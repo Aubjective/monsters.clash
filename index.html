@@ -156,13 +156,21 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .setting-row output{color:#f3d68a}.setting-row input{accent-color:#eec27b;width:100%;cursor:pointer}
 @media(max-height:460px){.lobby-icon{width:30px;height:30px;font-size:16px}}
 @media(max-width:700px){.lobby-utility{gap:5px;margin-right:40px}.lobby-icon{height:30px;width:30px;font-size:16px;border-radius:8px}.unknown-icon{width:50px;height:50px}}
+
+.coin-wallet{white-space:nowrap;color:#ffe9a1;background:#1c2d39dd;border:1px solid #ad8a4d;border-radius:12px;padding:8px 12px;font-weight:800;font-size:clamp(12px,1.4vw,17px)}
+.team-slot-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0}
+.team-slot-head strong{color:#f3d68a}.team-slot-head #team-wallet{margin-left:auto;color:#f8d894;font-weight:700}
+.team-slot-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:12px 0 4px}
+.team-slot-grid .app-slot{min-width:0;min-height:58px;display:flex;align-items:center}
+@media(max-width:650px){.team-slot-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.team-slot-grid .app-slot{font-size:11px;min-height:45px;padding:6px}.coin-wallet{padding:5px 7px;font-size:11px}}
+@media(max-height:460px){.team-slot-grid .app-slot{min-height:40px}}
 </style>
 </head>
 <body>
 <section class="app-screen" id="home-screen">
  <div class="lobby">
   <div class="lobby-header">
-   <div class="lobby-brand"><span class="lobby-emblem">⚔</span><div><div class="lobby-kicker">ELEMENTAL BATTLES</div><h1>MONSTERS <span>CLASH</span></h1></div></div><div class="lobby-utility"><button class="lobby-icon" id="menu-bestiary" title="Bestiary" aria-label="Open Bestiary">📖</button><button class="lobby-icon" id="menu-settings" title="Settings" aria-label="Open Settings">⚙</button></div>
+   <div class="lobby-brand"><span class="lobby-emblem">⚔</span><div><div class="lobby-kicker">ELEMENTAL BATTLES</div><h1>MONSTERS <span>CLASH</span></h1></div></div><div class="lobby-utility"><span class="coin-wallet" id="coin-wallet" aria-label="Coin balance">🪙 0</span><button class="lobby-icon" id="menu-bestiary" title="Bestiary" aria-label="Open Bestiary">📖</button><button class="lobby-icon" id="menu-settings" title="Settings" aria-label="Open Settings">⚙</button></div>
   </div>
   <div class="lobby-world" aria-label="Whisper Meadow with Mossguard and Cinderhorn">
     <div class="lobby-monster lobby-moss" role="img" aria-label="Mossguard, nature guardian"></div>
@@ -170,10 +178,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   </div>
   <div class="lobby-controls">
    <button id="home-start" class="lobby-play"><span class="play-mark">▶</span><span>PLAY</span><small>START BATTLE</small></button>
-   <nav class="lobby-options" aria-label="Main game menu">
-    <button id="menu-collection" class="lobby-option"><span class="lobby-option-icon">✦</span><span>MY MONSTERS</span></button>
-    <button id="menu-team-home" class="lobby-option"><span class="lobby-option-icon">⚔</span><span>TEAM</span></button>
-   </nav>
+   <nav class="lobby-options" aria-label="Main game menu"><button id="menu-team-home" class="lobby-option"><span class="lobby-option-icon">⚔</span><span>MY TEAM</span></button></nav>
   </div>
  </div>
 </section>
@@ -203,10 +208,10 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </section>
 <section class="app-screen" id="team-screen" hidden>
  <div class="page-inner">
-  <div class="page-head"><div><div class="eyebrow">Battle preparation</div><h2>Select Battle Team</h2></div><button class="app-back">← Main Menu</button></div>
-  <p class="page-sub">Choose up to two owned, battle-ready monsters. Each battle takes place on a randomly selected battlefield.</p>
+  <div class="page-head"><div><div class="eyebrow">Battle preparation</div><h2>My Team</h2></div><button class="app-back">← Main Menu</button></div>
+  <p class="page-sub">Build your battle squad from owned monsters. Eight carrying slots are available initially; earn coins from victories to unlock more. Battlefields are random.</p>
   <div class="app-grid" id="team-options"></div>
-  <div class="app-nav" id="team-slots"></div>
+  <div class="team-slot-head"><strong id="team-slot-count">Team slots: 8</strong><span id="team-wallet">🪙 0 coins</span><button id="unlock-team-slot" type="button">Unlock slot</button></div><div class="team-slot-grid" id="team-slots"></div><p class="muted" id="team-message" aria-live="polite"></p>
   <div class="team-footer"><span class="muted">Battlefield selected randomly at battle start</span><button class="primary" id="start-game">Start Battle</button></div>
  </div>
 </section>
@@ -293,12 +298,14 @@ document.addEventListener('visibilitychange',()=>syncMusic());
 backgroundImage.src='assets/backgrounds/grass-land.png';
 let towerRegistry=null,towerConfigs={ally:null,enemy:null};
 async function loadGameCatalog(){
- const [index,towers,rules,audio]=await Promise.all([
+ const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json').then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
   fetch('towers.json').then(r=>{if(!r.ok)throw Error('towers.json missing');return r.json()}).catch(()=>null),
   fetch('battle_rules.json').then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null)
+  fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null),
+  fetch('progression.json').then(r=>r.ok?r.json():null).catch(()=>null)
  ]);
+ if(progress?.team&&progress?.coins)progression=progress;
  if(rules?.summoning)battleRules=rules;
  if(audio?.bgm)audioConfig=audio;
  loadAudioPreferences();audioLabels();refreshSettings();
@@ -306,8 +313,9 @@ async function loadGameCatalog(){
  catalog=(await Promise.all(ids.map(id=>fetch('monsters/'+encodeURIComponent(id)+'.json').then(r=>r.ok?r.json():null).catch(()=>null)))).filter(Boolean);
  roster=catalog.filter(m=>m.art?.status==='ready'&&m.art?.sheet);
  loadProfile((index.default_deck||[]).filter(id=>roster.some(m=>m.id===id)));
- team=(index.default_deck||[]).filter(id=>owns(id)&&roster.some(m=>m.id===id)).slice(0,2);
- if(team.length===0)team=roster.slice(0,2).map(m=>m.id);
+ team=profile.team.filter(id=>owns(id)&&roster.some(m=>m.id===id)).slice(0,profile.teamSlots);
+ if(team.length===0)team=roster.slice(0,profile.teamSlots).filter(m=>owns(m.id)).map(m=>m.id);
+ profile.team=team.slice();storeProfile();refreshCoinDisplays();
  towerRegistry=towers;
  for(const side of ['ally','enemy']){
   const id=towers?.default_towers?.[side];
@@ -344,18 +352,50 @@ function sheetPreview(id){const el=document.createElement('span');el.className='
 
 const PROFILE_KEY='monsters-clash-profile-v1';
 const AUDIO_KEY='monsters-clash-audio-v1';
-let profile={owned:[],encountered:[]};
+let profile={owned:[],encountered:[],coins:0,teamSlots:8,team:[]};
+let progression={team:{starting_slots:8,max_slots:12,slot_unlock_costs:[250,500,900,1400]},coins:{win_base:100,speed_bonus:[{max_seconds:90,coins:100},{max_seconds:180,coins:60},{max_seconds:300,coins:30}],loss:0}};
 function storeProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile))}catch(e){}}
 function loadProfile(defaults){
  let saved=null;
  try{saved=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')}catch(e){}
  profile={
   owned:[...new Set([...defaults,...(Array.isArray(saved?.owned)?saved.owned:[])])],
-  encountered:[...new Set([...defaults,...(Array.isArray(saved?.encountered)?saved.encountered:[])])]
+  encountered:[...new Set([...defaults,...(Array.isArray(saved?.encountered)?saved.encountered:[])])],
+  coins:Math.max(0,Math.floor(Number(saved?.coins)||0)),
+  teamSlots:Math.min(progression.team.max_slots,Math.max(progression.team.starting_slots,Math.floor(Number(saved?.teamSlots)||progression.team.starting_slots))),
+  team:Array.isArray(saved?.team)?[...new Set(saved.team)]:defaults.slice()
  };
  storeProfile();
 }
 function owns(id){return profile.owned.includes(id)}
+function refreshCoinDisplays(){
+ const label=profile.coins.toLocaleString('en-US');
+ $('coin-wallet').textContent='🪙 '+label;
+ $('team-wallet').textContent='🪙 '+label+' coins';
+}
+function nextSlotPrice(){
+ const index=profile.teamSlots-progression.team.starting_slots;
+ return profile.teamSlots>=progression.team.max_slots?null:progression.team.slot_unlock_costs[index]??null;
+}
+function purchaseSlot(){
+ const price=nextSlotPrice();
+ if(price===null){$('team-message').textContent='All team slots unlocked.';return}
+ if(profile.coins<price){$('team-message').textContent='Not enough coins. Win battles to earn '+(price-profile.coins)+' more.';return}
+ profile.coins-=price;profile.teamSlots+=1;storeProfile();renderTeam();
+ $('team-message').textContent='Team slot '+profile.teamSlots+' unlocked!';
+}
+function victoryCoins(seconds){
+ const base=Number(progression.coins.win_base)||100;
+ const bonus=(progression.coins.speed_bonus||[]).find(t=>seconds<=Number(t.max_seconds));
+ return {base,bonus:Number(bonus?.coins)||0,total:base+(Number(bonus?.coins)||0)};
+}
+function settleBattle(){
+ if(!state||!state.ended||state.rewarded)return;
+ state.rewarded=true;
+ if(state.enemyBase>0)return;
+ const award=victoryCoins(state.time);profile.coins+=award.total;storeProfile();refreshCoinDisplays();
+ state.award=award;
+}
 function encountered(id){return profile.encountered.includes(id)}
 function markEncounter(id){if(!id||encountered(id))return;profile.encountered.push(id);storeProfile();renderBestiary()}
 function loadAudioPreferences(){
@@ -393,7 +433,7 @@ let currentStage=null;
 function chooseRandomStage(){currentStage=stages.length?stages[Math.floor(Math.random()*stages.length)]:null;const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name+' · '+currentStage.affinity:'Battlefield';}
 function reset(){
  chooseRandomStage();
- state={units:[],allyBase:towerConfigs.ally?.max_hp||1900,enemyBase:towerConfigs.enemy?.max_hp||1900,time:0,ended:false};
+ state={units:[],allyBase:towerConfigs.ally?.max_hp||1900,enemyBase:towerConfigs.enemy?.max_hp||1900,time:0,ended:false,rewarded:false,award:null};
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  $('status').textContent='Deploy monsters when their cooldown is ready.';
 }
@@ -488,7 +528,7 @@ function step(dt){
  }
  separateGroundUnits();
  state.units=state.units.filter(u=>u.hp>0);
- if(state.enemyBase<=0||state.allyBase<=0){state.ended=true;state.enemyBase=Math.max(0,state.enemyBase);state.allyBase=Math.max(0,state.allyBase);soundEffect(state.enemyBase<=0?'victory':'defeat');$('status').textContent=state.enemyBase<=0?'Victory — enemy base destroyed!':'Defeat — player base destroyed!'}
+ if(state.enemyBase<=0||state.allyBase<=0){state.ended=true;state.enemyBase=Math.max(0,state.enemyBase);state.allyBase=Math.max(0,state.allyBase);settleBattle();soundEffect(state.enemyBase<=0?'victory':'defeat');$('status').textContent=state.enemyBase<=0?'Victory — '+state.award.total+' coins earned!':'Defeat — player base destroyed!'}
 }
 
 function drawTower(side,x,hp){
@@ -535,7 +575,7 @@ function draw(){
  }
  ctx.fillStyle='#1b3755cc';ctx.fillRect(328,12,304,40);
  ctx.fillStyle='white';ctx.textAlign='center';ctx.font='bold 18px system-ui';ctx.fillText(s?.name||'Battlefield',480,38);
- if(state.ended){ctx.fillStyle='#08172cbb';ctx.fillRect(0,0,W,H);ctx.fillStyle='white';ctx.font='bold 52px system-ui';ctx.fillText(state.enemyBase<=0?'VICTORY':'DEFEAT',480,240)}
+ if(state.ended){ctx.fillStyle='#08172cbb';ctx.fillRect(0,0,W,H);ctx.fillStyle='white';ctx.font='bold 52px system-ui';ctx.fillText(state.enemyBase<=0?'VICTORY':'DEFEAT',480,228);if(state.award){ctx.font='bold 23px system-ui';ctx.fillStyle='#f4d283';ctx.fillText('+'+state.award.total+' coins · '+Math.floor(state.time)+'s',480,267)}}
  $('unit-count').textContent='Units '+teamCount(1)+'/'+maxTeamUnits();
  for(const m of roster){
   const btn=$('card_'+m.id);if(!btn)continue;
@@ -576,8 +616,8 @@ function cardFor(m,selectable){
   node.disabled=!ready||!unlocked;
   node.onclick=()=>{
    if(team.includes(m.id))team=team.filter(id=>id!==m.id);
-   else if(team.length<2)team.push(m.id);
-   renderTeam();
+   else if(team.length<profile.teamSlots)team.push(m.id);
+   profile.team=team.slice();storeProfile();renderTeam();
   };
  }
  return node;
@@ -607,11 +647,19 @@ function renderBestiary(){
 }
 function renderTeam(){
  $('team-options').replaceChildren(...catalog.filter(m=>owns(m.id)).map(m=>cardFor(m,true)));
- $('team-slots').replaceChildren(...[0,1].map(i=>{
+ $('team-slot-count').textContent='Team slots: '+team.length+' / '+profile.teamSlots;
+ refreshCoinDisplays();
+ const price=nextSlotPrice(),unlock=$('unlock-team-slot');
+ unlock.hidden=price===null;
+ unlock.textContent=price===null?'All slots unlocked':'Unlock slot · 🪙 '+price.toLocaleString('en-US');
+ unlock.disabled=price!==null&&profile.coins<price;
+ const slots=Array.from({length:profile.teamSlots},(_,i)=>{
   const d=document.createElement('div');d.className='app-slot';
-  d.textContent='Slot '+(i+1)+': '+(roster.find(m=>m.id===team[i])?.name||'Empty');
+  const m=roster.find(m=>m.id===team[i]);
+  d.textContent='Slot '+(i+1)+': '+(m?.name||'Empty');
   return d;
- }));
+ });
+ $('team-slots').replaceChildren(...slots);
  $('start-game').disabled=team.length===0;
 }
 function launchLandscape(){
@@ -641,12 +689,12 @@ function toggleQuickNav(force){
  $('nav-toggle').setAttribute('aria-expanded',String(navOpen));
 }
 function bindMenu(){
- $('menu-collection').onclick=()=>openView('collection');
  $('menu-bestiary').onclick=()=>openView('bestiary');
  $('menu-settings').onclick=()=>openView('settings');
  $('bgm-volume').oninput=e=>setAudioLevel('bgm',e.target.value);
  $('sfx-volume').oninput=e=>setAudioLevel('sfx',e.target.value);
  $('menu-team-home').onclick=()=>{renderTeam();openView('team')};
+ $('unlock-team-slot').onclick=purchaseSlot;
  $('home-start').onclick=()=>{if(team.length===0){renderTeam();openView('team');return}$('start-game').click()};
  document.querySelectorAll('.app-back').forEach(el=>el.onclick=()=>openView('home'));
  $('start-game').onclick=()=>{reset();openView('battle');launchLandscape()};
