@@ -71,3 +71,13 @@ Current game mechanics remain experimental, and future tower abilities still req
 - Players do not select the battlefield. The game picks randomly from `stage_affinities.json` whenever a battle begins or is restarted.
 - The selected stage's name and element are displayed in battle.
 - Existing stage-affinity buffs apply to both allied and enemy monsters matching that stage's element. Nonmatching monsters do not receive those buffs. A full elemental advantage/disadvantage interaction matrix (e.g. specific water-vs-fire penalties) has **not** yet been defined or implemented.
+
+## Team carrying slots and coins (prototype economy)
+
+- Main menu shows PLAY and MY TEAM; the Bestiary and Settings remain accessible as compact header icons.
+- Players start with **8 team carrying slots**, independent of the limit of 10 simultaneously active creatures on each side of a battlefield.
+- Carrying slots 9–12 can be bought for **250, 500, 900, and 1,400 coins**, respectively. Values live in `progression.json`.
+- Winning earns **100 coins**, plus **100** if finished within 90 seconds, **60** within 180 seconds, or **30** within 300 seconds. A slower win still earns 100; defeats earn zero.
+- Results award coins once per concluded battle. Restart begins a new battle with a new random stage. Coins, unlocked carrying slots, and saved team choices use the existing browser-local profile (`monsters-clash-profile-v1`), so no cross-device synchronization exists yet.
+- Only owned, battle-ready monsters can be selected. The roster can grow without adding hardcoded buttons for each monster.
+- Coin rewards and slot prices are initial test-balancing values, not a final economic model.
