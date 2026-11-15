@@ -135,6 +135,14 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 @media(max-height:550px){.lobby-header{padding:7px 30px}.lobby-controls{min-height:95px;gap:5px;padding:4px 10px 8px}.lobby-play{height:40px;font-size:19px;min-width:235px}.lobby-play small{font-size:9px}.lobby-option{padding:4px 8px}.lobby-scene-title{bottom:3%}.lobby-build{display:none}}
 @media(max-width:700px){.lobby-header{padding:8px 15px}.lobby-brand{gap:6px}.lobby-brand h1{font-size:clamp(20px,4.5vw,34px)}.lobby-kicker{font-size:8px}.lobby-build{display:none}.lobby-moss{left:16%}.lobby-cinder{right:13%}.lobby-controls{min-height:115px}.lobby-play{height:45px;min-width:220px;font-size:19px}.lobby-option{min-width:0;flex:1;max-width:150px;font-size:10px;gap:4px}.lobby-option-icon{font-size:13px}.lobby-scene-title{font-size:9px;letter-spacing:.13em}}
 @media(prefers-reduced-motion:reduce){.lobby-monster{animation:none}}
+
+/* Sprite sheet thumbnails: row 2 / column 1 is the neutral idle pose. */
+.sheet-preview{display:block;flex:none;width:76px;height:76px;background-repeat:no-repeat;background-size:400% 400%;background-position:0% 33.333%;image-rendering:auto}
+.cards .sheet-preview{width:42px;height:42px}
+.lobby-monster{width:clamp(110px,25vw,290px);height:clamp(110px,25vw,290px);max-width:36%;max-height:72%;background-repeat:no-repeat;background-size:400% 400%;background-position:0% 33.333%;object-fit:unset}
+.lobby-moss{background-image:url('assets/monsters/m001/mossguard-sheet.png')}
+.lobby-cinder{background-image:url('assets/monsters/m002/cinderhorn-sheet.png')}
+@media(max-width:650px){.app-card .sheet-preview{width:50px;height:50px}.cards .sheet-preview{width:34px;height:34px}}
 </style>
 </head>
 <body>
@@ -173,8 +181,8 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
       </g>
     </svg>
     <div class="lobby-ground-glow"></div>
-    <img class="lobby-monster lobby-moss" src="assets/monsters/m001/side.svg" alt="Mossguard, nature guardian">
-    <img class="lobby-monster lobby-cinder" src="assets/monsters/m002/side.svg" alt="Cinderhorn, fire bruiser">
+    <div class="lobby-monster lobby-moss" role="img" aria-label="Mossguard, nature guardian"></div>
+    <div class="lobby-monster lobby-cinder" role="img" aria-label="Cinderhorn, fire bruiser"></div>
     <div class="lobby-scene-title">WHISPER MEADOW <span>·</span> ELEMENTAL CLASH</div>
   </div>
   <div class="lobby-controls">
@@ -228,8 +236,36 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
+const ASSETS={
+ background:'assets/backgrounds/grass-land.png',
+ monsters:{m001:'assets/monsters/m001/mossguard-sheet.png',m002:'assets/monsters/m002/cinderhorn-sheet.png'},
+ towers:{ally:'assets/towers/t001/tower_sheet.png',enemy:'assets/towers/t002/tower_sheet.png'}
+};
+const backgroundImage=new Image(),towerImages={ally:new Image(),enemy:new Image()};
+backgroundImage.src=ASSETS.background;
+for(const side of ['ally','enemy'])towerImages[side].src=ASSETS.towers[side];
+function readyImage(img){return img&&img.complete&&img.naturalWidth>0&&img.naturalHeight>0}
+function spriteFrame(img,frame,x,y,w,h,columns=4,rows=4){
+ const sw=img.naturalWidth/columns,sh=img.naturalHeight/rows;
+ ctx.drawImage(img,(frame%columns)*sw,Math.floor(frame/columns)*sh,sw,sh,x,y,w,h);
+}
+function towerDamageFrame(hp,maxHp=1900){
+ if(hp<=0)return 3;
+ const pct=hp/maxHp*100;
+ return pct<30?2:pct<70?1:0;
+}
+function drawCover(img,x,y,w,h){const s=Math.max(w/img.naturalWidth,h/img.naturalHeight);const sw=w/s,sh=h/s;ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,x,y,w,h)}
+function monsterFrame(u){
+ if(u.hit>0)return 6;
+ if(u.anim&&u.anim.remaining>0){const elapsed=u.anim.duration-u.anim.remaining;const progress=Math.max(0,Math.min(.999,elapsed/u.anim.duration));return (u.anim.type==='skill'?12:8)+Math.floor(progress*4)}
+ if(u.walking)return Math.floor((u.phase%(Math.PI*2))/(Math.PI*2)*4)%4;
+ return 4+(Math.floor(state.time*1.4+u.phase)%2);
+}
+function sheetUrl(m){return ASSETS.monsters[m.id]||m.art?.battle_side}
+function sheetPreview(id){const el=document.createElement('span');el.className='sheet-preview';el.style.backgroundImage='url("'+ASSETS.monsters[id]+'")';return el}
+
 let roster=[],catalog=[],team=['m001','m002'],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;const battleReady=new Set(['m001','m002']);
-async function init(){catalog=(await Promise.all(Array.from({length:10},(_,i)=>fetch('monsters/m'+String(i+1).padStart(3,'0')+'.json').then(r=>r.ok?r.json():null).catch(()=>null)))).filter(Boolean);roster=catalog.filter(m=>battleReady.has(m.id));stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const s of stages){for(const id of ['stage','team-stage']){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+s.affinity;$(id).append(o)}}for(const m of roster){const img=new Image();img.src=m.art.battle_side;images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.innerHTML='<img src="'+m.art.front+'" alt=""><span>'+m.name+'<br><small>'+m.deployment.mana_cost+' mana</small></span>';btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('stage').onchange=reset;$('team-stage').onchange=()=>{$('stage').value=$('team-stage').value};$('restart').onclick=reset;bindMenu();renderCollection();renderTeam();reset();requestAnimationFrame(frame)}
+async function init(){catalog=(await Promise.all(Array.from({length:10},(_,i)=>fetch('monsters/m'+String(i+1).padStart(3,'0')+'.json').then(r=>r.ok?r.json():null).catch(()=>null)))).filter(Boolean);roster=catalog.filter(m=>battleReady.has(m.id));stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const s of stages){for(const id of ['stage','team-stage']){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+s.affinity;$(id).append(o)}}for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small>'+m.deployment.mana_cost+' mana</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('stage').onchange=reset;$('team-stage').onchange=()=>{$('stage').value=$('team-stage').value};$('restart').onclick=reset;bindMenu();renderCollection();renderTeam();reset();requestAnimationFrame(frame)}
 function reset(){state={units:[],mana:5,allyBase:1900,enemyBase:1900,time:0,ended:false};cooldowns={};enemyTimer=2;$('status').textContent='Summon monsters and destroy the enemy base.'}
 function stage(){return stages.find(s=>s.id===$('stage').value)||stages[0]}function mods(m){const s=stage();return s&&m.element!=='neutral'&&m.element===s.affinity?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
 function spawn(m,side){if(state.ended)return;if(side===1){if(!team.includes(m.id)||state.mana<m.deployment.mana_cost||(cooldowns[m.id]||0)>0)return;state.mana-=m.deployment.mana_cost;cooldowns[m.id]=m.deployment.cooldown_seconds}
@@ -238,7 +274,7 @@ const b=mods(m),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0)),spawnX=side>0?98:862;
 const groundRows=[356,385,414,443,463];
 const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(best,Math.hypot((u.x-spawnX)*.8,(u.y-y)*1.4)),Infinity)})).sort((a,b)=>b.clearance-a.clearance)[0];
 const x=spawnX+(side>0?-1:1)*Math.max(0,54-row.clearance);
-state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false})}
+state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null})}
 function dmg(u,amount){const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;const shield=Math.min(u.shield,amount);u.shield-=shield;u.hp-=amount-shield;u.hit=.15}
 function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
 function separateGroundUnits(){
@@ -270,7 +306,7 @@ function step(dt){
   if(u.hp<=0)continue;
   const gait=u.m.ai.locomotion;
   u.phase+=dt*({gallop:14,dash:13,roll:12,walk:8,float:5}[gait]||8);
-  u.hit=Math.max(0,u.hit-dt);u.motion=Math.max(0,u.motion-dt);u.atk-=dt;u.skill-=dt;
+  u.hit=Math.max(0,u.hit-dt);u.motion=Math.max(0,u.motion-dt);if(u.anim){u.anim.remaining-=dt;if(u.anim.remaining<=0)u.anim=null}u.atk-=dt;u.skill-=dt;
   const target=state.units.filter(t=>t.side!==u.side&&t.hp>0).sort((a,b)=>unitDistance(u,a)-unitDistance(u,b))[0];
   const dx=target?target.x-u.x:(u.side>0?904:56)-u.x;
   const dy=target?target.y-u.y:0;
@@ -287,9 +323,10 @@ function step(dt){
   }else if(u.atk<=0){
    const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0));
    if(target)dmg(target,amount);else if(u.side>0)state.enemyBase-=amount;else state.allyBase-=amount;
-   u.atk=u.m.attack.interval_seconds;u.motion=.24;
+   u.atk=u.m.attack.interval_seconds;u.motion=.24;u.anim={type:'attack',duration:.34,remaining:.34};
   }
   if(u.skill<=0){
+   u.anim={type:'skill',duration:.55,remaining:.55};
    if(u.m.skill.effect.type==='shield_self')u.shield=Math.max(u.shield,u.m.skill.effect.amount);
    else if(u.m.skill.effect.type==='dash_hit'){
     u.x+=u.side*u.m.skill.effect.distance;
@@ -303,26 +340,55 @@ function step(dt){
  if(state.enemyBase<=0||state.allyBase<=0){state.ended=true;$('status').textContent=state.enemyBase<=0?'Victory — enemy base destroyed!':'Defeat — player base destroyed!'}
 }
 
-function draw(){const s=stage(),colors={nature:['#78ceff','#95cb79','#7dbe57'],fire:['#f87b52','#a84c35','#b75c3d'],ice:['#b6e7ff','#a5d3e5','#cceaf5'],earth:['#b5c5cf','#9b927f','#bfae85'],neutral:['#93cce7','#81a081','#9eb982']}[s?.affinity]||['#8ed1ef','#89bd73','#92c269'];const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);ctx.fillStyle=colors[2];ctx.fillRect(0,ground,W,H-ground);ctx.fillStyle='#446b48';ctx.fillRect(0,ground,W,5);
-for(const base of [{x:20,c:'#4d8cc1',v:state.allyBase},{x:884,c:'#aa5364',v:state.enemyBase}]){ctx.fillStyle=base.c;ctx.fillRect(base.x,245,56,150);ctx.fillStyle='#263950';ctx.fillRect(base.x-5,233,66,16);ctx.fillStyle='#1b293f';ctx.fillRect(base.x,222,56,8);ctx.fillStyle='#f67b6a';ctx.fillRect(base.x,222,56*Math.max(0,base.v/1900),8)}
-// Painter's order: units closer to the bottom of the arena are drawn in front.
-for(const u of [...state.units].sort((a,b)=>a.y-b.y)){
- const img=images[u.m.id],sz=u.m.id==='m001'?95:91,kind=u.m.ai.locomotion||'walk',flying=kind==='float';
- const hover=flying?13+Math.sin(u.phase)*4:0;
- // Shadow is fixed on this monster's own ground position.
- ctx.save();ctx.globalAlpha=flying?.14:.24;ctx.fillStyle='#253b31';ctx.beginPath();ctx.ellipse(u.x,u.y-3,sz*.27,5,0,0,Math.PI*2);ctx.fill();ctx.restore();
- const sway=u.walking&&!flying?Math.sin(u.phase):0;
- const scaleX=1+Math.abs(sway)*.012,scaleY=1-Math.abs(sway)*.018;
- ctx.save();ctx.translate(u.x,u.y-2-hover);ctx.scale(u.side*scaleX,scaleY);
- if(u.motion>0)ctx.translate(-7*u.motion/.24,0);
- if(u.hit>0)ctx.globalAlpha=.6;
- if(img?.complete&&img.naturalWidth){const footRatio=.813,spriteH=sz/footRatio;ctx.drawImage(img,-sz/2,-spriteH*footRatio,sz,spriteH)}
- else{ctx.fillStyle='#fff';ctx.fillRect(-20,-60,40,60)}
- ctx.restore();
- ctx.fillStyle='#223044';ctx.fillRect(u.x-32,u.y-sz-21-hover,64,7);
- ctx.fillStyle=u.side>0?'#6dde8a':'#fa7777';ctx.fillRect(u.x-32,u.y-sz-21-hover,64*Math.max(0,u.hp/u.maxhp),7)
+function drawTower(side,x,hp){
+ const img=towerImages[side],maxHp=1900,frame=towerDamageFrame(hp,maxHp);
+ const y=side==='ally'?236:236;
+ if(readyImage(img)){
+   const width=154,height=182;
+   // Sprite art occupies a consistent cell; leave room for banners and rubble.
+   spriteFrame(img,frame,x-width/2,y-16,width,height,4,1);
+ }else{
+   // Keep old game playable until the tower sheets are uploaded.
+   ctx.fillStyle=side==='ally'?'#4d8cc1':'#aa5364';
+   ctx.fillRect(x-28,245,56,150);
+   ctx.fillStyle='#263950';ctx.fillRect(x-33,233,66,16);
+   if(frame>=1){ctx.strokeStyle='#253044';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x-8,266);ctx.lineTo(x+12,300);ctx.lineTo(x-5,329);ctx.stroke()}
+   if(frame===3){ctx.fillStyle='#3b3540';ctx.fillRect(x-36,340,72,55)}
+ }
+ ctx.fillStyle='#1a293d';ctx.fillRect(x-38,214,76,8);
+ ctx.fillStyle=side==='ally'?'#6cdb99':'#ef7877';ctx.fillRect(x-38,214,76*Math.max(0,hp/maxHp),8);
 }
-ctx.fillStyle='#1b3755';ctx.fillRect(328,12,304,40);ctx.fillStyle='white';ctx.textAlign='center';ctx.font='bold 18px system-ui';ctx.fillText(s?.name||'Battlefield',480,38);if(state.ended){ctx.fillStyle='#08172cbb';ctx.fillRect(0,0,W,H);ctx.fillStyle='white';ctx.font='bold 52px system-ui';ctx.fillText(state.enemyBase<=0?'VICTORY':'DEFEAT',480,240)}$('mana').textContent='Mana '+state.mana.toFixed(1)+'/12';for(const m of roster){const btn=$('card_'+m.id);btn.style.display=team.includes(m.id)?'flex':'none';btn.disabled=state.ended||state.mana<m.deployment.mana_cost||(cooldowns[m.id]||0)>0;btn.title=(cooldowns[m.id]||0)>0?'Cooldown '+cooldowns[m.id].toFixed(1)+'s':''}}
+function draw(){
+ const s=stage(),colors={nature:['#78ceff','#95cb79','#7dbe57'],fire:['#f87b52','#a84c35','#b75c3d'],ice:['#b6e7ff','#a5d3e5','#cceaf5'],earth:['#b5c5cf','#9b927f','#bfae85'],neutral:['#93cce7','#81a081','#9eb982']}[s?.affinity]||['#8ed1ef','#89bd73','#92c269'];
+ if(readyImage(backgroundImage)&&s?.affinity==='nature')drawCover(backgroundImage,0,0,W,H);
+ else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);ctx.fillStyle=colors[2];ctx.fillRect(0,ground,W,H-ground);ctx.fillStyle='#446b48';ctx.fillRect(0,ground,W,5)}
+ drawTower('ally',51,state.allyBase);drawTower('enemy',909,state.enemyBase);
+ // Depth-sort monsters by their individual ground positions.
+ for(const u of [...state.units].sort((a,b)=>a.y-b.y)){
+   const img=images[u.m.id],kind=u.m.ai.locomotion||'walk',flying=kind==='fly'||kind==='float';
+   const hover=flying?13+Math.sin(u.phase)*4:0;
+   const size=u.m.id==='m001'?134:128;
+   ctx.save();ctx.globalAlpha=.22;ctx.fillStyle='#192b22';ctx.beginPath();ctx.ellipse(u.x,u.y-3,size*.28,6,0,0,Math.PI*2);ctx.fill();ctx.restore();
+   ctx.save();ctx.translate(u.x,u.y-hover);ctx.scale(u.side,1);
+   if(u.motion>0)ctx.translate(-4*u.motion/.24,0);
+   if(readyImage(img)){
+      // Sheet frames are uniform cells; footline sits ~82% down the image cell.
+      const frame=monsterFrame(u);
+      if(u.hit>0)ctx.globalAlpha=.85;
+      spriteFrame(img,frame,-size/2,-size*.82,size,size);
+   }else{ctx.fillStyle='#f4f3e9';ctx.fillRect(-25,-64,50,64)}
+   ctx.restore();
+   const barY=u.y-size*.82-12-hover;
+   ctx.fillStyle='#1f2e40';ctx.fillRect(u.x-31,barY,62,6);
+   ctx.fillStyle=u.side>0?'#6dde8a':'#fa7777';ctx.fillRect(u.x-31,barY,62*Math.max(0,u.hp/u.maxhp),6);
+ }
+ ctx.fillStyle='#1b3755cc';ctx.fillRect(328,12,304,40);
+ ctx.fillStyle='white';ctx.textAlign='center';ctx.font='bold 18px system-ui';ctx.fillText(s?.name||'Battlefield',480,38);
+ if(state.ended){ctx.fillStyle='#08172cbb';ctx.fillRect(0,0,W,H);ctx.fillStyle='white';ctx.font='bold 52px system-ui';ctx.fillText(state.enemyBase<=0?'VICTORY':'DEFEAT',480,240)}
+ $('mana').textContent='Mana '+state.mana.toFixed(1)+'/12';
+ for(const m of roster){const btn=$('card_'+m.id);btn.style.display=team.includes(m.id)?'flex':'none';btn.disabled=state.ended||state.mana<m.deployment.mana_cost||(cooldowns[m.id]||0)>0}
+}
+
 function openView(name){
  view=name;battleMenuOpen=false;navOpen=false;
  for(const id of ['home','collection','team','battle'])$(id+'-screen').hidden=id!==name;
@@ -333,7 +399,7 @@ function openView(name){
  if(name!=='battle'&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});
  if(name!=='battle'&&screen.orientation?.unlock){try{screen.orientation.unlock()}catch(e){}}
 }
-function cardFor(m,selectable){const node=document.createElement('button');node.className='app-card'+(team.includes(m.id)&&selectable?' sel':'');const ready=battleReady.has(m.id);const art=document.createElement('img');if(ready){art.src=m.art.front}else{art.src='';art.alt='◇';art.style.display='none'}const desc=document.createElement('span');desc.innerHTML='<strong></strong><br><small></small><br><em class="app-pending"></em>';desc.querySelector('strong').textContent=m.name;desc.querySelector('small').textContent=m.element+' · '+m.role+' · '+m.deployment.mana_cost+' mana';desc.querySelector('em').textContent=ready?'Battle ready':'Art pending';node.append(art,desc);if(!selectable)node.disabled=true;else{node.disabled=!ready;node.onclick=()=>{if(team.includes(m.id))team=team.filter(id=>id!==m.id);else if(team.length<2)team.push(m.id);renderTeam()}}return node}
+function cardFor(m,selectable){const node=document.createElement('button');node.className='app-card'+(team.includes(m.id)&&selectable?' sel':'');const ready=battleReady.has(m.id);const art=ready?sheetPreview(m.id):document.createElement('span');if(!ready)art.style.display='none'const desc=document.createElement('span');desc.innerHTML='<strong></strong><br><small></small><br><em class="app-pending"></em>';desc.querySelector('strong').textContent=m.name;desc.querySelector('small').textContent=m.element+' · '+m.role+' · '+m.deployment.mana_cost+' mana';desc.querySelector('em').textContent=ready?'Battle ready':'Art pending';node.append(art,desc);if(!selectable)node.disabled=true;else{node.disabled=!ready;node.onclick=()=>{if(team.includes(m.id))team=team.filter(id=>id!==m.id);else if(team.length<2)team.push(m.id);renderTeam()}}return node}
 function renderCollection(){$('monster-collection').replaceChildren(...catalog.map(m=>cardFor(m,false)))}
 function renderTeam(){$('team-options').replaceChildren(...catalog.map(m=>cardFor(m,true)));$('team-slots').replaceChildren(...[0,1].map(i=>{const d=document.createElement('div');d.className='app-slot';d.textContent='Slot '+(i+1)+': '+(roster.find(m=>m.id===team[i])?.name||'Empty');return d}));$('start-game').disabled=team.length===0}
 function launchLandscape(){
