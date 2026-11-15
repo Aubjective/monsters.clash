@@ -44,7 +44,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 #battle-screen{position:fixed;inset:0;z-index:20;background:#081523;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 .battle-top{height:45px;min-height:45px;display:flex;align-items:center;justify-content:space-between;padding:0 70px 0 16px;gap:12px;background:#14293c;border-bottom:1px solid #3a5c78}
 .battle-brand{font-size:clamp(14px,1.8vw,19px);font-weight:800;white-space:nowrap}
-.battle-top label{font-size:12px;color:#c4d5e5;display:flex;align-items:center;gap:9px;white-space:nowrap}
+.battlefield-name{font-size:clamp(11px,1.5vw,15px);color:#e6d19f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
 .battle-top select{font-size:13px;padding:5px 10px;max-width:230px}
 .arena-wrap{flex:1;min-height:0;min-width:0;display:grid;place-items:center;background:#0d2134;overflow:hidden}
 #game{display:block;width:100%;height:100%;object-fit:contain;max-width:100%;max-height:100%;touch-action:none}
@@ -204,10 +204,10 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <section class="app-screen" id="team-screen" hidden>
  <div class="page-inner">
   <div class="page-head"><div><div class="eyebrow">Battle preparation</div><h2>Select Battle Team</h2></div><button class="app-back">← Main Menu</button></div>
-  <p class="page-sub">Choose up to two owned, battle-ready monsters, then select your battlefield.</p>
+  <p class="page-sub">Choose up to two owned, battle-ready monsters. Each battle takes place on a randomly selected battlefield.</p>
   <div class="app-grid" id="team-options"></div>
   <div class="app-nav" id="team-slots"></div>
-  <div class="team-footer"><label>Battlefield <select id="team-stage"></select></label><button class="primary" id="start-game">Start Battle</button></div>
+  <div class="team-footer"><span class="muted">Battlefield selected randomly at battle start</span><button class="primary" id="start-game">Start Battle</button></div>
  </div>
 </section>
 <div id="site-navigation"><button class="floating-plus" id="nav-toggle" aria-label="Expand menu" aria-expanded="false">+</button>
@@ -221,7 +221,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  <button id="nav-sfx">SFX: On</button>
 </nav></div>
 <main id="battle-screen" hidden>
- <div class="battle-top"><span class="battle-brand">⚔ Monsters Clash</span><label>Battlefield <select id="stage"></select></label></div>
+ <div class="battle-top"><span class="battle-brand">⚔ Monsters Clash</span><span class="battlefield-name" id="stage-label" aria-live="polite"></span></div>
  <div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas></div>
  <div class="battle-bottom">
   <div class="cards" id="cards"></div>
@@ -388,8 +388,11 @@ function setAudioLevel(kind,value){
 }
 
 let roster=[],catalog=[],team=[],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;
-async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const s of stages){for(const id of ['stage','team-stage']){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+s.affinity;$(id).append(o)}}for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('stage').onchange=reset;$('team-stage').onchange=()=>{$('stage').value=$('team-stage').value};$('restart').onclick=reset;bindMenu();renderCollection();renderBestiary();renderTeam();reset();requestAnimationFrame(frame)}
+async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderCollection();renderBestiary();renderTeam();reset();requestAnimationFrame(frame)}
+let currentStage=null;
+function chooseRandomStage(){currentStage=stages.length?stages[Math.floor(Math.random()*stages.length)]:null;const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name+' · '+currentStage.affinity:'Battlefield';}
 function reset(){
+ chooseRandomStage();
  state={units:[],allyBase:towerConfigs.ally?.max_hp||1900,enemyBase:towerConfigs.enemy?.max_hp||1900,time:0,ended:false};
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  $('status').textContent='Deploy monsters when their cooldown is ready.';
@@ -409,7 +412,7 @@ function canSummon(m,side){
 }
 function deployCooldown(m,side){cooldowns[side>0?'ally':'enemy'][m.id]=Math.max(0,Number(m.deployment?.cooldown_seconds)||0)}
 
-function stage(){return stages.find(s=>s.id===$('stage').value)||stages[0]}function mods(m){const s=stage();return s&&m.element!=='neutral'&&m.element===s.affinity?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
+function stage(){return currentStage||stages[0]}function mods(m){const s=stage();return s&&m.element!=='neutral'&&m.element===s.affinity?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
 function spawn(m,side){if(!m||!canSummon(m,side))return false;if(side<0)markEncounter(m.id);if(side===1&&!team.includes(m.id))return false;deployCooldown(m,side);if(side===1)soundEffect('summon');
 const b=mods(m),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0)),spawnX=side>0?98:862;
 // Spawn on a clear patch of ground, choosing a different depth when occupied.
@@ -646,7 +649,7 @@ function bindMenu(){
  $('menu-team-home').onclick=()=>{renderTeam();openView('team')};
  $('home-start').onclick=()=>{if(team.length===0){renderTeam();openView('team');return}$('start-game').click()};
  document.querySelectorAll('.app-back').forEach(el=>el.onclick=()=>openView('home'));
- $('start-game').onclick=()=>{$('stage').value=$('team-stage').value;reset();openView('battle');launchLandscape()};
+ $('start-game').onclick=()=>{reset();openView('battle');launchLandscape()};
  $('nav-toggle').onclick=()=>toggleQuickNav();
  $('nav-home').onclick=()=>openView('home');
  $('nav-collection').onclick=()=>openView('collection');
