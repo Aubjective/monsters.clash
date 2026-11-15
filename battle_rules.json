@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "summoning": {
+    "mode": "cooldown_only",
+    "max_active_per_team": 10,
+    "default_max_active_per_monster": 3,
+    "tier_caps": {
+      "common": 5,
+      "uncommon": 4,
+      "rare": 3,
+      "epic": 2,
+      "legendary": 2,
+      "boss": 1
+    },
+    "enemy_spawn_interval_seconds": [
+      3.2,
+      4.5
+    ]
+  }
+}
