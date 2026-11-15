@@ -100,30 +100,91 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 
  .app-screen,#battle-screen{transform:none;top:0;left:0;width:100vw;height:100dvh}
 }
+
+/* Main game lobby — scoped to the home screen; combat and team layouts remain unchanged. */
+#home-screen{padding:0!important;overflow:hidden;background:#0a182a}
+.lobby{position:relative;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;isolation:isolate;background:radial-gradient(ellipse at 50% 0%,#294d6c,#081626 83%);overflow:hidden}
+.lobby:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#020e18aa,transparent 35%,transparent 75%,#020e18aa);z-index:1}
+.lobby-header{z-index:4;position:relative;display:flex;align-items:center;justify-content:space-between;padding:clamp(11px,2.6vh,25px) max(25px,5vw);gap:20px;flex:0 0 auto}
+.lobby-brand{display:flex;align-items:center;gap:12px}
+.lobby-emblem{font-size:clamp(22px,4vw,45px);color:#f8cc7a;filter:drop-shadow(0 4px 8px #000b)}
+.lobby-kicker{color:#f5d28b;font-size:clamp(9px,1vw,12px);letter-spacing:.3em;font-weight:800}
+.lobby-brand h1{margin:1px 0 0;font-family:Georgia,serif;font-size:clamp(25px,4vw,54px);line-height:1;white-space:nowrap;letter-spacing:.06em;color:#f8e9c4;text-shadow:0 3px 2px #000,0 0 22px #eabf6250}
+.lobby-brand h1 span{color:#f2bb60}
+.lobby-build{color:#bbd2e5;font-size:clamp(9px,1vw,12px);letter-spacing:.18em;padding:8px 12px;background:#071829bb;border:1px solid #49728c;border-radius:20px;margin-right:48px}
+.lobby-world{position:relative;min-height:0;flex:1;overflow:hidden;box-shadow:inset 0 -30px 50px #06131b}
+.lobby-landscape{position:absolute;inset:0;width:100%;height:100%;display:block}
+.lobby-world:before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,#07172977 0%,transparent 26%,transparent 72%,#081626cc 100%);pointer-events:none}
+.lobby-ground-glow{position:absolute;width:50%;height:28%;left:25%;bottom:8%;border-radius:50%;background:radial-gradient(ellipse,#f3d28740,transparent 72%);pointer-events:none}
+.lobby-monster{position:absolute;z-index:2;bottom:6%;height:clamp(80px,45%,265px);max-width:38%;object-fit:contain;transform-origin:50% 95%;filter:drop-shadow(0 18px 7px #0a1e2090) drop-shadow(0 0 22px #07162288);animation:lobbyBreath 2.5s ease-in-out infinite}
+.lobby-moss{left:24%;animation-delay:-.3s}
+.lobby-cinder{right:22%;transform:scaleX(-1);animation:lobbyBreathMirror 2.1s ease-in-out infinite}
+@keyframes lobbyBreath{0%,100%{transform:scale(1,1)}50%{transform:scale(1.018,.988)}}
+@keyframes lobbyBreathMirror{0%,100%{transform:scale(-1,1)}50%{transform:scale(-1.018,.988)}}
+.lobby-scene-title{position:absolute;z-index:3;left:50%;bottom:5%;transform:translateX(-50%);white-space:nowrap;text-align:center;color:#f5e6c2;font:700 clamp(10px,1.2vw,15px) system-ui;letter-spacing:.25em;text-shadow:0 2px 7px #08131d}
+.lobby-scene-title span{color:#e2ac50}
+.lobby-controls{position:relative;z-index:5;min-height:clamp(115px,20vh,175px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px 20px max(12px,env(safe-area-inset-bottom));background:linear-gradient(180deg,#0a1d2ec9,#071525)}
+.lobby-play{display:flex;align-items:center;justify-content:center;gap:12px;min-width:min(340px,70vw);height:clamp(48px,8vh,72px);font-size:clamp(20px,2.5vw,30px);font-weight:900;letter-spacing:.15em;color:#172337;background:linear-gradient(160deg,#ffe39b,#e0a54e 55%,#b76c30);border:2px solid #fff1bf;border-radius:14px;box-shadow:0 5px 0 #87562b,0 0 30px #dca4534f;text-shadow:0 1px #fff6d7}
+.lobby-play small{font-size:11px;letter-spacing:.08em;font-weight:700;color:#68421b}
+.play-mark{font-size:.85em}
+.lobby-play:hover:not(:disabled){background:linear-gradient(160deg,#fff0be,#f0bd6f 55%,#ca7b42);transform:translateY(-1px)}
+.lobby-options{display:flex;align-items:center;justify-content:center;gap:clamp(7px,1.4vw,16px);width:100%}
+.lobby-option{min-width:clamp(115px,15vw,180px);display:flex;justify-content:center;align-items:center;gap:10px;font-size:clamp(11px,1.2vw,15px);font-weight:800;letter-spacing:.08em;color:#e9e7da;background:linear-gradient(#263e53,#14283e);border:1px solid #657d84;border-bottom:3px solid #7c6851;border-radius:9px;padding:clamp(6px,1.1vh,12px)}
+.lobby-option-icon{font-size:19px;color:#f3cf81}
+#home-screen .lobby{min-height:100%}
+@media(max-height:550px){.lobby-header{padding:7px 30px}.lobby-controls{min-height:95px;gap:5px;padding:4px 10px 8px}.lobby-play{height:40px;font-size:19px;min-width:235px}.lobby-play small{font-size:9px}.lobby-option{padding:4px 8px}.lobby-scene-title{bottom:3%}.lobby-build{display:none}}
+@media(max-width:700px){.lobby-header{padding:8px 15px}.lobby-brand{gap:6px}.lobby-brand h1{font-size:clamp(20px,4.5vw,34px)}.lobby-kicker{font-size:8px}.lobby-build{display:none}.lobby-moss{left:16%}.lobby-cinder{right:13%}.lobby-controls{min-height:115px}.lobby-play{height:45px;min-width:220px;font-size:19px}.lobby-option{min-width:0;flex:1;max-width:150px;font-size:10px;gap:4px}.lobby-option-icon{font-size:13px}.lobby-scene-title{font-size:9px;letter-spacing:.13em}}
+@media(prefers-reduced-motion:reduce){.lobby-monster{animation:none}}
 </style>
 </head>
 <body>
 <section class="app-screen" id="home-screen">
- <div class="page-inner">
- <div class="hero">
-  <div class="hero-copy">
-   <div class="eyebrow">Elemental monster battles</div>
-   <h1>⚔ Monsters Clash</h1>
-   <p>Build a monster team, choose a battlefield, and destroy the opposing base. Each monster brings its own element, combat style and special ability.</p>
-   <div class="menu-actions">
-    <button class="primary" id="home-start">Play · Select Team</button>
-    <button id="menu-collection">Monster Collection</button>
-   </div>
+ <div class="lobby">
+  <div class="lobby-header">
+   <div class="lobby-brand"><span class="lobby-emblem">⚔</span><div><div class="lobby-kicker">ELEMENTAL BATTLES</div><h1>MONSTERS <span>CLASH</span></h1></div></div>
+   <span class="lobby-build">BATTLE SANDBOX</span>
   </div>
-  <div class="hero-art" aria-hidden="true">
-   <svg viewBox="0 0 250 250"><circle cx="125" cy="125" r="102" fill="none" stroke="#7396be" stroke-width="4"/><circle cx="125" cy="125" r="88" fill="none" stroke="#eac27a" stroke-width="6" stroke-dasharray="42 12"/><path d="M88 185L146 53L167 79L111 194Z" fill="#c9ecff" stroke="#4f9fe7" stroke-width="7"/><path d="M140 53L146 25L167 79" fill="#6fc4ff"/><path d="M70 166L180 166" stroke="#e5b96e" stroke-width="14"/><circle cx="125" cy="125" r="17" fill="#74c6ff"/></svg>
+  <div class="lobby-world" aria-label="Whisper Meadow with Mossguard and Cinderhorn">
+    <svg class="lobby-landscape" viewBox="0 0 1200 580" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+       <linearGradient id="lobbySky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#153f65"/><stop offset=".52" stop-color="#4b91a1"/><stop offset="1" stop-color="#d2bb76"/></linearGradient>
+       <linearGradient id="lobbyGround" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#779d62"/><stop offset="1" stop-color="#36593b"/></linearGradient>
+       <radialGradient id="lobbySun"><stop stop-color="#fff3bb" stop-opacity=".68"/><stop offset="1" stop-color="#ffd688" stop-opacity="0"/></radialGradient>
+      </defs>
+      <rect width="1200" height="580" fill="url(#lobbySky)"/>
+      <circle cx="710" cy="166" r="220" fill="url(#lobbySun)"/>
+      <path d="M0 322L165 231L285 291L430 199L604 292L733 222L870 302L1010 201L1200 317V580H0Z" fill="#345d72" opacity=".65"/>
+      <path d="M0 360L175 292L314 352L480 284L650 352L835 275L1020 350L1200 300V580H0Z" fill="#477b6c" opacity=".9"/>
+      <path d="M0 394Q135 351 288 405T616 391T928 402T1200 373V580H0Z" fill="#5b8b61"/>
+      <path d="M0 453Q220 411 398 453T795 446T1200 439V580H0Z" fill="url(#lobbyGround)"/>
+      <path d="M410 580Q508 518 610 493Q676 476 795 487L908 580Z" fill="#aa9772" opacity=".42"/>
+      <path d="M0 540Q220 510 400 540T850 530T1200 520" stroke="#a6c078" stroke-width="4" fill="none" opacity=".3"/>
+      <g fill="#254c42" opacity=".95">
+       <path d="M50 444l60-156 62 156Z"/><path d="M120 449l58-189 65 189Z"/><path d="M970 450l62-181 69 181Z"/><path d="M1068 452l60-163 67 163Z"/>
+      </g>
+      <g fill="#2f644c">
+       <path d="M0 471L83 302L164 471Z"/><path d="M87 473l73-198 86 198Z"/><path d="M1010 481l86-214 90 214Z"/>
+      </g>
+      <g fill="#7cad72" opacity=".7">
+       <ellipse cx="126" cy="500" rx="104" ry="18"/><ellipse cx="1070" cy="504" rx="117" ry="22"/><ellipse cx="650" cy="519" rx="210" ry="13"/>
+      </g>
+      <g opacity=".85" fill="#e3c67c">
+       <circle cx="342" cy="430" r="3"/><circle cx="385" cy="448" r="3"/><circle cx="876" cy="424" r="3"/><circle cx="934" cy="452" r="3"/>
+      </g>
+    </svg>
+    <div class="lobby-ground-glow"></div>
+    <img class="lobby-monster lobby-moss" src="assets/monsters/m001/side.svg" alt="Mossguard, nature guardian">
+    <img class="lobby-monster lobby-cinder" src="assets/monsters/m002/side.svg" alt="Cinderhorn, fire bruiser">
+    <div class="lobby-scene-title">WHISPER MEADOW <span>·</span> ELEMENTAL CLASH</div>
   </div>
- </div>
- <div class="menu-features">
-  <div class="feature"><strong>Monster Collection</strong><span>Discover ten elemental monsters.</span></div>
-  <div class="feature"><strong>Battle Team</strong><span>Choose two combat-ready units.</span></div>
-  <div class="feature"><strong>Battlefields</strong><span>Fight across elemental terrain.</span></div>
- </div>
+  <div class="lobby-controls">
+   <button id="home-start" class="lobby-play"><span class="play-mark">▶</span><span>PLAY</span><small>START BATTLE</small></button>
+   <nav class="lobby-options" aria-label="Main game menu">
+    <button id="menu-collection" class="lobby-option"><span class="lobby-option-icon">✦</span><span>MONSTERS</span></button>
+    <button id="menu-team-home" class="lobby-option"><span class="lobby-option-icon">⚔</span><span>TEAM</span></button>
+    <button id="menu-battlefields-home" class="lobby-option"><span class="lobby-option-icon">◈</span><span>BATTLEFIELDS</span></button>
+   </nav>
+  </div>
  </div>
 </section>
 <section class="app-screen" id="collection-screen" hidden>
@@ -303,6 +364,8 @@ function toggleQuickNav(force){
 }
 function bindMenu(){
  $('menu-collection').onclick=()=>openView('collection');
+ $('menu-team-home').onclick=()=>{renderTeam();openView('team')};
+ $('menu-battlefields-home').onclick=()=>{renderTeam();openView('team');$('team-stage').focus()};
  $('home-start').onclick=()=>{renderTeam();openView('team')};
  document.querySelectorAll('.app-back').forEach(el=>el.onclick=()=>openView('home'));
  $('start-game').onclick=()=>{$('stage').value=$('team-stage').value;reset();openView('battle');launchLandscape()};
