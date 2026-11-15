@@ -310,8 +310,10 @@ function teamCount(side){return state.units.filter(u=>u.hp>0&&u.side===side).len
 function maxTeamUnits(){return Math.max(1,Number(battleRules.summoning?.max_active_per_team)||10)}
 function unitCap(m){
  const limits=battleRules.summoning?.tier_caps||{};
- const tier=String(m.tier||m.rarity||'common').toLowerCase();
- return Math.max(1,Number(m.deployment?.max_active_copies||limits[tier]||battleRules.summoning?.default_max_active_per_monster||3));
+ const tier=String(m.deployment?.summon_tier||m.tier||m.rarity||'common').toLowerCase();
+ const tierLimit=Number(limits[tier]||battleRules.summoning?.default_max_active_per_monster||3);
+ const explicit=Number(m.deployment?.max_active_copies)||tierLimit;
+ return Math.max(1,Math.min(tierLimit,explicit));
 }
 function deployedCount(side,id){return state.units.filter(u=>u.hp>0&&u.side===side&&u.m.id===id).length}
 function canSummon(m,side){
