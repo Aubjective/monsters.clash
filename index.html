@@ -411,6 +411,37 @@ function sheetPreview(id){const el=document.createElement('span');el.className='
 const PROFILE_KEY='monsters-clash-profile-v1';
 const AUDIO_KEY='monsters-clash-audio-v1';
 let profile={owned:[],encountered:[],coins:0,teamSlots:8,team:[]};
+let run={active:false,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null};
+function startRun(){
+ run={active:true,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null};
+ reset();openView('battle');launchLandscape();
+}
+function nextBattle(){
+ if(!run.active||!state?.ended||state.enemyBase>0)return;
+ run.battle+=1;reset();toggleBattleMenu(false);
+}
+function restartRun(){
+ run={active:true,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null};
+ reset();toggleBattleMenu(false);
+}
+function endRun(){
+ run.active=false;openView('home');
+}
+function enemyScale(){return 1+Math.max(0,run.battle-1)*.05}
+function showResult(){
+ const victory=state.enemyBase<=0;
+ $('run-results').hidden=false;
+ $('result-heading').textContent=victory?'VICTORY':'DEFEAT';
+ $('result-stage').textContent=(stage()?.name||'Battlefield')+' · Battle '+run.battle;
+ $('result-battle').textContent=String(run.battle);
+ $('result-time').textContent=Math.floor(state.time)+'s';
+ $('result-streak').textContent=String(run.wins);
+ $('result-reward').hidden=!victory;
+ $('result-coin-amount').textContent='+'+(state.award?.total||0).toLocaleString('en-US');
+ $('result-run-coins').textContent=run.wins+' victories · '+run.coins.toLocaleString('en-US')+' coins earned this run · '+Math.floor(run.totalSeconds)+'s played';
+ $('next-battle').hidden=!victory;
+ $('restart-run-result').hidden=victory;
+}
 let progression={team:{starting_slots:8,max_slots:12,slot_unlock_costs:[250,500,900,1400]},coins:{win_base:100,speed_bonus:[{max_seconds:90,coins:100},{max_seconds:180,coins:60},{max_seconds:300,coins:30}],loss:0}};
 function storeProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile))}catch(e){}}
 function loadProfile(defaults){
@@ -428,8 +459,8 @@ function loadProfile(defaults){
 function owns(id){return profile.owned.includes(id)}
 function refreshCoinDisplays(){
  const label=profile.coins.toLocaleString('en-US');
- $('coin-wallet').textContent='🪙 '+label;
- $('team-wallet').textContent='🪙 '+label+' coins';
+ $('wallet-amount').textContent=label;
+ $('team-wallet-amount').textContent=label;
 }
 function nextSlotPrice(){
  const index=profile.teamSlots-progression.team.starting_slots;
@@ -452,7 +483,7 @@ function settleBattle(){
  state.rewarded=true;
  if(state.enemyBase>0)return;
  const award=victoryCoins(state.time);profile.coins+=award.total;storeProfile();refreshCoinDisplays();
- state.award=award;
+ run.coins+=award.total;run.wins+=1;state.award=award;
 }
 function encountered(id){return profile.encountered.includes(id)}
 function markEncounter(id){if(!id||encountered(id))return;profile.encountered.push(id);storeProfile();renderBestiary()}
@@ -488,11 +519,19 @@ function setAudioLevel(kind,value){
 let roster=[],catalog=[],team=[],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;
 async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();if(allowBestiaryHash&&location.hash.startsWith('#/bestiary'))readBestiaryRoute();window.addEventListener('popstate',readBestiaryRoute);window.addEventListener('hashchange',readBestiaryRoute);requestAnimationFrame(frame)}
 let currentStage=null;
-function chooseRandomStage(){currentStage=stages.length?stages[Math.floor(Math.random()*stages.length)]:null;const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name+' · '+currentStage.affinity:'Battlefield';}
+function chooseRandomStage(){
+ const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;
+ currentStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;
+ if(currentStage)run.lastStageId=currentStage.id;
+ const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name+' · '+currentStage.affinity:'Battlefield';
+}
 function reset(){
  chooseRandomStage();
- state={units:[],allyBase:towerConfigs.ally?.max_hp||1900,enemyBase:towerConfigs.enemy?.max_hp||1900,time:0,ended:false,rewarded:false,award:null};
+ const enemyBaseMax=(towerConfigs.enemy?.max_hp||1900)*enemyScale();
+ state={units:[],allyBase:towerConfigs.ally?.max_hp||1900,enemyBase:enemyBaseMax,enemyBaseMax,time:0,ended:false,rewarded:false,award:null};
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
+ $('run-results').hidden=true;
+ $('run-progress').textContent='Battle '+run.battle;
  $('status').textContent='Deploy monsters when their cooldown is ready.';
 }
 function teamCount(side){return state.units.filter(u=>u.hp>0&&u.side===side).length}
@@ -512,7 +551,7 @@ function deployCooldown(m,side){cooldowns[side>0?'ally':'enemy'][m.id]=Math.max(
 
 function stage(){return currentStage||stages[0]}function mods(m){const s=stage();return s&&m.element!=='neutral'&&m.element===s.affinity?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
 function spawn(m,side){if(!m||!canSummon(m,side))return false;if(side<0)markEncounter(m.id);if(side===1&&!team.includes(m.id))return false;deployCooldown(m,side);if(side===1)soundEffect('summon');
-const b=mods(m),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0)),spawnX=side>0?198:762;
+const b=mods(m),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*(side<0?enemyScale():1),spawnX=side>0?198:762;
 // Deploy just beyond the visible tower art (not behind or inside the castle).
 // Prefer a clear depth lane and shift *toward the battlefield* when occupied.
 const groundRows=[356,385,414,443,463];
@@ -571,7 +610,7 @@ function step(dt){
    if(dist>0){u.x+=dx/dist*travel;u.y+=dy*1.45/dist*travel/1.45}
    u.x=Math.max(72,Math.min(888,u.x));u.y=Math.max(346,Math.min(463,u.y));
   }else if(u.atk<=0){
-   const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0));
+   const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?enemyScale():1);
    if(target)dmg(target,amount);else if(u.side>0)state.enemyBase=Math.max(0,state.enemyBase-amount);else state.allyBase=Math.max(0,state.allyBase-amount);
    if(u.side===1)soundEffect(target?'attack':'tower_hit');
    u.atk=u.m.attack.interval_seconds;u.motion=.24;u.anim={type:'attack',duration:.34,remaining:.34};
@@ -581,18 +620,24 @@ function step(dt){
    if(u.m.skill.effect.type==='shield_self')u.shield=Math.max(u.shield,u.m.skill.effect.amount);
    else if(u.m.skill.effect.type==='dash_hit'){
     u.x+=u.side*u.m.skill.effect.distance;
-    if(target&&unitDistance(u,target)<u.m.attack.range+u.radius+target.radius+22)dmg(target,u.m.skill.effect.damage*(1+(u.mod.outgoing_damage_bonus_pct||0)));
+    if(target&&unitDistance(u,target)<u.m.attack.range+u.radius+target.radius+22)dmg(target,u.m.skill.effect.damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?enemyScale():1));
    }
    u.skill=u.m.skill.cooldown_seconds;
   }
  }
  separateGroundUnits();
  state.units=state.units.filter(u=>u.hp>0);
- if(state.enemyBase<=0||state.allyBase<=0){state.ended=true;state.enemyBase=Math.max(0,state.enemyBase);state.allyBase=Math.max(0,state.allyBase);settleBattle();soundEffect(state.enemyBase<=0?'victory':'defeat');$('status').textContent=state.enemyBase<=0?'Victory — '+state.award.total+' coins earned!':'Defeat — player base destroyed!'}
+ if(state.enemyBase<=0||state.allyBase<=0){
+  state.ended=true;state.enemyBase=Math.max(0,state.enemyBase);state.allyBase=Math.max(0,state.allyBase);
+  run.totalSeconds+=state.time;
+  settleBattle();soundEffect(state.enemyBase<=0?'victory':'defeat');
+  $('status').textContent=state.enemyBase<=0?'Victory — '+state.award.total+' coins earned!':'Defeat — run ended.';
+  showResult();
+ }
 }
 
 function drawTower(side,x,hp){
- const img=towerImages[side],maxHp=towerConfigs[side]?.max_hp||1900,frame=towerDamageFrame(hp,maxHp);
+ const img=towerImages[side],maxHp=side==='enemy'?(state.enemyBaseMax||1900):(towerConfigs[side]?.max_hp||1900),frame=towerDamageFrame(hp,maxHp);
  const y=side==='ally'?236:236;
  if(readyImage(img)){
    const width=154,height=182;
@@ -635,7 +680,7 @@ function draw(){
  }
  ctx.fillStyle='#1b3755cc';ctx.fillRect(328,12,304,40);
  ctx.fillStyle='white';ctx.textAlign='center';ctx.font='bold 18px system-ui';ctx.fillText(s?.name||'Battlefield',480,38);
- if(state.ended){ctx.fillStyle='#08172cbb';ctx.fillRect(0,0,W,H);ctx.fillStyle='white';ctx.font='bold 52px system-ui';ctx.fillText(state.enemyBase<=0?'VICTORY':'DEFEAT',480,228);if(state.award){ctx.font='bold 23px system-ui';ctx.fillStyle='#f4d283';ctx.fillText('+'+state.award.total+' coins · '+Math.floor(state.time)+'s',480,267)}}
+ if(state.ended){ctx.fillStyle='#06152578';ctx.fillRect(0,0,W,H)}
  $('unit-count').textContent='Units '+teamCount(1)+'/'+maxTeamUnits();
  for(const m of roster){
   const btn=$('card_'+m.id);if(!btn)continue;
@@ -650,6 +695,7 @@ function draw(){
 function openView(name,fromRoute=false){
  if(name==='bestiary')renderBestiary();if(name==='settings')refreshSettings();
  if(!fromRoute&&name!=='monster-profile')updateRoute(name,true);
+ if(view==='battle'&&name!=='battle')run.active=false;
  view=name;battleMenuOpen=false;navOpen=false;syncMusic();
  for(const id of ['home','team','bestiary','monster-profile','settings','battle'])$(id+'-screen').hidden=id!==name;
  $('battle-menu').hidden=true;$('quick-nav').hidden=true;
@@ -782,7 +828,13 @@ function renderTeam(){
  refreshCoinDisplays();
  const price=nextSlotPrice(),unlock=$('unlock-team-slot');
  unlock.hidden=price===null;
- unlock.textContent=price===null?'All slots unlocked':'Unlock slot · 🪙 '+price.toLocaleString('en-US');
+ unlock.replaceChildren();
+ if(price===null){unlock.textContent='All slots unlocked'}
+ else{
+  unlock.append(document.createTextNode('Unlock slot · '));
+  const img=document.createElement('img');img.className='coin-icon';img.src='assets/ui/coin.svg';img.alt='';
+  unlock.append(img,document.createTextNode(' '+price.toLocaleString('en-US')));
+ }
  unlock.disabled=price!==null&&profile.coins<price;
  const slots=Array.from({length:profile.teamSlots},(_,i)=>{
   const d=document.createElement('div');d.className='app-slot';
@@ -827,9 +879,12 @@ function bindMenu(){
  $('sfx-volume').oninput=e=>setAudioLevel('sfx',e.target.value);
  $('menu-team-home').onclick=()=>{renderTeam();openView('team')};
  $('unlock-team-slot').onclick=purchaseSlot;
- $('home-start').onclick=()=>{if(team.length===0){renderTeam();openView('team');return}$('start-game').click()};
+ $('home-start').onclick=()=>{if(team.length===0){renderTeam();openView('team');return}startRun()};
  document.querySelectorAll('.app-back').forEach(el=>el.onclick=()=>openView('home'));
- $('start-game').onclick=()=>{reset();openView('battle');launchLandscape()};
+ $('start-game').onclick=startRun;
+ $('next-battle').onclick=nextBattle;
+ $('restart-run-result').onclick=restartRun;
+ $('result-menu').onclick=endRun;
  $('nav-toggle').onclick=()=>toggleQuickNav();
  $('nav-home').onclick=()=>openView('home');
  $('nav-team').onclick=()=>{renderTeam();openView('team')};
@@ -839,11 +894,11 @@ function bindMenu(){
  $('nav-sfx').onclick=toggleSfx;$('battle-sfx').onclick=toggleSfx;
  $('battle-menu-toggle').onclick=()=>toggleBattleMenu();
  $('battle-resume').onclick=()=>toggleBattleMenu(false);
- $('battle-restart').onclick=()=>{reset();toggleBattleMenu(false)};
+ $('battle-restart').onclick=restartRun;
  $('battle-menu-team').onclick=()=>{renderTeam();openView('team')};
  $('battle-menu-home').onclick=()=>openView('home');
  $('battle-menu-fullscreen').onclick=()=>{toggleBattleMenu(false);launchLandscape()};
- $('restart').onclick=()=>{reset();toggleBattleMenu(false)};
+ $('restart').onclick=restartRun;
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view==='battle'&&!document.fullscreenElement){toggleBattleMenu()}});
 }
 
