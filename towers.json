@@ -7,7 +7,7 @@
   "towers": [
     {
       "id": "t001",
-      "name": "Blue Tower",
+      "name": "Archer Tower",
       "sheet": "assets/towers/t001/tower-blue.png",
       "max_hp": 1900,
       "damage_thresholds_pct": [
@@ -15,11 +15,19 @@
         30,
         0
       ],
-      "abilities": []
+      "abilities": [],
+      "next_sheet": "assets/towers/t001/archer-tower-sheet.png",
+      "next_sheet_rows": 2,
+      "basic_attack": {
+        "type": "arrow",
+        "range": 205,
+        "damage": 22,
+        "cooldown_seconds": 2.6
+      }
     },
     {
       "id": "t002",
-      "name": "Red Tower",
+      "name": "Electric Tower",
       "sheet": "assets/towers/t002/tower-red.png",
       "max_hp": 1900,
       "damage_thresholds_pct": [
@@ -27,7 +35,15 @@
         30,
         0
       ],
-      "abilities": []
+      "abilities": [],
+      "next_sheet": "assets/towers/t002/electric-tower-sheet.png",
+      "next_sheet_rows": 2,
+      "basic_attack": {
+        "type": "electric_pulse",
+        "range": 180,
+        "damage": 14,
+        "cooldown_seconds": 4.2
+      }
     }
   ]
 }
