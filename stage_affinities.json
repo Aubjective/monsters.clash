@@ -7,7 +7,8 @@
       "outgoing_damage_bonus_pct": 0.1,
       "incoming_damage_reduction_pct": 0.05,
       "max_hp_bonus_pct": 0
-    }
+    },
+    "background": "assets/backgrounds/whisper-meadow.png"
   },
   {
     "id": "ember_wasteland",
@@ -17,7 +18,8 @@
       "outgoing_damage_bonus_pct": 0.1,
       "incoming_damage_reduction_pct": 0.05,
       "max_hp_bonus_pct": 0
-    }
+    },
+    "background": "assets/backgrounds/ember-wasteland.png"
   },
   {
     "id": "frost_plain",
@@ -27,7 +29,8 @@
       "outgoing_damage_bonus_pct": 0.1,
       "incoming_damage_reduction_pct": 0.05,
       "max_hp_bonus_pct": 0
-    }
+    },
+    "background": "assets/backgrounds/frost-plain.png"
   },
   {
     "id": "ancient_ruins",
@@ -37,7 +40,8 @@
       "outgoing_damage_bonus_pct": 0.1,
       "incoming_damage_reduction_pct": 0.05,
       "max_hp_bonus_pct": 0
-    }
+    },
+    "background": "assets/backgrounds/ancient-ruins.png"
   },
   {
     "id": "toxic_marsh",
@@ -47,6 +51,7 @@
       "outgoing_damage_bonus_pct": 0,
       "incoming_damage_reduction_pct": 0,
       "max_hp_bonus_pct": 0
-    }
+    },
+    "background": "assets/backgrounds/toxic-marsh.png"
   }
 ]
