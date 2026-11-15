@@ -1,7 +1,168 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Monsters Clash | Battle Sandbox</title><style>
-*{box-sizing:border-box}body{margin:0;background:#111827;color:#eaf3ff;font-family:system-ui,Arial}main{max-width:1120px;padding:18px;margin:auto}h1{margin:0;font-size:26px}.muted{color:#b2c1d3;font-size:13px}header,.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}select,button{background:#263d57;color:white;border:1px solid #57728b;border-radius:10px;padding:10px;font:inherit;cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}canvas{display:block;width:100%;height:auto;border:2px solid #6d8493;border-radius:16px;background:#c5e8f3;margin-top:13px}.toolbar{margin-top:12px}.cards{display:flex;gap:10px;flex-wrap:wrap}.cards button{display:flex;gap:8px;align-items:center;min-width:160px}.cards img{width:53px;height:53px}.status{margin-top:10px;font-weight:700;color:#e9d58b}@media(max-width:700px){.app-panel{padding:14px!important}.app-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.app-card{flex-direction:column;min-width:0!important;text-align:center}} .app-panel{max-width:1120px;padding:22px;margin:15px auto;background:#1a2b43;border:1px solid #42617c;border-radius:18px}.app-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:12px}.app-card{display:flex;align-items:center;gap:9px;width:100%;min-height:92px;text-align:left}.app-card img{width:60px;height:60px;object-fit:contain}.app-card small{color:#acc0d4}.app-card.sel{border-color:#f0d78e;background:#345170}.app-nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.app-slot{padding:12px;border:1px dashed #6588a6;border-radius:10px}.app-pending{color:#e5c58b;font-size:12px} #battle-screen{max-width:1180px} .landscape-note{font-size:13px;color:#f2d988} @media(orientation:landscape) and (max-height:540px){#battle-screen{padding:6px 12px}#battle-screen header h1{font-size:17px}#battle-screen header .muted,#battle-screen p.muted{display:none}#battle-screen canvas{max-height:calc(100dvh - 155px);width:auto;max-width:100%;margin:4px auto}#battle-screen .toolbar{margin-top:5px}#battle-screen .cards button{min-width:110px;padding:5px}} </style></head><body><section class="app-panel" id="home-screen"><h1>⚔ Monsters Clash</h1><p>Elemental collection battle · Assemble a team, then enter the battlefield.</p><div class="app-nav"><button id="menu-team">Select Team</button><button id="menu-collection">Monster Collection</button></div><p class="muted">Ground monsters walk, gallop or dash with their feet planted. Flying monsters hover. AGI contributes to movement speed.</p></section><section class="app-panel" id="collection-screen" hidden><button class="app-back">← Main Menu</button><h2>Monster Collection</h2><p class="muted">The full monster roster is listed. Only monsters with existing battle artwork are deployable in this prototype.</p><div class="app-grid" id="monster-collection"></div></section><section class="app-panel" id="team-screen" hidden><button class="app-back">← Main Menu</button><h2>Select Battle Team</h2><p class="muted">Choose up to two battle-ready monsters.</p><div class="app-grid" id="team-options"></div><div class="app-nav" id="team-slots"></div><div class="app-nav"><label>Battlefield <select id="team-stage"></select></label><button id="start-game">Start Battle</button></div></section><main id="battle-screen" hidden><div class="app-nav"><button id="battle-team">← Team</button><button id="battle-fullscreen">⛶ Landscape Fullscreen</button></div><p class="landscape-note">On a phone, rotate to landscape for the best battlefield view.</p><header><div><h1>⚔ Monsters Clash</h1><div class="muted">Elemental collection battle · Two-monster combat test</div></div><label>Battlefield <select id="stage"></select></label></header><canvas id="game" width="960" height="480"></canvas><div class="toolbar"><div class="cards" id="cards"></div><div><strong id="mana"></strong> <button id="restart">Restart</button></div></div><div id="status" class="status">Summon units from the left and destroy the enemy base.</div><p class="muted">Mossguard and Cinderhorn use single-SVG animation transforms; eight more monster records are ready for future artwork. No account or backend required.</p></main><script>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0b1627">
+<title>Monsters Clash | Battle</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1627;--surface:#152941;--panel:#1c344f;--line:#3b6385;--text:#ecf5ff;--soft:#a9bfd4;--gold:#f3d68a}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+button,select{font:inherit;color:inherit;cursor:pointer;background:#284766;border:1px solid #597c98;border-radius:11px;padding:10px 14px;touch-action:manipulation}
+button:hover:not(:disabled){background:#355e84}button:disabled{opacity:.42;cursor:not-allowed}
+[hidden]{display:none!important}
+.app-screen{position:fixed;inset:0;overflow-y:auto;overscroll-behavior:contain;padding:max(20px,env(safe-area-inset-top)) max(22px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));background:radial-gradient(ellipse at 20% 15%,#1e4161,#101d33 51%,#0a1425)}
+.page-inner{width:min(1020px,100%);margin:0 auto}
+.muted{color:var(--soft);font-size:14px}
+.eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#f5ca81;font-weight:700}
+h1{font-size:clamp(30px,5vw,58px);letter-spacing:-.035em;line-height:1.08;margin:10px 0}
+h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
+.hero{min-height:min(66vh,430px);display:flex;align-items:center;justify-content:space-between;gap:35px}
+.hero-copy{max-width:560px}.hero-copy p{font-size:clamp(14px,1.75vw,19px);line-height:1.55;color:#b8cde0}
+.hero-art{flex:0 0 33%;min-width:160px;max-width:335px;aspect-ratio:1;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,#3677ad44 0 18%,#f0bd6540 19% 21%,#12243b00 40%);box-shadow:0 0 65px #1ca9d51b}
+.hero-art svg{width:100%;height:auto;filter:drop-shadow(0 0 16px #70c6ff55)}
+.primary{background:linear-gradient(130deg,#d1a35b,#b97937);border-color:#f6cf8c;color:#132333;font-weight:800}
+.primary:hover:not(:disabled){background:linear-gradient(130deg,#f7ca7e,#d89c54)}
+.menu-actions,.app-nav{display:flex;gap:11px;flex-wrap:wrap;margin:16px 0}
+.menu-actions button{min-width:150px}
+.menu-features,.app-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:14px}
+.feature{padding:16px;border:1px solid #385873;border-radius:16px;background:#192f47aa}
+.feature strong{display:block;font-size:16px}.feature span{color:var(--soft);font-size:13px}
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.page-sub{color:var(--soft);max-width:680px}
+.app-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;min-height:102px;padding:12px}
+.app-card img{width:76px;height:76px;object-fit:contain;flex:none}
+.app-card strong{font-size:16px}.app-card small{color:#b1c8de}.app-card.sel{border-color:var(--gold);background:#3b5272}
+.app-pending{color:#d8bb79;font-size:12px}
+.app-slot{min-width:165px;padding:12px 16px;border:1px dashed #6992b2;border-radius:12px;color:#dbe7f7}
+.team-footer{display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-top:1px solid #385873;padding:16px 0}
+.team-footer select{max-width:300px}
+.floating-plus{position:fixed;top:max(13px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));z-index:50;border-radius:50%;font-size:30px;line-height:1;width:48px;height:48px;padding:0;background:#203e60;box-shadow:0 6px 24px #0006}
+.pop-menu{position:fixed;top:70px;right:16px;z-index:51;min-width:192px;display:flex;flex-direction:column;gap:8px;padding:11px;border:1px solid #547d9d;border-radius:14px;background:#152943f7;box-shadow:0 20px 50px #0009}
+.pop-menu button{text-align:left}
+#battle-screen{position:fixed;inset:0;z-index:20;background:#081523;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.battle-top{height:45px;min-height:45px;display:flex;align-items:center;justify-content:space-between;padding:0 70px 0 16px;gap:12px;background:#14293c;border-bottom:1px solid #3a5c78}
+.battle-brand{font-size:clamp(14px,1.8vw,19px);font-weight:800;white-space:nowrap}
+.battle-top label{font-size:12px;color:#c4d5e5;display:flex;align-items:center;gap:9px;white-space:nowrap}
+.battle-top select{font-size:13px;padding:5px 10px;max-width:230px}
+.arena-wrap{flex:1;min-height:0;min-width:0;display:grid;place-items:center;background:#0d2134;overflow:hidden}
+#game{display:block;width:100%;height:100%;object-fit:contain;max-width:100%;max-height:100%;touch-action:none}
+.battle-bottom{min-height:76px;max-height:110px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 16px;background:#13283e;border-top:1px solid #3a5871}
+.cards{display:flex;align-items:center;gap:9px;min-width:0;overflow-x:auto;max-width:70%;scrollbar-width:thin}
+.cards button{display:flex;align-items:center;gap:7px;flex:0 0 auto;min-width:120px;font-size:13px;padding:5px 9px}
+.cards img{width:42px;height:42px;object-fit:contain}
+.battle-stats{display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:14px}
+.battle-stats button{font-size:12px;padding:8px 11px}
+#status{font-size:12px;color:#f0d88b;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#battle-menu-toggle{position:absolute;top:5px;right:12px;z-index:32;width:36px;height:36px;font-size:25px;padding:0}
+#battle-menu{position:absolute;top:47px;right:12px;z-index:33;min-width:185px;background:#152a43fb}
+.battle-paused{font-size:14px;color:var(--gold);text-align:center;letter-spacing:.06em}
+@media(max-width:650px){
+ .hero{min-height:0;gap:12px}.hero-art{flex-basis:25%;min-width:90px}
+ .menu-features{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .app-card{min-height:75px;padding:7px}.app-card img{width:50px;height:50px}
+ .app-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .battle-top{height:35px;min-height:35px;padding-left:8px;padding-right:52px}
+ .battle-top select{max-width:130px;font-size:11px}
+ .battle-bottom{min-height:58px;max-height:62px;padding:4px 7px}
+ .cards{max-width:68%}.cards button{min-width:90px;padding:3px 6px;font-size:11px}.cards img{width:34px;height:34px}
+ .battle-stats{font-size:11px}.battle-stats button{padding:5px;font-size:11px}
+ #status{display:none}
+ #battle-menu-toggle{width:30px;height:30px;top:2px;right:6px;font-size:22px}
+ #battle-menu{top:35px;right:6px}
+}
+@media(max-height:460px){
+ .app-screen{padding:10px 22px}
+ .hero{min-height:0}.hero-art{max-width:180px}.hero-copy h1{font-size:34px}
+ .menu-features{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .battle-top{height:32px;min-height:32px}
+ .battle-bottom{min-height:55px;max-height:58px}
+}
+@media(orientation:portrait){
+ /* Browser orientation lock is not always granted. Rotate all game screens ourselves on narrow portrait phones. */
+ html,body{overflow:hidden}
+ .app-screen,#battle-screen{top:0;left:100dvw;right:auto;bottom:auto;width:100dvh;height:100dvw;transform-origin:top left;transform:rotate(90deg)}
+ .app-screen{padding:12px 26px;overflow-y:auto}
+ .hero{min-height:0}
+ .hero-art{max-width:170px}
+ .menu-features{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .floating-plus{top:12px;right:12px}
+ .pop-menu{top:65px;right:12px}
+ .battle-top{height:35px;min-height:35px;padding-right:50px}
+ .battle-bottom{height:58px;min-height:58px}
+}
+@media(orientation:portrait) and (min-width:700px){
+ .app-screen,#battle-screen{transform:none;top:0;left:0;width:100vw;height:100dvh}
+}
+</style>
+</head>
+<body>
+<section class="app-screen" id="home-screen">
+ <div class="page-inner">
+ <div class="hero">
+  <div class="hero-copy">
+   <div class="eyebrow">Elemental monster battles</div>
+   <h1>⚔ Monsters Clash</h1>
+   <p>Build a monster team, choose a battlefield, and destroy the opposing base. Each monster brings its own element, combat style and special ability.</p>
+   <div class="menu-actions">
+    <button class="primary" id="home-start">Play · Select Team</button>
+    <button id="menu-collection">Monster Collection</button>
+   </div>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+   <svg viewBox="0 0 250 250"><circle cx="125" cy="125" r="102" fill="none" stroke="#7396be" stroke-width="4"/><circle cx="125" cy="125" r="88" fill="none" stroke="#eac27a" stroke-width="6" stroke-dasharray="42 12"/><path d="M88 185L146 53L167 79L111 194Z" fill="#c9ecff" stroke="#4f9fe7" stroke-width="7"/><path d="M140 53L146 25L167 79" fill="#6fc4ff"/><path d="M70 166L180 166" stroke="#e5b96e" stroke-width="14"/><circle cx="125" cy="125" r="17" fill="#74c6ff"/></svg>
+  </div>
+ </div>
+ <div class="menu-features">
+  <div class="feature"><strong>Monster Collection</strong><span>Discover ten elemental monsters.</span></div>
+  <div class="feature"><strong>Battle Team</strong><span>Choose two combat-ready units.</span></div>
+  <div class="feature"><strong>Battlefields</strong><span>Fight across elemental terrain.</span></div>
+ </div>
+ </div>
+</section>
+<section class="app-screen" id="collection-screen" hidden>
+ <div class="page-inner">
+  <div class="page-head"><div><div class="eyebrow">Bestiary</div><h2>Monster Collection</h2></div><button class="app-back">← Main Menu</button></div>
+  <p class="page-sub">Explore each monster's element and combat role. Prototype-ready monsters can be selected for battle.</p>
+  <div class="app-grid" id="monster-collection"></div>
+ </div>
+</section>
+<section class="app-screen" id="team-screen" hidden>
+ <div class="page-inner">
+  <div class="page-head"><div><div class="eyebrow">Battle preparation</div><h2>Select Battle Team</h2></div><button class="app-back">← Main Menu</button></div>
+  <p class="page-sub">Choose up to two battle-ready monsters, then select your battlefield.</p>
+  <div class="app-grid" id="team-options"></div>
+  <div class="app-nav" id="team-slots"></div>
+  <div class="team-footer"><label>Battlefield <select id="team-stage"></select></label><button class="primary" id="start-game">Start Battle</button></div>
+ </div>
+</section>
+<button class="floating-plus" id="nav-toggle" aria-label="Expand menu" aria-expanded="false">+</button>
+<nav class="pop-menu" id="quick-nav" hidden aria-label="Navigation">
+ <button id="nav-home">⌂ Main Menu</button>
+ <button id="nav-collection">Monster Collection</button>
+ <button id="nav-team">Select Team</button>
+</nav>
+<main id="battle-screen" hidden>
+ <div class="battle-top"><span class="battle-brand">⚔ Monsters Clash</span><label>Battlefield <select id="stage"></select></label></div>
+ <div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas></div>
+ <div class="battle-bottom">
+  <div class="cards" id="cards"></div>
+  <div class="battle-stats"><strong id="mana"></strong><button id="restart">Restart</button><span id="status"></span></div>
+ </div>
+ <button id="battle-menu-toggle" class="floating-plus" aria-label="Expand battle menu" aria-expanded="false">+</button>
+ <nav class="pop-menu" id="battle-menu" hidden aria-label="Battle menu">
+  <div class="battle-paused">PAUSED</div>
+  <button id="battle-resume">Resume</button>
+  <button id="battle-restart">Restart Battle</button>
+  <button id="battle-menu-team">Select Team</button>
+  <button id="battle-menu-fullscreen">Landscape Fullscreen</button>
+  <button id="battle-menu-home">Main Menu</button>
+ </nav>
+</main>
+<script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
-let roster=[],catalog=[],team=['m001','m002'],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2;const battleReady=new Set(['m001','m002']);
+let roster=[],catalog=[],team=['m001','m002'],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;const battleReady=new Set(['m001','m002']);
 async function init(){catalog=(await Promise.all(Array.from({length:10},(_,i)=>fetch('monsters/m'+String(i+1).padStart(3,'0')+'.json').then(r=>r.ok?r.json():null).catch(()=>null)))).filter(Boolean);roster=catalog.filter(m=>battleReady.has(m.id));stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const s of stages){for(const id of ['stage','team-stage']){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+s.affinity;$(id).append(o)}}for(const m of roster){const img=new Image();img.src=m.art.battle_side;images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.innerHTML='<img src="'+m.art.front+'" alt=""><span>'+m.name+'<br><small>'+m.deployment.mana_cost+' mana</small></span>';btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('stage').onchange=reset;$('team-stage').onchange=()=>{$('stage').value=$('team-stage').value};$('restart').onclick=reset;bindMenu();renderCollection();renderTeam();reset();requestAnimationFrame(frame)}
 function reset(){state={units:[],mana:5,allyBase:1900,enemyBase:1900,time:0,ended:false};cooldowns={};enemyTimer=2;$('status').textContent='Summon monsters and destroy the enemy base.'}
 function stage(){return stages.find(s=>s.id===$('stage').value)||stages[0]}function mods(m){const s=stage();return s&&m.element!=='neutral'&&m.element===s.affinity?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
@@ -96,10 +257,66 @@ for(const u of [...state.units].sort((a,b)=>a.y-b.y)){
  ctx.fillStyle=u.side>0?'#6dde8a':'#fa7777';ctx.fillRect(u.x-32,u.y-sz-21-hover,64*Math.max(0,u.hp/u.maxhp),7)
 }
 ctx.fillStyle='#1b3755';ctx.fillRect(328,12,304,40);ctx.fillStyle='white';ctx.textAlign='center';ctx.font='bold 18px system-ui';ctx.fillText(s?.name||'Battlefield',480,38);if(state.ended){ctx.fillStyle='#08172cbb';ctx.fillRect(0,0,W,H);ctx.fillStyle='white';ctx.font='bold 52px system-ui';ctx.fillText(state.enemyBase<=0?'VICTORY':'DEFEAT',480,240)}$('mana').textContent='Mana '+state.mana.toFixed(1)+'/12';for(const m of roster){const btn=$('card_'+m.id);btn.style.display=team.includes(m.id)?'flex':'none';btn.disabled=state.ended||state.mana<m.deployment.mana_cost||(cooldowns[m.id]||0)>0;btn.title=(cooldowns[m.id]||0)>0?'Cooldown '+cooldowns[m.id].toFixed(1)+'s':''}}
-function openView(name){view=name;for(const id of ['home','collection','team','battle'])$(id+'-screen').hidden=id!==name;window.scrollTo(0,0);last=performance.now()}
+function openView(name){
+ view=name;battleMenuOpen=false;navOpen=false;
+ for(const id of ['home','collection','team','battle'])$(id+'-screen').hidden=id!==name;
+ $('battle-menu').hidden=true;$('quick-nav').hidden=true;
+ $('battle-menu-toggle').setAttribute('aria-expanded','false');$('nav-toggle').setAttribute('aria-expanded','false');
+ $('nav-toggle').hidden=name==='battle';
+ last=performance.now();
+ if(name!=='battle'&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+ if(name!=='battle'&&screen.orientation?.unlock){try{screen.orientation.unlock()}catch(e){}}
+}
 function cardFor(m,selectable){const node=document.createElement('button');node.className='app-card'+(team.includes(m.id)&&selectable?' sel':'');const ready=battleReady.has(m.id);const art=document.createElement('img');if(ready){art.src=m.art.front}else{art.src='';art.alt='◇';art.style.display='none'}const desc=document.createElement('span');desc.innerHTML='<strong></strong><br><small></small><br><em class="app-pending"></em>';desc.querySelector('strong').textContent=m.name;desc.querySelector('small').textContent=m.element+' · '+m.role+' · '+m.deployment.mana_cost+' mana';desc.querySelector('em').textContent=ready?'Battle ready':'Art pending';node.append(art,desc);if(!selectable)node.disabled=true;else{node.disabled=!ready;node.onclick=()=>{if(team.includes(m.id))team=team.filter(id=>id!==m.id);else if(team.length<2)team.push(m.id);renderTeam()}}return node}
 function renderCollection(){$('monster-collection').replaceChildren(...catalog.map(m=>cardFor(m,false)))}
 function renderTeam(){$('team-options').replaceChildren(...catalog.map(m=>cardFor(m,true)));$('team-slots').replaceChildren(...[0,1].map(i=>{const d=document.createElement('div');d.className='app-slot';d.textContent='Slot '+(i+1)+': '+(roster.find(m=>m.id===team[i])?.name||'Empty');return d}));$('start-game').disabled=team.length===0}
-function bindMenu(){$('menu-team').onclick=()=>{renderTeam();openView('team')};$('menu-collection').onclick=()=>openView('collection');document.querySelectorAll('.app-back').forEach(el=>el.onclick=()=>openView('home'));$('battle-team').onclick=()=>{renderTeam();openView('team')};$('start-game').onclick=()=>{$('stage').value=$('team-stage').value;reset();openView('battle')};$('battle-fullscreen').onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();if(screen.orientation?.lock)await screen.orientation.lock('landscape')}catch(e){$('status').textContent='Rotate your phone manually if landscape lock is unavailable.'}}}
-function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){step(dt);draw()}requestAnimationFrame(frame)}init().catch(e=>{$('status').textContent='Loading failed: '+e.message});
+function launchLandscape(){
+  const elem=document.documentElement;
+  try{
+    if(!document.fullscreenElement&&elem.requestFullscreen){
+      const request=elem.requestFullscreen({navigationUI:'hide'});
+      Promise.resolve(request).then(()=>{
+        if(screen.orientation?.lock)return screen.orientation.lock('landscape').catch(()=>{});
+      }).catch(()=>{});
+    }else if(screen.orientation?.lock){
+      screen.orientation.lock('landscape').catch(()=>{});
+    }
+  }catch(e){}
+}
+function toggleBattleMenu(force){
+ battleMenuOpen=typeof force==='boolean'?force:!battleMenuOpen;
+ $('battle-menu').hidden=!battleMenuOpen;
+ $('battle-menu-toggle').textContent=battleMenuOpen?'×':'+';
+ $('battle-menu-toggle').setAttribute('aria-expanded',String(battleMenuOpen));
+ last=performance.now();
+}
+function toggleQuickNav(force){
+ navOpen=typeof force==='boolean'?force:!navOpen;
+ $('quick-nav').hidden=!navOpen;
+ $('nav-toggle').textContent=navOpen?'×':'+';
+ $('nav-toggle').setAttribute('aria-expanded',String(navOpen));
+}
+function bindMenu(){
+ $('menu-team').onclick=()=>{renderTeam();openView('team')};
+ $('menu-collection').onclick=()=>openView('collection');
+ $('home-start').onclick=()=>{renderTeam();openView('team')};
+ document.querySelectorAll('.app-back').forEach(el=>el.onclick=()=>openView('home'));
+ $('battle-team').onclick=()=>{renderTeam();openView('team')};
+ $('start-game').onclick=()=>{$('stage').value=$('team-stage').value;reset();openView('battle');launchLandscape()};
+ $('battle-fullscreen').onclick=launchLandscape;
+ $('nav-toggle').onclick=()=>toggleQuickNav();
+ $('nav-home').onclick=()=>openView('home');
+ $('nav-collection').onclick=()=>openView('collection');
+ $('nav-team').onclick=()=>{renderTeam();openView('team')};
+ $('battle-menu-toggle').onclick=()=>toggleBattleMenu();
+ $('battle-resume').onclick=()=>toggleBattleMenu(false);
+ $('battle-restart').onclick=()=>{reset();toggleBattleMenu(false)};
+ $('battle-menu-team').onclick=()=>{renderTeam();openView('team')};
+ $('battle-menu-home').onclick=()=>openView('home');
+ $('battle-menu-fullscreen').onclick=()=>{toggleBattleMenu(false);launchLandscape()};
+ $('restart').onclick=()=>{reset();toggleBattleMenu(false)};
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view==='battle'&&!document.fullscreenElement){toggleBattleMenu()}});
+}
+
+function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){if(!battleMenuOpen)step(dt);draw()}requestAnimationFrame(frame)}init().catch(e=>{$('status').textContent='Loading failed: '+e.message});
 </script></body></html>
