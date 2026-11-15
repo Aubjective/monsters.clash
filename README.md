@@ -14,7 +14,9 @@ Browser-based elemental monster combat prototype with a full-screen landscape lo
 ```text
 assets/
   backgrounds/
-    grass-land.png
+    whisper-meadow.png
+    ember-wasteland.png
+    frost-plain.png
   monsters/
     m001/mossguard-sheet.png
     m002/cinderhorn-sheet.png
@@ -65,6 +67,13 @@ Current game mechanics remain experimental, and future tower abilities still req
 - No mana resource is consumed. Deploy buttons show cooldown or active count.
 - Initial balance: Mossguard 8s cooldown / 5 copies; Cinderhorn 6s cooldown / 5 copies. Team selection still uses two monster types in the current UI.
 - Monsters and enemy AI must obey total capacity, per-type caps and cooldown. Dead units free their slots.
+
+## Battlefield backgrounds
+
+- Each map registers its background image path directly in `stage_affinities.json` under `background`. The renderer uses this field for any map, regardless of its element, and caches background images by path.
+- Uploaded images: `whisper-meadow.png`, `ember-wasteland.png`, and `frost-plain.png`. The main lobby also uses `whisper-meadow.png`.
+- Registered but not yet uploaded: `ancient-ruins.png` and `toxic-marsh.png`. These maps render the existing element-colored fallback until their matching image files are uploaded. The game does not require a rename when they are provided.
+- Add a future map by adding its name, ID, affinity, modifiers, and background path to the same JSON file; no additional hardcoded renderer case is required.
 
 ## Random battlefields
 
