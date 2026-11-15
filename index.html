@@ -182,6 +182,11 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .profile-stat strong{display:block;font-size:21px;color:#f5e9ca}
 .profile-stat small{display:block;font-size:11px;color:#adc5d6}
 @media(max-width:650px){.monster-profile-layout{grid-template-columns:minmax(130px,35%) minmax(0,1fr)}.monster-profile-art{min-height:145px}.monster-profile-info{padding:12px}.profile-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.profile-stat{padding:6px}.profile-stat strong{font-size:16px}}
+
+.team-entry{position:relative;min-width:0}
+.team-entry>.app-card{padding-bottom:38px}
+.team-profile-button{position:absolute;bottom:6px;right:9px;z-index:2;font-size:12px;padding:4px 10px;border-radius:7px;background:#18304a;border:1px solid #6d8ba6;color:#f1dfb4}
+.team-profile-button:hover{background:#385775}
 </style>
 </head>
 <body>
@@ -656,7 +661,8 @@ function updateRoute(name,replace=false){
  if(!allowBestiaryHash)return;
  const next=routePath(name);
  if(location.hash===next||(next===location.pathname+location.search&&!location.hash))return;
- history[replace?'replaceState':'pushState']({monsterClash:true},'',next);
+ try{history[replace?'replaceState':'pushState']({monsterClash:true},'',next)}
+ catch(e){/* Embedded host may disallow navigation; in-game screens still work. */}
 }
 function showMonsterProfile(id,fromRoute=false){
  const monster=catalog.find(m=>m.id===id);
@@ -690,8 +696,12 @@ function showMonsterProfile(id,fromRoute=false){
   const skill=document.createElement('p');skill.textContent='Skill: '+String(monster.skill?.id||'Unknown').replaceAll('_',' ')+' · '+(monster.skill?.cooldown_seconds??'—')+'s cooldown';
   details.append(attack,skill);
  }
+ // The in-game screen is authoritative. URL linking must never block navigation.
  openView('monster-profile',true);
- if(!fromRoute&&allowBestiaryHash)history.pushState({monsterClash:true},'',profileLink(id));
+ if(!fromRoute&&allowBestiaryHash){
+  try{history.pushState({monsterClash:true},'',profileLink(id))}
+  catch(e){/* Safe fallback: profile remains open without changing URL. */}
+ }
 }
 function readBestiaryRoute(){
  if(!allowBestiaryHash)return;
@@ -706,8 +716,9 @@ function renderBestiary(){
  const entries=catalog.map(m=>{
   const known=encountered(m.id),node=document.createElement('button');
   node.type='button';node.className='app-card journal-entry '+(known?'journal-known':'journal-unknown');
+  node.title=known?'Open '+m.name+' profile':'Open unknown monster profile';
   node.setAttribute('aria-label',known?'View '+m.name+' profile':'View undiscovered monster profile');
-  node.onclick=()=>showMonsterProfile(m.id);
+  node.addEventListener('click',()=>showMonsterProfile(m.id));
   const icon=known&&m.art?.sheet?sheetPreview(m.id):document.createElement('span');
   if(!known||!m.art?.sheet){icon.className='unknown-icon';icon.textContent='?'}
   const desc=document.createElement('span');
@@ -722,7 +733,17 @@ function renderBestiary(){
  $('bestiary-grid').replaceChildren(...entries);
 }
 function renderTeam(){
- $('team-options').replaceChildren(...catalog.filter(m=>owns(m.id)).map(m=>cardFor(m,true)));
+ $('team-options').replaceChildren(...catalog.filter(m=>owns(m.id)).map(m=>{
+  const wrapper=document.createElement('div');wrapper.className='team-entry';
+  const select=cardFor(m,true);
+  const profileButton=document.createElement('button');
+  profileButton.type='button';profileButton.className='team-profile-button';
+  profileButton.textContent='View profile';
+  profileButton.setAttribute('aria-label','Open '+m.name+' profile');
+  profileButton.onclick=()=>showMonsterProfile(m.id);
+  wrapper.append(select,profileButton);
+  return wrapper;
+ }));
  $('team-slot-count').textContent='Team slots: '+team.length+' / '+profile.teamSlots;
  refreshCoinDisplays();
  const price=nextSlotPrice(),unlock=$('unlock-team-slot');
