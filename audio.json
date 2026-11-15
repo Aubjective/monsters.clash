@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "bgm": {
+    "menu": "assets/bgms/main-menu-bgm.mp3",
+    "battle": "assets/bgms/battle-bgm-001.mp3",
+    "loop": true,
+    "volume": 0.38
+  },
+  "sfx": {
+    "enabled": true,
+    "volume": 0.26,
+    "presets": {
+      "summon": {
+        "wave": "sine",
+        "frequency": 410,
+        "duration": 0.16
+      },
+      "attack": {
+        "wave": "triangle",
+        "frequency": 190,
+        "duration": 0.075
+      },
+      "impact": {
+        "wave": "sawtooth",
+        "frequency": 115,
+        "duration": 0.1
+      },
+      "skill": {
+        "wave": "sine",
+        "frequency": 620,
+        "duration": 0.22
+      },
+      "shield": {
+        "wave": "sine",
+        "frequency": 570,
+        "duration": 0.2
+      },
+      "stun": {
+        "wave": "square",
+        "frequency": 320,
+        "duration": 0.24
+      },
+      "freeze": {
+        "wave": "triangle",
+        "frequency": 850,
+        "duration": 0.22
+      },
+      "tower_hit": {
+        "wave": "triangle",
+        "frequency": 85,
+        "duration": 0.16
+      },
+      "victory": {
+        "wave": "sine",
+        "frequency": 740,
+        "duration": 0.38
+      },
+      "defeat": {
+        "wave": "triangle",
+        "frequency": 105,
+        "duration": 0.4
+      }
+    }
+  }
+}
