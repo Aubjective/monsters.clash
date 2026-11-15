@@ -81,3 +81,10 @@ Current game mechanics remain experimental, and future tower abilities still req
 - Results award coins once per concluded battle. Restart begins a new battle with a new random stage. Coins, unlocked carrying slots, and saved team choices use the existing browser-local profile (`monsters-clash-profile-v1`), so no cross-device synchronization exists yet.
 - Only owned, battle-ready monsters can be selected. The roster can grow without adding hardcoded buttons for each monster.
 - Coin rewards and slot prices are initial test-balancing values, not a final economic model.
+
+## Bestiary profiles and cross-platform navigation
+
+- Every Bestiary entry opens an in-game profile. Encountered monsters show their artwork (if available), description, element, rarity, combat role, statistics and skill information from their own `monsters/<id>.json`.
+- Undiscovered monsters remain greyed and show an unknown profile without revealing identifying details.
+- Profiles use the existing in-game screen navigation. On the standalone GitHub Pages site, optional deep links use `#/bestiary/m001` (or the corresponding monster ID). The game's core screens do **not** require URL routing.
+- Embedded hosts (including Telegram launch URLs using hash parameters and iframe-based platforms) are not dependent on or rewritten by the optional hash route. Native host back buttons and platform save APIs will require platform-specific integration during packaging.
