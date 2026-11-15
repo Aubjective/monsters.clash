@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "default_towers": {
+    "ally": "t001",
+    "enemy": "t002"
+  },
+  "towers": [
+    {
+      "id": "t001",
+      "name": "Blue Tower",
+      "sheet": "assets/towers/t001/tower-blue.png",
+      "max_hp": 1900,
+      "damage_thresholds_pct": [
+        70,
+        30,
+        0
+      ],
+      "abilities": []
+    },
+    {
+      "id": "t002",
+      "name": "Red Tower",
+      "sheet": "assets/towers/t002/tower-red.png",
+      "max_hp": 1900,
+      "damage_thresholds_pct": [
+        70,
+        30,
+        0
+      ],
+      "abilities": []
+    }
+  ]
+}
