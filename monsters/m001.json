@@ -76,7 +76,7 @@
     "can_attack_base": true
   },
   "animation": {
-    "mode": "single_png_transforms",
+    "mode": "sprite_sheet_4x4",
     "idle": {
       "motion": "breath",
       "cycle_ms": 1700
@@ -101,15 +101,22 @@
       "ally": "right",
       "enemy": "left",
       "mirror_allowed": true
+    },
+    "rows": {
+      "move": 0,
+      "reaction": 1,
+      "attack": 2,
+      "skill": 3
     }
   },
   "art": {
     "front": "assets/monsters/m001/front.svg",
     "battle_side": "assets/monsters/m001/side.svg",
-    "status": "prototype_unapproved",
+    "status": "ready",
     "background": "transparent",
     "shadows": false,
-    "particles": false
+    "particles": false,
+    "sheet": "assets/monsters/m001/mossguard-sheet.png"
   },
   "notes": "Provisional Level 1 design; balance and artwork pending approval."
 }
