@@ -143,13 +143,26 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .lobby-moss{background-image:none}
 .lobby-cinder{background-image:none}
 @media(max-width:650px){.app-card .sheet-preview{width:50px;height:50px}.cards .sheet-preview{width:34px;height:34px}}
+
+.lobby-utility{display:flex;align-items:center;gap:9px;margin-left:auto;margin-right:46px;z-index:6}
+.lobby-icon{height:clamp(34px,5vw,44px);width:clamp(34px,5vw,44px);padding:0;border-radius:12px;font-size:20px;background:#142e46d9;border:1px solid #e9c98799;box-shadow:0 3px 12px #0008}
+.lobby-icon:hover{background:#31506a}
+.journal-unknown{background:linear-gradient(145deg,#273546,#111c2d);border:1px solid #4c5865;opacity:.75;filter:grayscale(1)}
+.unknown-icon{width:76px;height:76px;display:grid;place-items:center;flex:none;font:bold 36px Georgia,serif;color:#a3afbc;background:#2c3d4f;border-radius:12px}
+.journal-entry{cursor:default}
+.settings-panel{max-width:620px;margin:22px auto;padding:clamp(18px,3vw,32px);background:#14293ee8;border:1px solid #4a6984;border-radius:20px;display:flex;flex-direction:column;gap:24px}
+.setting-row{display:flex;flex-direction:column;gap:12px;font-weight:700}
+.setting-row>span{display:flex;justify-content:space-between;gap:20px}
+.setting-row output{color:#f3d68a}.setting-row input{accent-color:#eec27b;width:100%;cursor:pointer}
+@media(max-height:460px){.lobby-icon{width:30px;height:30px;font-size:16px}}
+@media(max-width:700px){.lobby-utility{gap:5px;margin-right:40px}.lobby-icon{height:30px;width:30px;font-size:16px;border-radius:8px}.unknown-icon{width:50px;height:50px}}
 </style>
 </head>
 <body>
 <section class="app-screen" id="home-screen">
  <div class="lobby">
   <div class="lobby-header">
-   <div class="lobby-brand"><span class="lobby-emblem">⚔</span><div><div class="lobby-kicker">ELEMENTAL BATTLES</div><h1>MONSTERS <span>CLASH</span></h1></div></div>
+   <div class="lobby-brand"><span class="lobby-emblem">⚔</span><div><div class="lobby-kicker">ELEMENTAL BATTLES</div><h1>MONSTERS <span>CLASH</span></h1></div></div><div class="lobby-utility"><button class="lobby-icon" id="menu-bestiary" title="Bestiary" aria-label="Open Bestiary">📖</button><button class="lobby-icon" id="menu-settings" title="Settings" aria-label="Open Settings">⚙</button></div>
   </div>
   <div class="lobby-world" aria-label="Whisper Meadow with Mossguard and Cinderhorn">
     <div class="lobby-monster lobby-moss" role="img" aria-label="Mossguard, nature guardian"></div>
@@ -158,7 +171,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <div class="lobby-controls">
    <button id="home-start" class="lobby-play"><span class="play-mark">▶</span><span>PLAY</span><small>START BATTLE</small></button>
    <nav class="lobby-options" aria-label="Main game menu">
-    <button id="menu-collection" class="lobby-option"><span class="lobby-option-icon">✦</span><span>MONSTERS</span></button>
+    <button id="menu-collection" class="lobby-option"><span class="lobby-option-icon">✦</span><span>MY MONSTERS</span></button>
     <button id="menu-team-home" class="lobby-option"><span class="lobby-option-icon">⚔</span><span>TEAM</span></button>
    </nav>
   </div>
@@ -166,15 +179,32 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </section>
 <section class="app-screen" id="collection-screen" hidden>
  <div class="page-inner">
-  <div class="page-head"><div><div class="eyebrow">Bestiary</div><h2>Monster Collection</h2></div><button class="app-back">← Main Menu</button></div>
-  <p class="page-sub">Explore each monster's element and combat role. Prototype-ready monsters can be selected for battle.</p>
+  <div class="page-head"><div><div class="eyebrow">Your roster</div><h2>My Monsters</h2></div><button class="app-back">← Main Menu</button></div>
+  <p class="page-sub">Browse the monsters you own. Only battle-ready monsters can join your team.</p>
   <div class="app-grid" id="monster-collection"></div>
+ </div>
+</section>
+<section class="app-screen" id="bestiary-screen" hidden>
+ <div class="page-inner">
+  <div class="page-head"><div><div class="eyebrow">Field journal</div><h2>Monster Bestiary</h2></div><button class="app-back">← Main Menu</button></div>
+  <p class="page-sub" id="bestiary-progress"></p>
+  <div class="app-grid" id="bestiary-grid"></div>
+ </div>
+</section>
+<section class="app-screen" id="settings-screen" hidden>
+ <div class="page-inner">
+  <div class="page-head"><div><div class="eyebrow">Options</div><h2>Settings</h2></div><button class="app-back">← Main Menu</button></div>
+  <div class="settings-panel">
+   <label class="setting-row"><span>Background Music <output id="bgm-volume-label">16%</output></span><input id="bgm-volume" type="range" min="0" max="100" value="16"></label>
+   <label class="setting-row"><span>Sound Effects <output id="sfx-volume-label">42%</output></span><input id="sfx-volume" type="range" min="0" max="100" value="42"></label>
+   <p class="page-sub">Settings and monster discoveries are saved in this browser.</p>
+  </div>
  </div>
 </section>
 <section class="app-screen" id="team-screen" hidden>
  <div class="page-inner">
   <div class="page-head"><div><div class="eyebrow">Battle preparation</div><h2>Select Battle Team</h2></div><button class="app-back">← Main Menu</button></div>
-  <p class="page-sub">Choose up to two battle-ready monsters, then select your battlefield.</p>
+  <p class="page-sub">Choose up to two owned, battle-ready monsters, then select your battlefield.</p>
   <div class="app-grid" id="team-options"></div>
   <div class="app-nav" id="team-slots"></div>
   <div class="team-footer"><label>Battlefield <select id="team-stage"></select></label><button class="primary" id="start-game">Start Battle</button></div>
@@ -183,7 +213,9 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <div id="site-navigation"><button class="floating-plus" id="nav-toggle" aria-label="Expand menu" aria-expanded="false">+</button>
 <nav class="pop-menu" id="quick-nav" hidden aria-label="Navigation">
  <button id="nav-home">⌂ Main Menu</button>
- <button id="nav-collection">Monster Collection</button>
+ <button id="nav-collection">My Monsters</button>
+ <button id="nav-bestiary">Bestiary</button>
+ <button id="nav-settings">Settings</button>
  <button id="nav-team">Select Team</button>
  <button id="nav-music">Music: On</button>
  <button id="nav-sfx">SFX: On</button>
