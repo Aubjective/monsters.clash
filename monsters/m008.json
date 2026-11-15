@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0.0",
+  "id": "m008",
+  "name": "Ashcap",
+  "family": "monster",
+  "description": "A mushroom fire mage that deals explosive area damage.",
+  "rarity": "common",
+  "element": "fire",
+  "elemental": {
+    "primary": "fire",
+    "secondary": null,
+    "resistances": {},
+    "status_immunities": [],
+    "stage_affinity_enabled": true
+  },
+  "combat_position": "ranged",
+  "role": "mage",
+  "unlock": {
+    "method": "stage_reward",
+    "initially_unlocked": false
+  },
+  "growth": {
+    "level": 1,
+    "max_level": 20,
+    "hp_per_level_pct": 0.05,
+    "damage_per_level_pct": 0.035,
+    "defense_per_level_pct": 0.02
+  },
+  "stats": {
+    "hp": 150,
+    "str": 10,
+    "agi": 15,
+    "int": 43,
+    "vit": 8,
+    "def": 6,
+    "res": 13,
+    "move_speed": 28
+  },
+  "deployment": {
+    "mana_cost": 5,
+    "cooldown_seconds": 13,
+    "max_active_copies": 4
+  },
+  "attack": {
+    "type": "ranged",
+    "damage_type": "magic",
+    "base_damage": 41,
+    "range": 180,
+    "interval_seconds": 2.05,
+    "targeting": "nearest_enemy",
+    "area_radius": 0,
+    "projectile_speed": 260
+  },
+  "passive": {
+    "id": "smolder",
+    "type": "burn_on_area_hit",
+    "damage_per_second": 5,
+    "duration_seconds": 3
+  },
+  "skill": {
+    "id": "ember_burst",
+    "cooldown_seconds": 10,
+    "effect": {
+      "type": "area_magic",
+      "damage": 63,
+      "radius": 65
+    },
+    "trigger": "automatic"
+  },
+  "ai": {
+    "locomotion": "hop",
+    "advance_direction": "toward_enemy_base",
+    "stop_at_attack_range": true,
+    "retarget": "nearest",
+    "can_attack_base": true
+  },
+  "animation": {
+    "mode": "single_png_transforms",
+    "idle": {
+      "motion": "breath",
+      "cycle_ms": 1700
+    },
+    "move": {
+      "motion": "hop",
+      "cycle_ms": 850
+    },
+    "attack": {
+      "motion": "cast",
+      "duration_ms": 300
+    },
+    "hit": {
+      "motion": "flash_recoil",
+      "duration_ms": 180
+    },
+    "death": {
+      "motion": "fade_shrink",
+      "duration_ms": 400
+    },
+    "direction": {
+      "ally": "right",
+      "enemy": "left",
+      "mirror_allowed": true
+    }
+  },
+  "art": {
+    "front": "assets/monsters/m008/front.svg",
+    "battle_side": "assets/monsters/m008/side.svg",
+    "status": "pending",
+    "background": "transparent",
+    "shadows": false,
+    "particles": false
+  },
+  "notes": "Provisional Level 1 design; balance and artwork pending approval."
+}

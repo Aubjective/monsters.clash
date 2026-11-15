@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0.0",
+  "id": "m006",
+  "name": "Reedbow",
+  "family": "monster",
+  "description": "A wooden ranger firing seed arrows from the backline.",
+  "rarity": "common",
+  "element": "nature",
+  "elemental": {
+    "primary": "nature",
+    "secondary": null,
+    "resistances": {},
+    "status_immunities": [],
+    "stage_affinity_enabled": true
+  },
+  "combat_position": "ranged",
+  "role": "archer",
+  "unlock": {
+    "method": "stage_reward",
+    "initially_unlocked": false
+  },
+  "growth": {
+    "level": 1,
+    "max_level": 20,
+    "hp_per_level_pct": 0.05,
+    "damage_per_level_pct": 0.035,
+    "defense_per_level_pct": 0.02
+  },
+  "stats": {
+    "hp": 160,
+    "str": 17,
+    "agi": 33,
+    "int": 11,
+    "vit": 8,
+    "def": 6,
+    "res": 11,
+    "move_speed": 40
+  },
+  "deployment": {
+    "mana_cost": 3,
+    "cooldown_seconds": 8,
+    "max_active_copies": 4
+  },
+  "attack": {
+    "type": "ranged",
+    "damage_type": "physical",
+    "base_damage": 28,
+    "range": 230,
+    "interval_seconds": 1.15,
+    "targeting": "nearest_enemy",
+    "area_radius": 0,
+    "projectile_speed": 260
+  },
+  "passive": {
+    "id": "steady_aim",
+    "type": "defense_ignore_fraction",
+    "value": 0.15
+  },
+  "skill": {
+    "id": "piercing_seed",
+    "cooldown_seconds": 9,
+    "effect": {
+      "type": "piercing_projectile",
+      "max_targets": 2,
+      "damage": 41
+    },
+    "trigger": "automatic"
+  },
+  "ai": {
+    "locomotion": "walk",
+    "advance_direction": "toward_enemy_base",
+    "stop_at_attack_range": true,
+    "retarget": "nearest",
+    "can_attack_base": true
+  },
+  "animation": {
+    "mode": "single_png_transforms",
+    "idle": {
+      "motion": "breath",
+      "cycle_ms": 1700
+    },
+    "move": {
+      "motion": "walk",
+      "cycle_ms": 850
+    },
+    "attack": {
+      "motion": "cast",
+      "duration_ms": 300
+    },
+    "hit": {
+      "motion": "flash_recoil",
+      "duration_ms": 180
+    },
+    "death": {
+      "motion": "fade_shrink",
+      "duration_ms": 400
+    },
+    "direction": {
+      "ally": "right",
+      "enemy": "left",
+      "mirror_allowed": true
+    }
+  },
+  "art": {
+    "front": "assets/monsters/m006/front.svg",
+    "battle_side": "assets/monsters/m006/side.svg",
+    "status": "pending",
+    "background": "transparent",
+    "shadows": false,
+    "particles": false
+  },
+  "notes": "Provisional Level 1 design; balance and artwork pending approval."
+}

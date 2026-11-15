@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0.0",
+  "id": "m009",
+  "name": "Voltwing",
+  "family": "monster",
+  "description": "A fast-flying electrical bat firing rapid bolts.",
+  "rarity": "common",
+  "element": "lightning",
+  "elemental": {
+    "primary": "lightning",
+    "secondary": null,
+    "resistances": {},
+    "status_immunities": [],
+    "stage_affinity_enabled": true
+  },
+  "combat_position": "ranged",
+  "role": "ranged_dps",
+  "unlock": {
+    "method": "stage_reward",
+    "initially_unlocked": false
+  },
+  "growth": {
+    "level": 1,
+    "max_level": 20,
+    "hp_per_level_pct": 0.05,
+    "damage_per_level_pct": 0.035,
+    "defense_per_level_pct": 0.02
+  },
+  "stats": {
+    "hp": 170,
+    "str": 11,
+    "agi": 42,
+    "int": 22,
+    "vit": 9,
+    "def": 7,
+    "res": 12,
+    "move_speed": 65
+  },
+  "deployment": {
+    "mana_cost": 4,
+    "cooldown_seconds": 10,
+    "max_active_copies": 4
+  },
+  "attack": {
+    "type": "ranged",
+    "damage_type": "physical",
+    "base_damage": 19,
+    "range": 190,
+    "interval_seconds": 0.7,
+    "targeting": "nearest_enemy",
+    "area_radius": 0,
+    "projectile_speed": 260
+  },
+  "passive": {
+    "id": "charged_wings",
+    "type": "chain_every_n_hits",
+    "hits": 4,
+    "max_targets": 2
+  },
+  "skill": {
+    "id": "static_burst",
+    "cooldown_seconds": 9,
+    "effect": {
+      "type": "multi_projectile",
+      "count": 3,
+      "damage_each": 21
+    },
+    "trigger": "automatic"
+  },
+  "ai": {
+    "locomotion": "fly",
+    "advance_direction": "toward_enemy_base",
+    "stop_at_attack_range": true,
+    "retarget": "nearest",
+    "can_attack_base": true
+  },
+  "animation": {
+    "mode": "single_png_transforms",
+    "idle": {
+      "motion": "breath",
+      "cycle_ms": 1700
+    },
+    "move": {
+      "motion": "fly",
+      "cycle_ms": 850
+    },
+    "attack": {
+      "motion": "cast",
+      "duration_ms": 300
+    },
+    "hit": {
+      "motion": "flash_recoil",
+      "duration_ms": 180
+    },
+    "death": {
+      "motion": "fade_shrink",
+      "duration_ms": 400
+    },
+    "direction": {
+      "ally": "right",
+      "enemy": "left",
+      "mirror_allowed": true
+    }
+  },
+  "art": {
+    "front": "assets/monsters/m009/front.svg",
+    "battle_side": "assets/monsters/m009/side.svg",
+    "status": "pending",
+    "background": "transparent",
+    "shadows": false,
+    "particles": false
+  },
+  "notes": "Provisional Level 1 design; balance and artwork pending approval."
+}

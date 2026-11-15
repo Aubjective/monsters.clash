@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0.0",
+  "id": "m003",
+  "name": "Duskpounce",
+  "family": "monster",
+  "description": "A quick shadow ferret that slips past slow defenses.",
+  "rarity": "common",
+  "element": "dark",
+  "elemental": {
+    "primary": "dark",
+    "secondary": null,
+    "resistances": {},
+    "status_immunities": [],
+    "stage_affinity_enabled": true
+  },
+  "combat_position": "melee",
+  "role": "assassin",
+  "unlock": {
+    "method": "stage_reward",
+    "initially_unlocked": false
+  },
+  "growth": {
+    "level": 1,
+    "max_level": 20,
+    "hp_per_level_pct": 0.05,
+    "damage_per_level_pct": 0.035,
+    "defense_per_level_pct": 0.02
+  },
+  "stats": {
+    "hp": 185,
+    "str": 24,
+    "agi": 35,
+    "int": 7,
+    "vit": 9,
+    "def": 7,
+    "res": 10,
+    "move_speed": 87
+  },
+  "deployment": {
+    "mana_cost": 3,
+    "cooldown_seconds": 8,
+    "max_active_copies": 4
+  },
+  "attack": {
+    "type": "melee",
+    "damage_type": "physical",
+    "base_damage": 25,
+    "range": 30,
+    "interval_seconds": 0.62,
+    "targeting": "nearest_enemy",
+    "area_radius": 0,
+    "projectile_speed": null
+  },
+  "passive": {
+    "id": "evasive_steps",
+    "trigger": "on_basic_attack_received",
+    "type": "dodge_chance",
+    "value": 0.15
+  },
+  "skill": {
+    "id": "backstab",
+    "cooldown_seconds": 8,
+    "effect": {
+      "type": "single_hit",
+      "damage_multiplier": 2,
+      "target": "lowest_hp_enemy"
+    },
+    "trigger": "automatic"
+  },
+  "ai": {
+    "locomotion": "dash",
+    "advance_direction": "toward_enemy_base",
+    "stop_at_attack_range": true,
+    "retarget": "nearest",
+    "can_attack_base": true
+  },
+  "animation": {
+    "mode": "single_png_transforms",
+    "idle": {
+      "motion": "breath",
+      "cycle_ms": 1700
+    },
+    "move": {
+      "motion": "dash",
+      "cycle_ms": 850
+    },
+    "attack": {
+      "motion": "lunge",
+      "duration_ms": 300
+    },
+    "hit": {
+      "motion": "flash_recoil",
+      "duration_ms": 180
+    },
+    "death": {
+      "motion": "fade_shrink",
+      "duration_ms": 400
+    },
+    "direction": {
+      "ally": "right",
+      "enemy": "left",
+      "mirror_allowed": true
+    }
+  },
+  "art": {
+    "front": "assets/monsters/m003/front.svg",
+    "battle_side": "assets/monsters/m003/side.svg",
+    "status": "pending",
+    "background": "transparent",
+    "shadows": false,
+    "particles": false
+  },
+  "notes": "Provisional Level 1 design; balance and artwork pending approval."
+}

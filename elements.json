@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "id": "neutral",
+      "name": "Neutral",
+      "color": "#9ca3af"
+    },
+    {
+      "id": "fire",
+      "name": "Fire",
+      "color": "#f15b36"
+    },
+    {
+      "id": "water",
+      "name": "Water",
+      "color": "#3bace8"
+    },
+    {
+      "id": "nature",
+      "name": "Nature",
+      "color": "#63b34b"
+    },
+    {
+      "id": "earth",
+      "name": "Earth",
+      "color": "#ac8b55"
+    },
+    {
+      "id": "ice",
+      "name": "Ice",
+      "color": "#85cbe9"
+    },
+    {
+      "id": "lightning",
+      "name": "Lightning",
+      "color": "#f0c443"
+    },
+    {
+      "id": "light",
+      "name": "Light",
+      "color": "#e8dba4"
+    },
+    {
+      "id": "dark",
+      "name": "Dark",
+      "color": "#8359af"
+    }
+  ]
+}

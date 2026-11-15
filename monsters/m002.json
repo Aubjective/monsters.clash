@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0.0",
+  "id": "m002",
+  "name": "Cinderhorn",
+  "family": "monster",
+  "description": "A fiery horned boar that charges into the frontline.",
+  "rarity": "common",
+  "element": "fire",
+  "elemental": {
+    "primary": "fire",
+    "secondary": null,
+    "resistances": {},
+    "status_immunities": [],
+    "stage_affinity_enabled": true
+  },
+  "combat_position": "melee",
+  "role": "bruiser",
+  "unlock": {
+    "method": "stage_reward",
+    "initially_unlocked": false
+  },
+  "growth": {
+    "level": 1,
+    "max_level": 20,
+    "hp_per_level_pct": 0.05,
+    "damage_per_level_pct": 0.035,
+    "defense_per_level_pct": 0.02
+  },
+  "stats": {
+    "hp": 355,
+    "str": 36,
+    "agi": 12,
+    "int": 4,
+    "vit": 18,
+    "def": 13,
+    "res": 9,
+    "move_speed": 59
+  },
+  "deployment": {
+    "mana_cost": 4,
+    "cooldown_seconds": 10,
+    "max_active_copies": 4
+  },
+  "attack": {
+    "type": "melee",
+    "damage_type": "physical",
+    "base_damage": 43,
+    "range": 37,
+    "interval_seconds": 1.35,
+    "targeting": "nearest_enemy",
+    "area_radius": 0,
+    "projectile_speed": null
+  },
+  "passive": {
+    "id": "heated_tusks",
+    "trigger": "first_basic_hit_per_target",
+    "type": "damage_over_time",
+    "element": "fire",
+    "damage_per_second": 4,
+    "duration_seconds": 2
+  },
+  "skill": {
+    "id": "horn_charge",
+    "cooldown_seconds": 8,
+    "effect": {
+      "type": "dash_hit",
+      "distance": 65,
+      "damage": 58,
+      "damage_type": "physical",
+      "max_targets": 1
+    },
+    "trigger": "automatic"
+  },
+  "ai": {
+    "locomotion": "gallop",
+    "advance_direction": "toward_enemy_base",
+    "stop_at_attack_range": true,
+    "retarget": "nearest",
+    "can_attack_base": true
+  },
+  "animation": {
+    "mode": "single_png_transforms",
+    "idle": {
+      "motion": "breath",
+      "cycle_ms": 1700
+    },
+    "move": {
+      "motion": "gallop",
+      "cycle_ms": 550
+    },
+    "attack": {
+      "motion": "lunge",
+      "duration_ms": 300
+    },
+    "hit": {
+      "motion": "flash_recoil",
+      "duration_ms": 180
+    },
+    "death": {
+      "motion": "fade_shrink",
+      "duration_ms": 400
+    },
+    "direction": {
+      "ally": "right",
+      "enemy": "left",
+      "mirror_allowed": true
+    }
+  },
+  "art": {
+    "front": "assets/monsters/m002/front.svg",
+    "battle_side": "assets/monsters/m002/side.svg",
+    "status": "prototype_unapproved",
+    "background": "transparent",
+    "shadows": false,
+    "particles": false
+  },
+  "notes": "Provisional Level 1 design; balance and artwork pending approval."
+}

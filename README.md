@@ -1,23 +1,18 @@
-# Monsters Clash
+# Monsters Clash — Elemental Battle Sandbox
 
-A browser-based, side-view monster defense prototype using the existing [Isekaimania](https://github.com/Aubjective/isekaimania) monster database.
+New clean prototype for `Aubjective/monsters.clash`.
 
-## Version 0.1
+## Current build
+- Ten editable individual monster JSONs in `monsters/`
+- `elements.json`, `stage_affinities.json`, and `roster.json`
+- First two original test monsters: Mossguard (nature tank) and Cinderhorn (fire bruiser)
+- Transparent front/side SVG assets for these two monsters
+- Single-lane browser test with allied and enemy bases, mana deployment, cooldown, auto-advance, basic attacks, skill triggers and win/loss
+- Stage bonuses apply to both teams, not just the player
 
-- Hero defense, increasing waves, enemy movement and automatic combat.
-- Six starter monster deployment cards, energy regeneration and a 12-unit cap.
-- Hero AOE burst, elemental battlefield selector, health bars and combat log.
-- Fetches monsters, active skills and passive skills from the Isekaimania GitHub Pages JSON manifests.
-- Loads monster images from the original Isekaimania `monstersprite/` folder; no duplicate monster data or sprite assets.
+The SVG files are the editable originals for the prepared test art. The PNG exports were not transferred in this repository commit. Sprite art remains provisional.
 
-## Running
+The first two monsters can be deployed in the battle sandbox. The other eight are roster data awaiting artwork and integration. Values are provisional.
 
-Open `index.html` through a static web server or GitHub Pages. The browser must have network access to `https://aubjective.github.io/isekaimania/`.
-
-## Prototype limitations
-
-Combat conversion rules are provisional. The engine currently implements basic physical damage, skill damage, healing and Root; other structured effects (buffs, shields, status effects, passive bonuses, etc.) are reserved for the next iteration. Skill selection is simplified, and deployment, range, elemental bonuses and derived stats need balancing. No persistent saves or authentication.
-
-## Hosting
-
-Enable GitHub Pages for the repository, deploying the default branch from the repository root. The expected URL is `https://aubjective.github.io/monsters.clash/` after Pages has been enabled and published.
+## Asset rules
+One unit per asset, transparent background, no ground shadow, glow, scenery or particles. Use front art for cards, right-facing side art in battle; enemies can be flipped. Locomotion, attack, hit and disappearance should be configured per entity, but executed through a shared unit engine.

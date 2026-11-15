@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.0.0",
+  "id": "m001",
+  "name": "Mossguard",
+  "family": "monster",
+  "description": "A stout moss-covered tortoise guardian that absorbs the first enemy push.",
+  "rarity": "common",
+  "element": "nature",
+  "elemental": {
+    "primary": "nature",
+    "secondary": null,
+    "resistances": {},
+    "status_immunities": [],
+    "stage_affinity_enabled": true
+  },
+  "combat_position": "melee",
+  "role": "tank",
+  "unlock": {
+    "method": "stage_reward",
+    "initially_unlocked": true
+  },
+  "growth": {
+    "level": 1,
+    "max_level": 20,
+    "hp_per_level_pct": 0.05,
+    "damage_per_level_pct": 0.035,
+    "defense_per_level_pct": 0.02
+  },
+  "stats": {
+    "hp": 570,
+    "str": 19,
+    "agi": 7,
+    "int": 8,
+    "vit": 29,
+    "def": 29,
+    "res": 15,
+    "move_speed": 28
+  },
+  "deployment": {
+    "mana_cost": 5,
+    "cooldown_seconds": 14,
+    "max_active_copies": 4
+  },
+  "attack": {
+    "type": "melee",
+    "damage_type": "physical",
+    "base_damage": 24,
+    "range": 33,
+    "interval_seconds": 1.75,
+    "targeting": "nearest_enemy",
+    "area_radius": 0,
+    "projectile_speed": null
+  },
+  "passive": {
+    "id": "bark_shell",
+    "trigger": "while_hp_above_fraction",
+    "threshold": 0.5,
+    "type": "physical_damage_taken_multiplier",
+    "value": 0.88
+  },
+  "skill": {
+    "id": "root_guard",
+    "cooldown_seconds": 9,
+    "effect": {
+      "type": "shield_self",
+      "amount": 60,
+      "duration_seconds": 3
+    },
+    "trigger": "automatic"
+  },
+  "ai": {
+    "locomotion": "walk",
+    "advance_direction": "toward_enemy_base",
+    "stop_at_attack_range": true,
+    "retarget": "nearest",
+    "can_attack_base": true
+  },
+  "animation": {
+    "mode": "single_png_transforms",
+    "idle": {
+      "motion": "breath",
+      "cycle_ms": 1700
+    },
+    "move": {
+      "motion": "walk",
+      "cycle_ms": 850
+    },
+    "attack": {
+      "motion": "lunge",
+      "duration_ms": 300
+    },
+    "hit": {
+      "motion": "flash_recoil",
+      "duration_ms": 180
+    },
+    "death": {
+      "motion": "fade_shrink",
+      "duration_ms": 400
+    },
+    "direction": {
+      "ally": "right",
+      "enemy": "left",
+      "mirror_allowed": true
+    }
+  },
+  "art": {
+    "front": "assets/monsters/m001/front.svg",
+    "battle_side": "assets/monsters/m001/side.svg",
+    "status": "prototype_unapproved",
+    "background": "transparent",
+    "shadows": false,
+    "particles": false
+  },
+  "notes": "Provisional Level 1 design; balance and artwork pending approval."
+}

@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0.0",
+  "id": "m005",
+  "name": "Thornhopper",
+  "family": "monster",
+  "description": "A spring-legged insect that strikes through thorns.",
+  "rarity": "common",
+  "element": "nature",
+  "elemental": {
+    "primary": "nature",
+    "secondary": null,
+    "resistances": {},
+    "status_immunities": [],
+    "stage_affinity_enabled": true
+  },
+  "combat_position": "melee",
+  "role": "skirmisher",
+  "unlock": {
+    "method": "stage_reward",
+    "initially_unlocked": false
+  },
+  "growth": {
+    "level": 1,
+    "max_level": 20,
+    "hp_per_level_pct": 0.05,
+    "damage_per_level_pct": 0.035,
+    "defense_per_level_pct": 0.02
+  },
+  "stats": {
+    "hp": 270,
+    "str": 28,
+    "agi": 32,
+    "int": 6,
+    "vit": 14,
+    "def": 11,
+    "res": 8,
+    "move_speed": 76
+  },
+  "deployment": {
+    "mana_cost": 3,
+    "cooldown_seconds": 9,
+    "max_active_copies": 4
+  },
+  "attack": {
+    "type": "melee",
+    "damage_type": "physical",
+    "base_damage": 30,
+    "range": 35,
+    "interval_seconds": 0.95,
+    "targeting": "nearest_enemy",
+    "area_radius": 0,
+    "projectile_speed": null
+  },
+  "passive": {
+    "id": "springstep",
+    "type": "bonus_damage_after_movement",
+    "value": 0.18
+  },
+  "skill": {
+    "id": "thorn_leap",
+    "cooldown_seconds": 9,
+    "effect": {
+      "type": "dash_hit",
+      "distance": 80,
+      "damage": 39
+    },
+    "trigger": "automatic"
+  },
+  "ai": {
+    "locomotion": "hop",
+    "advance_direction": "toward_enemy_base",
+    "stop_at_attack_range": true,
+    "retarget": "nearest",
+    "can_attack_base": true
+  },
+  "animation": {
+    "mode": "single_png_transforms",
+    "idle": {
+      "motion": "breath",
+      "cycle_ms": 1700
+    },
+    "move": {
+      "motion": "hop",
+      "cycle_ms": 850
+    },
+    "attack": {
+      "motion": "lunge",
+      "duration_ms": 300
+    },
+    "hit": {
+      "motion": "flash_recoil",
+      "duration_ms": 180
+    },
+    "death": {
+      "motion": "fade_shrink",
+      "duration_ms": 400
+    },
+    "direction": {
+      "ally": "right",
+      "enemy": "left",
+      "mirror_allowed": true
+    }
+  },
+  "art": {
+    "front": "assets/monsters/m005/front.svg",
+    "battle_side": "assets/monsters/m005/side.svg",
+    "status": "pending",
+    "background": "transparent",
+    "shadows": false,
+    "particles": false
+  },
+  "notes": "Provisional Level 1 design; balance and artwork pending approval."
+}
