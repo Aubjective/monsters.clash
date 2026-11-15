@@ -388,7 +388,7 @@ function setAudioLevel(kind,value){
 }
 
 let roster=[],catalog=[],team=[],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;
-async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const s of stages){for(const id of ['stage','team-stage']){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+s.affinity;$(id).append(o)}}for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('stage').onchange=reset;$('team-stage').onchange=()=>{$('stage').value=$('team-stage').value};$('restart').onclick=reset;bindMenu();renderCollection();renderTeam();reset();requestAnimationFrame(frame)}
+async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const s of stages){for(const id of ['stage','team-stage']){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+s.affinity;$(id).append(o)}}for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('stage').onchange=reset;$('team-stage').onchange=()=>{$('stage').value=$('team-stage').value};$('restart').onclick=reset;bindMenu();renderCollection();renderBestiary();renderTeam();reset();requestAnimationFrame(frame)}
 function reset(){
  state={units:[],allyBase:towerConfigs.ally?.max_hp||1900,enemyBase:towerConfigs.enemy?.max_hp||1900,time:0,ended:false};
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
@@ -555,9 +555,62 @@ function openView(name){
  if(name!=='battle'&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});
  if(name!=='battle'&&screen.orientation?.unlock){try{screen.orientation.unlock()}catch(e){}}
 }
-function cardFor(m,selectable){const node=document.createElement('button');node.className='app-card'+(team.includes(m.id)&&selectable?' sel':'');const ready=m.art?.status==='ready'&&!!m.art?.sheet;const art=ready?sheetPreview(m.id):document.createElement('span');if(!ready)art.style.display='none';const desc=document.createElement('span');desc.innerHTML='<strong></strong><br><small></small><br><em class="app-pending"></em>';desc.querySelector('strong').textContent=m.name;desc.querySelector('small').textContent=m.element+' · '+m.role+' · '+m.deployment.cooldown_seconds+'s cooldown · max '+unitCap(m);desc.querySelector('em').textContent=ready?'Battle ready':'Art pending';node.append(art,desc);if(!selectable)node.disabled=true;else{node.disabled=!ready;node.onclick=()=>{if(team.includes(m.id))team=team.filter(id=>id!==m.id);else if(team.length<2)team.push(m.id);renderTeam()}}return node}
-function renderCollection(){$('monster-collection').replaceChildren(...catalog.map(m=>cardFor(m,false)))}
-function renderTeam(){$('team-options').replaceChildren(...catalog.map(m=>cardFor(m,true)));$('team-slots').replaceChildren(...[0,1].map(i=>{const d=document.createElement('div');d.className='app-slot';d.textContent='Slot '+(i+1)+': '+(roster.find(m=>m.id===team[i])?.name||'Empty');return d}));$('start-game').disabled=team.length===0}
+
+function cardFor(m,selectable){
+ const node=document.createElement('button');
+ node.className='app-card'+(team.includes(m.id)&&selectable?' sel':'');
+ const ready=m.art?.status==='ready'&&!!m.art?.sheet,unlocked=owns(m.id);
+ const art=ready&&unlocked?sheetPreview(m.id):document.createElement('span');
+ if(!ready||!unlocked){art.className='unknown-icon';art.textContent='?'}
+ const desc=document.createElement('span');
+ desc.innerHTML='<strong></strong><br><small></small><br><em class="app-pending"></em>';
+ desc.querySelector('strong').textContent=m.name;
+ desc.querySelector('small').textContent=m.element+' · '+m.role+' · '+m.deployment.cooldown_seconds+'s cooldown · max '+unitCap(m);
+ desc.querySelector('em').textContent=!unlocked?'Locked':ready?'Owned · Battle ready':'Owned · Artwork pending';
+ node.append(art,desc);
+ if(!selectable)node.disabled=true;
+ else{
+  node.disabled=!ready||!unlocked;
+  node.onclick=()=>{
+   if(team.includes(m.id))team=team.filter(id=>id!==m.id);
+   else if(team.length<2)team.push(m.id);
+   renderTeam();
+  };
+ }
+ return node;
+}
+function renderCollection(){
+ const owned=catalog.filter(m=>owns(m.id));
+ $('monster-collection').replaceChildren(...owned.map(m=>cardFor(m,false)));
+}
+function renderBestiary(){
+ const count=catalog.filter(m=>encountered(m.id)).length;
+ $('bestiary-progress').textContent=count+' / '+catalog.length+' encountered. Meet monsters in battle to discover them.';
+ const entries=catalog.map(m=>{
+  const known=encountered(m.id),node=document.createElement('div');
+  node.className='app-card journal-entry '+(known?'journal-known':'journal-unknown');
+  const icon=known&&m.art?.sheet?sheetPreview(m.id):document.createElement('span');
+  if(!known||!m.art?.sheet){icon.className='unknown-icon';icon.textContent='?'}
+  const desc=document.createElement('span');
+  const title=document.createElement('strong'),detail=document.createElement('small'),status=document.createElement('em');
+  title.textContent=known?m.name:'???';
+  detail.textContent=known?m.element+' · '+m.role:'Not yet encountered';
+  status.className='app-pending';
+  status.textContent=known?(owns(m.id)?'Owned':'Encountered'):'Undiscovered';
+  desc.append(title,document.createElement('br'),detail,document.createElement('br'),status);
+  node.append(icon,desc);return node;
+ });
+ $('bestiary-grid').replaceChildren(...entries);
+}
+function renderTeam(){
+ $('team-options').replaceChildren(...catalog.filter(m=>owns(m.id)).map(m=>cardFor(m,true)));
+ $('team-slots').replaceChildren(...[0,1].map(i=>{
+  const d=document.createElement('div');d.className='app-slot';
+  d.textContent='Slot '+(i+1)+': '+(roster.find(m=>m.id===team[i])?.name||'Empty');
+  return d;
+ }));
+ $('start-game').disabled=team.length===0;
+}
 function launchLandscape(){
   const elem=document.documentElement;
   try{
