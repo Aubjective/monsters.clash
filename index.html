@@ -213,11 +213,20 @@ const backgroundImage=new Image(),towerImages={ally:new Image(),enemy:new Image(
 let battleRules={summoning:{mode:'cooldown_only',max_active_per_team:10,default_max_active_per_monster:3,tier_caps:{common:5,uncommon:4,rare:3,epic:2,legendary:2,boss:1},enemy_spawn_interval_seconds:[3.2,4.5]}};
 let audioConfig=null,audioUnlocked=false,musicEnabled=true,sfxEnabled=true,activeMusic='',lastSfxAt={};
 const bgmPlayer=new Audio();bgmPlayer.loop=true;bgmPlayer.preload='none';
-let soundContext=null;
+let soundContext=null,sfxPools={};
 function soundEffect(type){
  if(!audioUnlocked||!sfxEnabled||document.hidden)return;
  const preset=audioConfig?.sfx?.presets?.[type];if(!preset)return;
  const now=performance.now();if(now-(lastSfxAt[type]||0)<(type==='attack'?110:75))return;lastSfxAt[type]=now;
+ if(preset.file){
+   try{
+     const pool=sfxPools[type]||(sfxPools[type]=Array.from({length:3},()=>{const clip=new Audio(preset.file);clip.preload='auto';return clip}));
+     const clip=pool.find(item=>item.paused)||pool[0];
+     clip.volume=Math.max(0,Math.min(1,audioConfig?.sfx?.volume??.26));
+     clip.currentTime=0;clip.play().catch(()=>{});
+   }catch(e){}
+   return;
+ }
  try{
   const API=window.AudioContext||window.webkitAudioContext;
   if(!API)return;
