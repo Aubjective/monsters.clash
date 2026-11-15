@@ -185,13 +185,15 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  <button id="nav-home">⌂ Main Menu</button>
  <button id="nav-collection">Monster Collection</button>
  <button id="nav-team">Select Team</button>
+ <button id="nav-music">Music: On</button>
+ <button id="nav-sfx">SFX: On</button>
 </nav></div>
 <main id="battle-screen" hidden>
  <div class="battle-top"><span class="battle-brand">⚔ Monsters Clash</span><label>Battlefield <select id="stage"></select></label></div>
  <div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas></div>
  <div class="battle-bottom">
   <div class="cards" id="cards"></div>
-  <div class="battle-stats"><strong id="mana"></strong><button id="restart">Restart</button><span id="status"></span></div>
+  <div class="battle-stats"><strong id="unit-count"></strong><button id="restart">Restart</button><span id="status"></span></div>
  </div>
  <button id="battle-menu-toggle" class="floating-plus" aria-label="Expand battle menu" aria-expanded="false">+</button>
  <nav class="pop-menu" id="battle-menu" hidden aria-label="Battle menu">
@@ -199,6 +201,8 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <button id="battle-resume">Resume</button>
   <button id="battle-restart">Restart Battle</button>
   <button id="battle-menu-team">Select Team</button>
+  <button id="battle-music">Music: On</button>
+  <button id="battle-sfx">SFX: On</button>
   <button id="battle-menu-fullscreen">Landscape Fullscreen</button>
   <button id="battle-menu-home">Main Menu</button>
  </nav>
@@ -206,13 +210,57 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
 const backgroundImage=new Image(),towerImages={ally:new Image(),enemy:new Image()};
+let battleRules={summoning:{mode:'cooldown_only',max_active_per_team:10,default_max_active_per_monster:3,tier_caps:{common:5,uncommon:4,rare:3,epic:2,legendary:2,boss:1},enemy_spawn_interval_seconds:[3.2,4.5]}};
+let audioConfig=null,audioUnlocked=false,musicEnabled=true,sfxEnabled=true,activeMusic='',lastSfxAt={};
+const bgmPlayer=new Audio();bgmPlayer.loop=true;bgmPlayer.preload='none';
+let soundContext=null;
+function soundEffect(type){
+ if(!audioUnlocked||!sfxEnabled||document.hidden)return;
+ const preset=audioConfig?.sfx?.presets?.[type];if(!preset)return;
+ const now=performance.now();if(now-(lastSfxAt[type]||0)<(type==='attack'?110:75))return;lastSfxAt[type]=now;
+ try{
+  const API=window.AudioContext||window.webkitAudioContext;
+  if(!API)return;
+  if(!soundContext)soundContext=new API();
+  if(soundContext.state==='suspended')soundContext.resume().catch(()=>{});
+  const oscillator=soundContext.createOscillator(),gain=soundContext.createGain(),t=soundContext.currentTime;
+  oscillator.type=preset.wave||'sine';oscillator.frequency.setValueAtTime(preset.frequency||320,t);
+  const vol=(audioConfig?.sfx?.volume??.26)*.12;
+  gain.gain.setValueAtTime(Math.max(.0001,vol),t);
+  gain.gain.exponentialRampToValueAtTime(.0001,t+Math.max(.06,preset.duration||.15));
+  oscillator.connect(gain);gain.connect(soundContext.destination);oscillator.start(t);oscillator.stop(t+Math.max(.06,preset.duration||.15)+.005);
+ }catch(e){}
+}
+function wantedMusic(){return view==='battle'?'battle':'menu'}
+function syncMusic(){
+ if(!audioUnlocked||!audioConfig||!musicEnabled||document.hidden||(view==='battle'&&battleMenuOpen)){bgmPlayer.pause();return}
+ const key=wantedMusic(),url=audioConfig.bgm?.[key];
+ if(!url)return;
+ if(activeMusic!==key){activeMusic=key;bgmPlayer.src=url;bgmPlayer.currentTime=0}
+ bgmPlayer.loop=audioConfig.bgm?.loop!==false;bgmPlayer.volume=Math.max(0,Math.min(1,audioConfig.bgm?.volume??.38));
+ if(bgmPlayer.paused)bgmPlayer.play().catch(()=>{});
+}
+function audioLabels(){
+ for(const id of ['nav-music','battle-music']){const button=$(id);if(button)button.textContent='Music: '+(musicEnabled?'On':'Off')}
+ for(const id of ['nav-sfx','battle-sfx']){const button=$(id);if(button)button.textContent='SFX: '+(sfxEnabled?'On':'Off')}
+}
+function toggleMusic(){musicEnabled=!musicEnabled;audioLabels();syncMusic()}
+function toggleSfx(){sfxEnabled=!sfxEnabled;audioLabels()}
+document.addEventListener('pointerdown',()=>{audioUnlocked=true;syncMusic()},{once:true});
+document.addEventListener('visibilitychange',()=>syncMusic());
+
 backgroundImage.src='assets/backgrounds/grass-land.png';
 let towerRegistry=null,towerConfigs={ally:null,enemy:null};
 async function loadGameCatalog(){
- const [index,towers]=await Promise.all([
+ const [index,towers,rules,audio]=await Promise.all([
   fetch('roster.json').then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json').then(r=>{if(!r.ok)throw Error('towers.json missing');return r.json()}).catch(()=>null)
+  fetch('towers.json').then(r=>{if(!r.ok)throw Error('towers.json missing');return r.json()}).catch(()=>null),
+  fetch('battle_rules.json').then(r=>r.ok?r.json():null).catch(()=>null),
+  fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null)
  ]);
+ if(rules?.summoning)battleRules=rules;
+ if(audio?.bgm)audioConfig=audio;
+ audioLabels();
  const ids=Array.isArray(index.ids)?index.ids:[];
  catalog=(await Promise.all(ids.map(id=>fetch('monsters/'+encodeURIComponent(id)+'.json').then(r=>r.ok?r.json():null).catch(()=>null)))).filter(Boolean);
  roster=catalog.filter(m=>m.art?.status==='ready'&&m.art?.sheet);
@@ -252,17 +300,34 @@ function sheetUrl(m){return m.art?.sheet||m.art?.battle_side}
 function sheetPreview(id){const el=document.createElement('span');el.className='sheet-preview';const m=catalog.find(item=>item.id===id);if(m?.art?.sheet)el.style.backgroundImage='url("'+m.art.sheet+'")';return el}
 
 let roster=[],catalog=[],team=[],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;
-async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const s of stages){for(const id of ['stage','team-stage']){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+s.affinity;$(id).append(o)}}for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small>'+m.deployment.mana_cost+' mana</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('stage').onchange=reset;$('team-stage').onchange=()=>{$('stage').value=$('team-stage').value};$('restart').onclick=reset;bindMenu();renderCollection();renderTeam();reset();requestAnimationFrame(frame)}
-function reset(){state={units:[],mana:5,allyBase:1900,enemyBase:1900,time:0,ended:false};cooldowns={};enemyTimer=2;$('status').textContent='Summon monsters and destroy the enemy base.'}
+async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const s of stages){for(const id of ['stage','team-stage']){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+s.affinity;$(id).append(o)}}for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('stage').onchange=reset;$('team-stage').onchange=()=>{$('stage').value=$('team-stage').value};$('restart').onclick=reset;bindMenu();renderCollection();renderTeam();reset();requestAnimationFrame(frame)}
+function reset(){
+ state={units:[],allyBase:towerConfigs.ally?.max_hp||1900,enemyBase:towerConfigs.enemy?.max_hp||1900,time:0,ended:false};
+ cooldowns={ally:{},enemy:{}};enemyTimer=2;
+ $('status').textContent='Deploy monsters when their cooldown is ready.';
+}
+function teamCount(side){return state.units.filter(u=>u.hp>0&&u.side===side).length}
+function maxTeamUnits(){return Math.max(1,Number(battleRules.summoning?.max_active_per_team)||10)}
+function unitCap(m){
+ const limits=battleRules.summoning?.tier_caps||{};
+ const tier=String(m.tier||m.rarity||'common').toLowerCase();
+ return Math.max(1,Number(m.deployment?.max_active_copies||limits[tier]||battleRules.summoning?.default_max_active_per_monster||3));
+}
+function deployedCount(side,id){return state.units.filter(u=>u.hp>0&&u.side===side&&u.m.id===id).length}
+function canSummon(m,side){
+ return !state.ended&&teamCount(side)<maxTeamUnits()&&deployedCount(side,m.id)<unitCap(m)&&!(cooldowns[side>0?'ally':'enemy'][m.id]>0);
+}
+function deployCooldown(m,side){cooldowns[side>0?'ally':'enemy'][m.id]=Math.max(0,Number(m.deployment?.cooldown_seconds)||0)}
+
 function stage(){return stages.find(s=>s.id===$('stage').value)||stages[0]}function mods(m){const s=stage();return s&&m.element!=='neutral'&&m.element===s.affinity?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
-function spawn(m,side){if(state.ended)return;if(side===1){if(!team.includes(m.id)||state.mana<m.deployment.mana_cost||(cooldowns[m.id]||0)>0)return;state.mana-=m.deployment.mana_cost;cooldowns[m.id]=m.deployment.cooldown_seconds}
+function spawn(m,side){if(!m||!canSummon(m,side))return false;if(side===1&&!team.includes(m.id))return false;deployCooldown(m,side);if(side===1)soundEffect('summon');
 const b=mods(m),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0)),spawnX=side>0?98:862;
 // Spawn on a clear patch of ground, choosing a different depth when occupied.
 const groundRows=[356,385,414,443,463];
 const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(best,Math.hypot((u.x-spawnX)*.8,(u.y-y)*1.4)),Infinity)})).sort((a,b)=>b.clearance-a.clearance)[0];
 const x=spawnX+(side>0?-1:1)*Math.max(0,54-row.clearance);
-state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null})}
-function dmg(u,amount){const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;const shield=Math.min(u.shield,amount);u.shield-=shield;u.hp-=amount-shield;u.hit=.15}
+state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null});return true}
+function dmg(u,amount){const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;const shield=Math.min(u.shield,amount);u.shield-=shield;u.hp-=amount-shield;u.hit=.15;if(u.side===1)soundEffect('impact')}
 function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
 function separateGroundUnits(){
   // Two small passes resolve physical overlaps; opposing monsters touch but never stack.
@@ -285,10 +350,15 @@ function separateGroundUnits(){
 }
 function step(dt){
  if(state.ended)return;
- state.time+=dt;state.mana=Math.min(12,state.mana+dt);
- for(const k of Object.keys(cooldowns))cooldowns[k]=Math.max(0,cooldowns[k]-dt);
+ state.time+=dt;
+ for(const side of ['ally','enemy'])for(const k of Object.keys(cooldowns[side]))cooldowns[side][k]=Math.max(0,cooldowns[side][k]-dt);
  enemyTimer-=dt;
- if(enemyTimer<=0&&roster.length){spawn(roster[Math.floor(Math.random()*roster.length)],-1);enemyTimer=3.1+Math.random()*1.5}
+ if(enemyTimer<=0&&roster.length){
+  const eligible=roster.filter(m=>canSummon(m,-1));
+  if(eligible.length)spawn(eligible[Math.floor(Math.random()*eligible.length)],-1);
+  const range=battleRules.summoning?.enemy_spawn_interval_seconds||[3.2,4.5];
+  enemyTimer=(Number(range[0])||3.2)+Math.random()*Math.max(0,(Number(range[1])||4.5)-(Number(range[0])||3.2));
+ }
  for(const u of state.units){
   if(u.hp<=0)continue;
   const gait=u.m.ai.locomotion;
@@ -309,11 +379,12 @@ function step(dt){
    u.x=Math.max(72,Math.min(888,u.x));u.y=Math.max(346,Math.min(463,u.y));
   }else if(u.atk<=0){
    const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0));
-   if(target)dmg(target,amount);else if(u.side>0)state.enemyBase-=amount;else state.allyBase-=amount;
+   if(target)dmg(target,amount);else if(u.side>0)state.enemyBase=Math.max(0,state.enemyBase-amount);else state.allyBase=Math.max(0,state.allyBase-amount);
+   if(u.side===1)soundEffect(target?'attack':'tower_hit');
    u.atk=u.m.attack.interval_seconds;u.motion=.24;u.anim={type:'attack',duration:.34,remaining:.34};
   }
   if(u.skill<=0){
-   u.anim={type:'skill',duration:.55,remaining:.55};
+   u.anim={type:'skill',duration:.55,remaining:.55};if(u.side===1)soundEffect(u.m.skill.effect.type==='shield_self'?'shield':'skill');
    if(u.m.skill.effect.type==='shield_self')u.shield=Math.max(u.shield,u.m.skill.effect.amount);
    else if(u.m.skill.effect.type==='dash_hit'){
     u.x+=u.side*u.m.skill.effect.distance;
@@ -324,7 +395,7 @@ function step(dt){
  }
  separateGroundUnits();
  state.units=state.units.filter(u=>u.hp>0);
- if(state.enemyBase<=0||state.allyBase<=0){state.ended=true;$('status').textContent=state.enemyBase<=0?'Victory — enemy base destroyed!':'Defeat — player base destroyed!'}
+ if(state.enemyBase<=0||state.allyBase<=0){state.ended=true;state.enemyBase=Math.max(0,state.enemyBase);state.allyBase=Math.max(0,state.allyBase);soundEffect(state.enemyBase<=0?'victory':'defeat');$('status').textContent=state.enemyBase<=0?'Victory — enemy base destroyed!':'Defeat — player base destroyed!'}
 }
 
 function drawTower(side,x,hp){
@@ -372,12 +443,19 @@ function draw(){
  ctx.fillStyle='#1b3755cc';ctx.fillRect(328,12,304,40);
  ctx.fillStyle='white';ctx.textAlign='center';ctx.font='bold 18px system-ui';ctx.fillText(s?.name||'Battlefield',480,38);
  if(state.ended){ctx.fillStyle='#08172cbb';ctx.fillRect(0,0,W,H);ctx.fillStyle='white';ctx.font='bold 52px system-ui';ctx.fillText(state.enemyBase<=0?'VICTORY':'DEFEAT',480,240)}
- $('mana').textContent='Mana '+state.mana.toFixed(1)+'/12';
- for(const m of roster){const btn=$('card_'+m.id);btn.style.display=team.includes(m.id)?'flex':'none';btn.disabled=state.ended||state.mana<m.deployment.mana_cost||(cooldowns[m.id]||0)>0}
+ $('unit-count').textContent='Units '+teamCount(1)+'/'+maxTeamUnits();
+ for(const m of roster){
+  const btn=$('card_'+m.id);if(!btn)continue;
+  btn.style.display=team.includes(m.id)?'flex':'none';
+  const remaining=cooldowns.ally[m.id]||0,active=deployedCount(1,m.id),cap=unitCap(m);
+  const info=$('cooldown_'+m.id);
+  if(info)info.textContent=remaining>0?remaining.toFixed(1)+'s':active>=cap?active+'/'+cap+' full':teamCount(1)>=maxTeamUnits()?'Field full':active+'/'+cap+' · Ready';
+  btn.disabled=!canSummon(m,1);
+ }
 }
 
 function openView(name){
- view=name;battleMenuOpen=false;navOpen=false;
+ view=name;battleMenuOpen=false;navOpen=false;syncMusic();
  for(const id of ['home','collection','team','battle'])$(id+'-screen').hidden=id!==name;
  $('battle-menu').hidden=true;$('quick-nav').hidden=true;
  $('battle-menu-toggle').setAttribute('aria-expanded','false');$('nav-toggle').setAttribute('aria-expanded','false');
@@ -386,7 +464,7 @@ function openView(name){
  if(name!=='battle'&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});
  if(name!=='battle'&&screen.orientation?.unlock){try{screen.orientation.unlock()}catch(e){}}
 }
-function cardFor(m,selectable){const node=document.createElement('button');node.className='app-card'+(team.includes(m.id)&&selectable?' sel':'');const ready=m.art?.status==='ready'&&!!m.art?.sheet;const art=ready?sheetPreview(m.id):document.createElement('span');if(!ready)art.style.display='none';const desc=document.createElement('span');desc.innerHTML='<strong></strong><br><small></small><br><em class="app-pending"></em>';desc.querySelector('strong').textContent=m.name;desc.querySelector('small').textContent=m.element+' · '+m.role+' · '+m.deployment.mana_cost+' mana';desc.querySelector('em').textContent=ready?'Battle ready':'Art pending';node.append(art,desc);if(!selectable)node.disabled=true;else{node.disabled=!ready;node.onclick=()=>{if(team.includes(m.id))team=team.filter(id=>id!==m.id);else if(team.length<2)team.push(m.id);renderTeam()}}return node}
+function cardFor(m,selectable){const node=document.createElement('button');node.className='app-card'+(team.includes(m.id)&&selectable?' sel':'');const ready=m.art?.status==='ready'&&!!m.art?.sheet;const art=ready?sheetPreview(m.id):document.createElement('span');if(!ready)art.style.display='none';const desc=document.createElement('span');desc.innerHTML='<strong></strong><br><small></small><br><em class="app-pending"></em>';desc.querySelector('strong').textContent=m.name;desc.querySelector('small').textContent=m.element+' · '+m.role+' · '+m.deployment.cooldown_seconds+'s cooldown · max '+unitCap(m);desc.querySelector('em').textContent=ready?'Battle ready':'Art pending';node.append(art,desc);if(!selectable)node.disabled=true;else{node.disabled=!ready;node.onclick=()=>{if(team.includes(m.id))team=team.filter(id=>id!==m.id);else if(team.length<2)team.push(m.id);renderTeam()}}return node}
 function renderCollection(){$('monster-collection').replaceChildren(...catalog.map(m=>cardFor(m,false)))}
 function renderTeam(){$('team-options').replaceChildren(...catalog.map(m=>cardFor(m,true)));$('team-slots').replaceChildren(...[0,1].map(i=>{const d=document.createElement('div');d.className='app-slot';d.textContent='Slot '+(i+1)+': '+(roster.find(m=>m.id===team[i])?.name||'Empty');return d}));$('start-game').disabled=team.length===0}
 function launchLandscape(){
@@ -407,7 +485,7 @@ function toggleBattleMenu(force){
  $('battle-menu').hidden=!battleMenuOpen;
  $('battle-menu-toggle').textContent=battleMenuOpen?'×':'+';
  $('battle-menu-toggle').setAttribute('aria-expanded',String(battleMenuOpen));
- last=performance.now();
+ last=performance.now();syncMusic();
 }
 function toggleQuickNav(force){
  navOpen=typeof force==='boolean'?force:!navOpen;
@@ -425,6 +503,8 @@ function bindMenu(){
  $('nav-home').onclick=()=>openView('home');
  $('nav-collection').onclick=()=>openView('collection');
  $('nav-team').onclick=()=>{renderTeam();openView('team')};
+ $('nav-music').onclick=toggleMusic;$('battle-music').onclick=toggleMusic;
+ $('nav-sfx').onclick=toggleSfx;$('battle-sfx').onclick=toggleSfx;
  $('battle-menu-toggle').onclick=()=>toggleBattleMenu();
  $('battle-resume').onclick=()=>toggleBattleMenu(false);
  $('battle-restart').onclick=()=>{reset();toggleBattleMenu(false)};
