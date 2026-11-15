@@ -164,6 +164,24 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .team-slot-grid .app-slot{min-width:0;min-height:58px;display:flex;align-items:center}
 @media(max-width:650px){.team-slot-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.team-slot-grid .app-slot{font-size:11px;min-height:45px;padding:6px}.coin-wallet{padding:5px 7px;font-size:11px}}
 @media(max-height:460px){.team-slot-grid .app-slot{min-height:40px}}
+
+/* Bestiary profile — existing monster JSON is the single source of identity and stats. */
+.journal-entry{cursor:pointer;transition:border-color .16s,background .16s;min-width:0}
+.journal-entry:hover,.journal-entry:focus-visible{border-color:#e5bd78;background:#31465d}
+.journal-entry:focus-visible{outline:2px solid #f2d48f;outline-offset:2px}
+.monster-profile-layout{display:grid;grid-template-columns:minmax(180px,32%) minmax(0,1fr);gap:clamp(12px,3vw,30px);align-items:start}
+.monster-profile-art{min-height:220px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 65%,#3b6384,#182e47 72%);border:1px solid #456d89;border-radius:20px}
+.monster-profile-art .sheet-preview{width:min(270px,85%);aspect-ratio:1;height:auto}
+.monster-profile-art .unknown-icon{font-size:90px;width:170px;height:170px;filter:grayscale(1)}
+.monster-profile-info{border:1px solid #45617b;background:#12273be8;border-radius:18px;padding:clamp(14px,2.2vw,25px)}
+.monster-profile-info p{color:#c2d5e4;line-height:1.5}
+.profile-tags{display:flex;gap:8px;flex-wrap:wrap}
+.profile-tags span{border:1px solid #587a94;border-radius:30px;padding:5px 10px;color:#f3d48f;font-size:13px}
+.profile-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}
+.profile-stat{border:1px solid #41607d;border-radius:12px;padding:11px;text-align:center;background:#20364c}
+.profile-stat strong{display:block;font-size:21px;color:#f5e9ca}
+.profile-stat small{display:block;font-size:11px;color:#adc5d6}
+@media(max-width:650px){.monster-profile-layout{grid-template-columns:minmax(130px,35%) minmax(0,1fr)}.monster-profile-art{min-height:145px}.monster-profile-info{padding:12px}.profile-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.profile-stat{padding:6px}.profile-stat strong{font-size:16px}}
 </style>
 </head>
 <body>
@@ -187,6 +205,15 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <div class="page-head"><div><div class="eyebrow">Field journal</div><h2>Monster Bestiary</h2></div><button class="app-back">← Main Menu</button></div>
   <p class="page-sub" id="bestiary-progress"></p>
   <div class="app-grid" id="bestiary-grid"></div>
+ </div>
+</section>
+<section class="app-screen" id="monster-profile-screen" hidden>
+ <div class="page-inner">
+  <div class="page-head"><div><div class="eyebrow">Bestiary entry</div><h2 id="profile-name">Monster Profile</h2></div><button id="profile-back" type="button">← Bestiary</button></div>
+  <div class="monster-profile-layout">
+   <div class="monster-profile-art" id="profile-art" aria-label="Monster portrait"></div>
+   <div class="monster-profile-info" id="profile-info"></div>
+  </div>
  </div>
 </section>
 <section class="app-screen" id="settings-screen" hidden>
@@ -420,7 +447,7 @@ function setAudioLevel(kind,value){
 }
 
 let roster=[],catalog=[],team=[],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;
-async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();requestAnimationFrame(frame)}
+async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();if(allowBestiaryHash&&location.hash.startsWith('#/bestiary'))readBestiaryRoute();window.addEventListener('popstate',readBestiaryRoute);window.addEventListener('hashchange',readBestiaryRoute);requestAnimationFrame(frame)}
 let currentStage=null;
 function chooseRandomStage(){currentStage=stages.length?stages[Math.floor(Math.random()*stages.length)]:null;const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name+' · '+currentStage.affinity:'Battlefield';}
 function reset(){
@@ -581,10 +608,11 @@ function draw(){
  }
 }
 
-function openView(name){
+function openView(name,fromRoute=false){
  if(name==='bestiary')renderBestiary();if(name==='settings')refreshSettings();
+ if(!fromRoute&&name!=='monster-profile')updateRoute(name,true);
  view=name;battleMenuOpen=false;navOpen=false;syncMusic();
- for(const id of ['home','team','bestiary','settings','battle'])$(id+'-screen').hidden=id!==name;
+ for(const id of ['home','team','bestiary','monster-profile','settings','battle'])$(id+'-screen').hidden=id!==name;
  $('battle-menu').hidden=true;$('quick-nav').hidden=true;
  $('battle-menu-toggle').setAttribute('aria-expanded','false');$('nav-toggle').setAttribute('aria-expanded','false');
  $('nav-toggle').hidden=name==='battle';
@@ -616,12 +644,70 @@ function cardFor(m,selectable){
  }
  return node;
 }
+// Hash links are optional website deep links. Never rely on hashes inside hosts
+// such as Telegram Mini Apps, which may supply their own launch parameters.
+const allowBestiaryHash=(()=>{
+ try{return window.top===window.self&&!window.Telegram?.WebApp&&!location.hash.includes('tgWebApp')}catch(e){return false}
+})();
+let selectedMonsterId=null;
+function profileLink(id){return '#/bestiary/'+encodeURIComponent(id)}
+function routePath(name){return name==='bestiary'?'#/bestiary':location.pathname+location.search}
+function updateRoute(name,replace=false){
+ if(!allowBestiaryHash)return;
+ const next=routePath(name);
+ if(location.hash===next||(next===location.pathname+location.search&&!location.hash))return;
+ history[replace?'replaceState':'pushState']({monsterClash:true},'',next);
+}
+function showMonsterProfile(id,fromRoute=false){
+ const monster=catalog.find(m=>m.id===id);
+ if(!monster)return openView('bestiary',fromRoute);
+ selectedMonsterId=id;
+ const known=encountered(id);
+ $('profile-name').textContent=known?monster.name:'??? · Undiscovered';
+ const artwork=$('profile-art'),details=$('profile-info');
+ artwork.replaceChildren();details.replaceChildren();
+ if(known&&monster.art?.sheet)artwork.append(sheetPreview(id));
+ else{const unknown=document.createElement('span');unknown.className='unknown-icon';unknown.textContent='?';artwork.append(unknown)}
+ if(!known){
+  const description=document.createElement('p');description.textContent='This monster has not been encountered yet. Meet it in battle to reveal its profile.';
+  details.append(description);
+ }else{
+  const tags=document.createElement('div');tags.className='profile-tags';
+  for(const entry of [monster.element,monster.role,monster.rarity,owns(id)?'Owned':'Encountered']){
+   const span=document.createElement('span');span.textContent=entry;tags.append(span);
+  }
+  details.append(tags);
+  const p=document.createElement('p');p.textContent=monster.description||'No description available.';details.append(p);
+  const stats=document.createElement('div');stats.className='profile-stats';
+  for(const [label,value] of [['HP',monster.stats?.hp],['STR',monster.stats?.str],['AGI',monster.stats?.agi],['VIT',monster.stats?.vit],['DEF',monster.stats?.def],['RES',monster.stats?.res]]){
+   if(value==null)continue;
+   const stat=document.createElement('div');stat.className='profile-stat';
+   const number=document.createElement('strong');number.textContent=String(value);
+   const name=document.createElement('small');name.textContent=label;stat.append(number,name);stats.append(stat);
+  }
+  details.append(stats);
+  const attack=document.createElement('p');attack.textContent='Attack: '+(monster.attack?.type||'Unknown')+' · '+(monster.attack?.base_damage??'—')+' base damage';
+  const skill=document.createElement('p');skill.textContent='Skill: '+String(monster.skill?.id||'Unknown').replaceAll('_',' ')+' · '+(monster.skill?.cooldown_seconds??'—')+'s cooldown';
+  details.append(attack,skill);
+ }
+ openView('monster-profile',true);
+ if(!fromRoute&&allowBestiaryHash)history.pushState({monsterClash:true},'',profileLink(id));
+}
+function readBestiaryRoute(){
+ if(!allowBestiaryHash)return;
+ const match=location.hash.match(/^#\/bestiary\/([a-zA-Z0-9_-]+)$/);
+ if(match){const id=decodeURIComponent(match[1]);if(catalog.some(m=>m.id===id))return showMonsterProfile(id,true)}
+ if(location.hash==='#/bestiary')openView('bestiary',true);
+ else if(view==='monster-profile'||view==='bestiary')openView('home',true);
+}
 function renderBestiary(){
  const count=catalog.filter(m=>encountered(m.id)).length;
  $('bestiary-progress').textContent=count+' / '+catalog.length+' encountered. Meet monsters in battle to discover them.';
  const entries=catalog.map(m=>{
-  const known=encountered(m.id),node=document.createElement('div');
-  node.className='app-card journal-entry '+(known?'journal-known':'journal-unknown');
+  const known=encountered(m.id),node=document.createElement('button');
+  node.type='button';node.className='app-card journal-entry '+(known?'journal-known':'journal-unknown');
+  node.setAttribute('aria-label',known?'View '+m.name+' profile':'View undiscovered monster profile');
+  node.onclick=()=>showMonsterProfile(m.id);
   const icon=known&&m.art?.sheet?sheetPreview(m.id):document.createElement('span');
   if(!known||!m.art?.sheet){icon.className='unknown-icon';icon.textContent='?'}
   const desc=document.createElement('span');
@@ -680,6 +766,7 @@ function toggleQuickNav(force){
 }
 function bindMenu(){
  $('menu-bestiary').onclick=()=>openView('bestiary');
+ $('profile-back').onclick=()=>openView('bestiary');
  $('menu-settings').onclick=()=>openView('settings');
  $('bgm-volume').oninput=e=>setAudioLevel('bgm',e.target.value);
  $('sfx-volume').oninput=e=>setAudioLevel('sfx',e.target.value);
