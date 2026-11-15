@@ -16,5 +16,11 @@
       3.2,
       4.5
     ]
+  },
+  "towers": {
+    "common_passive": {
+      "id": "fortified_foundation",
+      "direct_damage_reduction_pct": 0.1
+    }
   }
 }
