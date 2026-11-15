@@ -103,7 +103,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 
 /* Main game lobby — scoped to the home screen; combat and team layouts remain unchanged. */
 #home-screen{padding:0!important;overflow:hidden;background:#0a182a}
-.lobby{position:relative;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;isolation:isolate;background:#84c66a url('assets/backgrounds/grass-land.png') center 57%/cover no-repeat;overflow:hidden}
+.lobby{position:relative;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;isolation:isolate;background:#84c66a url('assets/backgrounds/whisper-meadow.png') center 57%/cover no-repeat;overflow:hidden}
 .lobby:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#06182938 0%,transparent 30%,transparent 70%,#06182935 100%);z-index:1}
 .lobby-header{z-index:4;position:relative;display:flex;align-items:center;justify-content:flex-start;padding:clamp(11px,2.6vh,25px) max(25px,5vw);gap:20px;flex:0 0 auto;background:linear-gradient(180deg,#071a32c9,#071a3244 83%,transparent)}
 .lobby-brand{display:flex;align-items:center;gap:12px}
@@ -304,7 +304,15 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
-const backgroundImage=new Image(),towerImages={ally:new Image(),enemy:new Image()};
+const backgroundImages=new Map(),towerImages={ally:new Image(),enemy:new Image()};
+function mapBackground(path){
+ if(!path)return null;
+ if(!backgroundImages.has(path)){
+  const img=new Image();img.src=path;
+  backgroundImages.set(path,img);
+ }
+ return backgroundImages.get(path);
+}
 let battleRules={summoning:{mode:'cooldown_only',max_active_per_team:10,default_max_active_per_monster:3,tier_caps:{common:5,uncommon:4,rare:3,epic:2,legendary:2,boss:1},enemy_spawn_interval_seconds:[3.2,4.5]}};
 let audioConfig=null,audioUnlocked=false,musicEnabled=true,sfxEnabled=true,activeMusic='',lastSfxAt={};
 const bgmPlayer=new Audio();bgmPlayer.loop=true;bgmPlayer.preload='none';
@@ -353,7 +361,6 @@ function toggleSfx(){sfxEnabled=!sfxEnabled;audioLabels();saveAudioPreferences()
 document.addEventListener('pointerdown',()=>{audioUnlocked=true;syncMusic()},{once:true});
 document.addEventListener('visibilitychange',()=>syncMusic());
 
-backgroundImage.src='assets/backgrounds/grass-land.png';
 let towerRegistry=null,towerConfigs={ally:null,enemy:null};
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
@@ -522,7 +529,7 @@ let currentStage=null;
 function chooseRandomStage(){
  const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;
  currentStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;
- if(currentStage)run.lastStageId=currentStage.id;
+ if(currentStage){run.lastStageId=currentStage.id;mapBackground(currentStage.background)};
  const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name+' · '+currentStage.affinity:'Battlefield';
 }
 function reset(){
@@ -660,7 +667,8 @@ function drawTower(side,x,hp){
 }
 function draw(){
  const s=stage(),colors={nature:['#78ceff','#95cb79','#7dbe57'],fire:['#f87b52','#a84c35','#b75c3d'],ice:['#b6e7ff','#a5d3e5','#cceaf5'],earth:['#b5c5cf','#9b927f','#bfae85'],neutral:['#93cce7','#81a081','#9eb982']}[s?.affinity]||['#8ed1ef','#89bd73','#92c269'];
- if(readyImage(backgroundImage)&&s?.affinity==='nature')drawCover(backgroundImage,0,0,W,H);
+ const backdrop=mapBackground(s?.background);
+ if(readyImage(backdrop))drawCover(backdrop,0,0,W,H);
  else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);ctx.fillStyle=colors[2];ctx.fillRect(0,ground,W,H-ground);ctx.fillStyle='#446b48';ctx.fillRect(0,ground,W,5)}
  drawTower('ally',51,state.allyBase);drawTower('enemy',909,state.enemyBase);
  // Depth-sort monsters by their individual ground positions.
