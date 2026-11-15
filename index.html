@@ -266,7 +266,7 @@ function soundEffect(type){
   if(soundContext.state==='suspended')soundContext.resume().catch(()=>{});
   const oscillator=soundContext.createOscillator(),gain=soundContext.createGain(),t=soundContext.currentTime;
   oscillator.type=preset.wave||'sine';oscillator.frequency.setValueAtTime(preset.frequency||320,t);
-  const vol=(audioConfig?.sfx?.volume??.26)*.12;
+  const vol=(audioConfig?.sfx?.volume??.42)*.30;
   gain.gain.setValueAtTime(Math.max(.0001,vol),t);
   gain.gain.exponentialRampToValueAtTime(.0001,t+Math.max(.06,preset.duration||.15));
   oscillator.connect(gain);gain.connect(soundContext.destination);oscillator.start(t);oscillator.stop(t+Math.max(.06,preset.duration||.15)+.005);
