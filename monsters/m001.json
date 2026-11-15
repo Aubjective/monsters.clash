@@ -38,8 +38,9 @@
   },
   "deployment": {
     "mana_cost": 5,
-    "cooldown_seconds": 14,
-    "max_active_copies": 4
+    "cooldown_seconds": 8,
+    "max_active_copies": 5,
+    "summon_tier": "common"
   },
   "attack": {
     "type": "melee",
