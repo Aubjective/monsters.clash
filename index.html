@@ -558,7 +558,7 @@ const groundRows=[356,385,414,443,463];
 const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(best,Math.hypot((u.x-spawnX)*.8,(u.y-y)*1.4)),Infinity)})).sort((a,b)=>b.clearance-a.clearance)[0];
 const forward=side>0?1:-1;
 const x=spawnX+forward*Math.min(54,Math.max(0,54-row.clearance));
-state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null});return true}
+state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,facing:side>0?1:-1});return true}
 function dmg(u,amount){const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;const shield=Math.min(u.shield,amount);u.shield-=shield;u.hp-=amount-shield;u.hit=.15;if(u.side===1)soundEffect('impact')}
 function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
 function separateGroundUnits(){
@@ -599,6 +599,9 @@ function step(dt){
   const target=state.units.filter(t=>t.side!==u.side&&t.hp>0).sort((a,b)=>unitDistance(u,a)-unitDistance(u,b))[0];
   const dx=target?target.x-u.x:(u.side>0?904:56)-u.x;
   const dy=target?target.y-u.y:0;
+  // Face the actual combat target, even after an enemy crosses behind us.
+  // Small dead zone prevents left/right flicker when monsters nearly overlap.
+  if(Math.abs(dx)>8)u.facing=dx>0?1:-1;
   const dist=Math.hypot(dx,dy*1.45);
   const reach=(u.m.attack.range||32)+(target?u.radius+target.radius:28);
   const inrange=dist<=reach;
@@ -619,7 +622,8 @@ function step(dt){
    u.anim={type:'skill',duration:.55,remaining:.55};if(u.side===1)soundEffect(u.m.skill.effect.type==='shield_self'?'shield':'skill');
    if(u.m.skill.effect.type==='shield_self')u.shield=Math.max(u.shield,u.m.skill.effect.amount);
    else if(u.m.skill.effect.type==='dash_hit'){
-    u.x+=u.side*u.m.skill.effect.distance;
+    u.x+=u.facing*u.m.skill.effect.distance;
+    u.x=Math.max(72,Math.min(888,u.x));
     if(target&&unitDistance(u,target)<u.m.attack.range+u.radius+target.radius+22)dmg(target,u.m.skill.effect.damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?enemyScale():1));
    }
    u.skill=u.m.skill.cooldown_seconds;
@@ -665,7 +669,7 @@ function draw(){
    const hover=flying?13+Math.sin(u.phase)*4:0;
    const size=u.m.id==='m001'?134:128;
    ctx.save();ctx.globalAlpha=.22;ctx.fillStyle='#192b22';ctx.beginPath();ctx.ellipse(u.x,u.y-3,size*.28,6,0,0,Math.PI*2);ctx.fill();ctx.restore();
-   ctx.save();ctx.translate(u.x,u.y-hover);ctx.scale(u.side,1);
+   ctx.save();ctx.translate(u.x,u.y-hover);ctx.scale(u.facing||u.side,1);
    if(u.motion>0)ctx.translate(-4*u.motion/.24,0);
    if(readyImage(img)){
       // Sheet frames are uniform cells; footline sits ~82% down the image cell.
