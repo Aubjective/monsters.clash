@@ -88,3 +88,13 @@ Current game mechanics remain experimental, and future tower abilities still req
 - Undiscovered monsters remain greyed and show an unknown profile without revealing identifying details.
 - Profiles use the existing in-game screen navigation. On the standalone GitHub Pages site, optional deep links use `#/bestiary/m001` (or the corresponding monster ID). The game's core screens do **not** require URL routing.
 - Embedded hosts (including Telegram launch URLs using hash parameters and iframe-based platforms) are not dependent on or rewritten by the optional hash route. Native host back buttons and platform save APIs will require platform-specific integration during packaging.
+
+## Continuous battle runs
+
+- PLAY starts a run at Battle 1 with the currently equipped team. Winning awards that battle's normal time-based coins immediately and shows NEXT BATTLE and MAIN MENU.
+- NEXT BATTLE preserves the run's battle number, wins and cumulative rewards while resetting both castles, active monsters, deployment cooldowns and the combat field. The next battlefield is randomly chosen from `stage_affinities.json`, excluding the map just completed when more than one map exists.
+- Enemy castle HP and enemy monster HP, basic damage and dash damage increase by **5% per battle**. The ally castle and allied monster statistics do not increase.
+- On defeat the run ends and displays total victories, cumulative coins and elapsed battle time, with RESTART RUN and MAIN MENU actions.
+- Restart Run (including the in-battle restart buttons) starts back at Battle 1, not the next stage. Leaving the battlefield ends the active run. Coins awarded for previous wins remain in the browser-local wallet.
+- `assets/ui/coin.svg` is the standard game currency icon shown in the wallet, slot purchase prices and result screen, replacing unsupported emoji glyphs.
+- A victory award is settled at most once per concluded battle. Run state is in memory only for now; closing or reloading the page does not resume an unfinished run.
