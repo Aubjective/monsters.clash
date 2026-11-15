@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "team": {
+    "starting_slots": 8,
+    "max_slots": 12,
+    "slot_unlock_costs": [
+      250,
+      500,
+      900,
+      1400
+    ]
+  },
+  "coins": {
+    "win_base": 100,
+    "speed_bonus": [
+      {
+        "max_seconds": 90,
+        "coins": 100
+      },
+      {
+        "max_seconds": 180,
+        "coins": 60
+      },
+      {
+        "max_seconds": 300,
+        "coins": 30
+      }
+    ],
+    "loss": 0
+  }
+}
