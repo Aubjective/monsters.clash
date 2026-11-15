@@ -187,13 +187,30 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .team-entry>.app-card{padding-bottom:38px}
 .team-profile-button{position:absolute;bottom:6px;right:9px;z-index:2;font-size:12px;padding:4px 10px;border-radius:7px;background:#18304a;border:1px solid #6d8ba6;color:#f1dfb4}
 .team-profile-button:hover{background:#385775}
+
+.coin-icon{display:inline-block;vertical-align:-.21em;width:1.25em;height:1.25em;object-fit:contain;flex:none;filter:drop-shadow(0 1px 2px #0005)}
+.coin-wallet,#team-wallet{display:inline-flex;align-items:center;gap:5px}
+#run-progress{display:inline-block;color:#f4d589;font-size:.7em;margin-left:9px}
+.arena-wrap{position:relative}
+.run-results{position:absolute;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(145deg,#112943f5,#081a2df7);border:2px solid #d8ac62;border-radius:20px;padding:clamp(15px,2vw,28px);width:min(540px,92%);max-height:96%;overflow-y:auto;box-shadow:0 12px 70px #000b;color:#fff4dd;text-align:center}
+.run-results[hidden]{display:none!important}
+.run-results h2{font:bold clamp(27px,4vw,46px) Georgia,serif;letter-spacing:.07em;color:#fff0b3;margin:0 0 5px;text-shadow:0 2px 10px #ba7c2a80}
+.run-results p{margin:8px auto 13px;color:#b9d1e5}
+.run-result-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}
+.run-result-metrics>div{background:#264260b0;border:1px solid #5b7892;border-radius:10px;padding:8px}
+.run-result-metrics strong{display:block;font-size:clamp(18px,2vw,25px)}
+.run-result-metrics small{display:block;font-size:11px;color:#b6cce0}
+#result-reward{display:flex;align-items:center;justify-content:center;gap:6px;color:#ffe8a2;font-size:clamp(15px,2vw,22px)}
+.result-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:9px;margin-top:15px}
+.result-actions button{font-size:clamp(11px,1.3vw,14px);font-weight:800}
+@media(max-height:500px){.run-results{padding:11px 18px}.run-results h2{font-size:26px}.run-results p{margin:4px auto 7px}.run-result-metrics{margin:7px 0}.run-result-metrics>div{padding:4px}.result-actions{margin-top:8px}.result-actions button{padding:6px 9px}}
 </style>
 </head>
 <body>
 <section class="app-screen" id="home-screen">
  <div class="lobby">
   <div class="lobby-header">
-   <div class="lobby-brand"><span class="lobby-emblem">⚔</span><div><div class="lobby-kicker">ELEMENTAL BATTLES</div><h1>MONSTERS <span>CLASH</span></h1></div></div><div class="lobby-utility"><span class="coin-wallet" id="coin-wallet" aria-label="Coin balance">🪙 0</span><button class="lobby-icon" id="menu-bestiary" title="Bestiary" aria-label="Open Bestiary">📖</button><button class="lobby-icon" id="menu-settings" title="Settings" aria-label="Open Settings">⚙</button></div>
+   <div class="lobby-brand"><span class="lobby-emblem">⚔</span><div><div class="lobby-kicker">ELEMENTAL BATTLES</div><h1>MONSTERS <span>CLASH</span></h1></div></div><div class="lobby-utility"><span class="coin-wallet" id="coin-wallet" aria-label="Coin balance"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> <span id="wallet-amount">0</span></span><button class="lobby-icon" id="menu-bestiary" title="Bestiary" aria-label="Open Bestiary">📖</button><button class="lobby-icon" id="menu-settings" title="Settings" aria-label="Open Settings">⚙</button></div>
   </div>
   <div class="lobby-world" aria-label="Whisper Meadow with Mossguard and Cinderhorn">
     <div class="lobby-monster lobby-moss" role="img" aria-label="Mossguard, nature guardian"></div>
@@ -236,7 +253,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <div class="page-head"><div><div class="eyebrow">Battle preparation</div><h2>My Team</h2></div><button class="app-back">← Main Menu</button></div>
   <p class="page-sub">Build your battle squad from owned monsters. Eight carrying slots are available initially; earn coins from victories to unlock more. Battlefields are random.</p>
   <div class="app-grid" id="team-options"></div>
-  <div class="team-slot-head"><strong id="team-slot-count">Team slots: 8</strong><span id="team-wallet">🪙 0 coins</span><button id="unlock-team-slot" type="button">Unlock slot</button></div><div class="team-slot-grid" id="team-slots"></div><p class="muted" id="team-message" aria-live="polite"></p>
+  <div class="team-slot-head"><strong id="team-slot-count">Team slots: 8</strong><span id="team-wallet"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> <span id="team-wallet-amount">0</span></span><button id="unlock-team-slot" type="button">Unlock slot</button></div><div class="team-slot-grid" id="team-slots"></div><p class="muted" id="team-message" aria-live="polite"></p>
   <div class="team-footer"><span class="muted">Battlefield selected randomly at battle start</span><button class="primary" id="start-game">Start Battle</button></div>
  </div>
 </section>
@@ -250,17 +267,34 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  <button id="nav-sfx">SFX: On</button>
 </nav></div>
 <main id="battle-screen" hidden>
- <div class="battle-top"><span class="battle-brand">⚔ Monsters Clash</span><span class="battlefield-name" id="stage-label" aria-live="polite"></span></div>
- <div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas></div>
+ <div class="battle-top"><span class="battle-brand">⚔ Monsters Clash <small id="run-progress">Battle 1</small></span><span class="battlefield-name" id="stage-label" aria-live="polite"></span></div>
+ <div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas>
+  <section class="run-results" id="run-results" hidden aria-live="polite" aria-label="Battle result">
+    <h2 id="result-heading">VICTORY</h2>
+    <p id="result-stage"></p>
+    <div class="run-result-metrics">
+      <div><strong id="result-battle">1</strong><small>Battle</small></div>
+      <div><strong id="result-time">0s</strong><small>Time</small></div>
+      <div><strong id="result-streak">1</strong><small>Wins</small></div>
+    </div>
+    <p id="result-reward"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> <strong id="result-coin-amount">+0</strong> coins this battle</p>
+    <p id="result-run-coins"></p>
+    <div class="result-actions">
+      <button class="primary" id="next-battle">NEXT BATTLE</button>
+      <button id="restart-run-result">RESTART RUN</button>
+      <button id="result-menu">MAIN MENU</button>
+    </div>
+  </section>
+ </div>
  <div class="battle-bottom">
   <div class="cards" id="cards"></div>
-  <div class="battle-stats"><strong id="unit-count"></strong><button id="restart">Restart</button><span id="status"></span></div>
+  <div class="battle-stats"><strong id="unit-count"></strong><button id="restart">Restart Run</button><span id="status"></span></div>
  </div>
  <button id="battle-menu-toggle" class="floating-plus" aria-label="Expand battle menu" aria-expanded="false">+</button>
  <nav class="pop-menu" id="battle-menu" hidden aria-label="Battle menu">
   <div class="battle-paused">PAUSED</div>
   <button id="battle-resume">Resume</button>
-  <button id="battle-restart">Restart Battle</button>
+  <button id="battle-restart">Restart Run</button>
   <button id="battle-menu-team">Select Team</button>
   <button id="battle-music">Music: On</button>
   <button id="battle-sfx">SFX: On</button>
