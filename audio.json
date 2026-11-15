@@ -4,11 +4,11 @@
     "menu": "assets/bgms/main-menu-bgm.mp3",
     "battle": "assets/bgms/battle-bgm-001.mp3",
     "loop": true,
-    "volume": 0.38
+    "volume": 0.16
   },
   "sfx": {
     "enabled": true,
-    "volume": 0.26,
+    "volume": 0.42,
     "presets": {
       "summon": {
         "wave": "sine",
