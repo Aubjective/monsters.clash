@@ -182,13 +182,6 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   </div>
  </div>
 </section>
-<section class="app-screen" id="collection-screen" hidden>
- <div class="page-inner">
-  <div class="page-head"><div><div class="eyebrow">Your roster</div><h2>My Monsters</h2></div><button class="app-back">← Main Menu</button></div>
-  <p class="page-sub">Browse the monsters you own. Only battle-ready monsters can join your team.</p>
-  <div class="app-grid" id="monster-collection"></div>
- </div>
-</section>
 <section class="app-screen" id="bestiary-screen" hidden>
  <div class="page-inner">
   <div class="page-head"><div><div class="eyebrow">Field journal</div><h2>Monster Bestiary</h2></div><button class="app-back">← Main Menu</button></div>
@@ -218,7 +211,6 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <div id="site-navigation"><button class="floating-plus" id="nav-toggle" aria-label="Expand menu" aria-expanded="false">+</button>
 <nav class="pop-menu" id="quick-nav" hidden aria-label="Navigation">
  <button id="nav-home">⌂ Main Menu</button>
- <button id="nav-collection">My Monsters</button>
  <button id="nav-bestiary">Bestiary</button>
  <button id="nav-settings">Settings</button>
  <button id="nav-team">Select Team</button>
@@ -428,7 +420,7 @@ function setAudioLevel(kind,value){
 }
 
 let roster=[],catalog=[],team=[],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;
-async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderCollection();renderBestiary();renderTeam();reset();requestAnimationFrame(frame)}
+async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json')).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();requestAnimationFrame(frame)}
 let currentStage=null;
 function chooseRandomStage(){currentStage=stages.length?stages[Math.floor(Math.random()*stages.length)]:null;const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name+' · '+currentStage.affinity:'Battlefield';}
 function reset(){
@@ -590,9 +582,9 @@ function draw(){
 }
 
 function openView(name){
- if(name==='collection')renderCollection();if(name==='bestiary')renderBestiary();if(name==='settings')refreshSettings();
+ if(name==='bestiary')renderBestiary();if(name==='settings')refreshSettings();
  view=name;battleMenuOpen=false;navOpen=false;syncMusic();
- for(const id of ['home','collection','team','bestiary','settings','battle'])$(id+'-screen').hidden=id!==name;
+ for(const id of ['home','team','bestiary','settings','battle'])$(id+'-screen').hidden=id!==name;
  $('battle-menu').hidden=true;$('quick-nav').hidden=true;
  $('battle-menu-toggle').setAttribute('aria-expanded','false');$('nav-toggle').setAttribute('aria-expanded','false');
  $('nav-toggle').hidden=name==='battle';
@@ -623,10 +615,6 @@ function cardFor(m,selectable){
   };
  }
  return node;
-}
-function renderCollection(){
- const owned=catalog.filter(m=>owns(m.id));
- $('monster-collection').replaceChildren(...owned.map(m=>cardFor(m,false)));
 }
 function renderBestiary(){
  const count=catalog.filter(m=>encountered(m.id)).length;
@@ -702,7 +690,6 @@ function bindMenu(){
  $('start-game').onclick=()=>{reset();openView('battle');launchLandscape()};
  $('nav-toggle').onclick=()=>toggleQuickNav();
  $('nav-home').onclick=()=>openView('home');
- $('nav-collection').onclick=()=>openView('collection');
  $('nav-team').onclick=()=>{renderTeam();openView('team')};
  $('nav-bestiary').onclick=()=>openView('bestiary');
  $('nav-settings').onclick=()=>openView('settings');
