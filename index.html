@@ -210,7 +210,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <section class="app-screen" id="home-screen">
  <div class="lobby">
   <div class="lobby-header">
-   <div class="lobby-brand"><span class="lobby-emblem">⚔</span><div><div class="lobby-kicker">ELEMENTAL BATTLES</div><h1>MONSTERS <span>CLASH</span></h1></div></div><div class="lobby-utility"><span class="coin-wallet" id="coin-wallet" aria-label="Coin balance"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> <span id="wallet-amount">0</span></span><button class="lobby-icon" id="menu-bestiary" title="Bestiary" aria-label="Open Bestiary">📖</button><button class="lobby-icon" id="menu-settings" title="Settings" aria-label="Open Settings">⚙</button></div>
+   <div class="lobby-brand"><span class="lobby-emblem">⚔</span><div><div class="lobby-kicker">ELEMENTAL BATTLES</div><h1>MONSTERS <span>CLASH</span></h1></div></div><div class="lobby-utility"><span class="coin-wallet" id="coin-wallet" aria-label="Coin balance"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> <span id="wallet-amount">0</span></span></div>
   </div>
   <div class="lobby-world" aria-label="Whisper Meadow with Mossguard and Cinderhorn">
     <div class="lobby-monster lobby-moss" role="img" aria-label="Mossguard, nature guardian"></div>
@@ -872,9 +872,7 @@ function toggleQuickNav(force){
  $('nav-toggle').setAttribute('aria-expanded',String(navOpen));
 }
 function bindMenu(){
- $('menu-bestiary').onclick=()=>openView('bestiary');
  $('profile-back').onclick=()=>openView('bestiary');
- $('menu-settings').onclick=()=>openView('settings');
  $('bgm-volume').oninput=e=>setAudioLevel('bgm',e.target.value);
  $('sfx-volume').oninput=e=>setAudioLevel('sfx',e.target.value);
  $('menu-team-home').onclick=()=>{renderTeam();openView('team')};
