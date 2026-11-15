@@ -454,11 +454,13 @@ function deployCooldown(m,side){cooldowns[side>0?'ally':'enemy'][m.id]=Math.max(
 
 function stage(){return currentStage||stages[0]}function mods(m){const s=stage();return s&&m.element!=='neutral'&&m.element===s.affinity?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
 function spawn(m,side){if(!m||!canSummon(m,side))return false;if(side<0)markEncounter(m.id);if(side===1&&!team.includes(m.id))return false;deployCooldown(m,side);if(side===1)soundEffect('summon');
-const b=mods(m),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0)),spawnX=side>0?98:862;
-// Spawn on a clear patch of ground, choosing a different depth when occupied.
+const b=mods(m),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0)),spawnX=side>0?198:762;
+// Deploy just beyond the visible tower art (not behind or inside the castle).
+// Prefer a clear depth lane and shift *toward the battlefield* when occupied.
 const groundRows=[356,385,414,443,463];
 const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(best,Math.hypot((u.x-spawnX)*.8,(u.y-y)*1.4)),Infinity)})).sort((a,b)=>b.clearance-a.clearance)[0];
-const x=spawnX+(side>0?-1:1)*Math.max(0,54-row.clearance);
+const forward=side>0?1:-1;
+const x=spawnX+forward*Math.min(54,Math.max(0,54-row.clearance));
 state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null});return true}
 function dmg(u,amount){const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;const shield=Math.min(u.shield,amount);u.shield-=shield;u.hp-=amount-shield;u.hit=.15;if(u.side===1)soundEffect('impact')}
 function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
