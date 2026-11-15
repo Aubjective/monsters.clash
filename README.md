@@ -65,3 +65,9 @@ Current game mechanics remain experimental, and future tower abilities still req
 - No mana resource is consumed. Deploy buttons show cooldown or active count.
 - Initial balance: Mossguard 8s cooldown / 5 copies; Cinderhorn 6s cooldown / 5 copies. Team selection still uses two monster types in the current UI.
 - Monsters and enemy AI must obey total capacity, per-type caps and cooldown. Dead units free their slots.
+
+## Random battlefields
+
+- Players do not select the battlefield. The game picks randomly from `stage_affinities.json` whenever a battle begins or is restarted.
+- The selected stage's name and element are displayed in battle.
+- Existing stage-affinity buffs apply to both allied and enemy monsters matching that stage's element. Nonmatching monsters do not receive those buffs. A full elemental advantage/disadvantage interaction matrix (e.g. specific water-vs-fire penalties) has **not** yet been defined or implemented.
