@@ -80,6 +80,9 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  .battle-bottom{min-height:55px;max-height:58px}
 }
 @media(orientation:portrait){
+ #site-navigation{position:fixed;top:0;left:100dvw;width:100dvh;height:100dvw;transform:rotate(90deg);transform-origin:top left;pointer-events:none;z-index:70}
+ #site-navigation .floating-plus,#site-navigation .pop-menu{position:absolute;pointer-events:auto}
+
  /* Browser orientation lock is not always granted. Rotate all game screens ourselves on narrow portrait phones. */
  html,body{overflow:hidden}
  .app-screen,#battle-screen{top:0;left:100dvw;right:auto;bottom:auto;width:100dvh;height:100dvw;transform-origin:top left;transform:rotate(90deg)}
@@ -93,6 +96,8 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  .battle-bottom{height:58px;min-height:58px}
 }
 @media(orientation:portrait) and (min-width:700px){
+ #site-navigation{transform:none;left:0;top:0;width:100vw;height:100dvh}
+
  .app-screen,#battle-screen{transform:none;top:0;left:0;width:100vw;height:100dvh}
 }
 </style>
@@ -137,12 +142,12 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <div class="team-footer"><label>Battlefield <select id="team-stage"></select></label><button class="primary" id="start-game">Start Battle</button></div>
  </div>
 </section>
-<button class="floating-plus" id="nav-toggle" aria-label="Expand menu" aria-expanded="false">+</button>
+<div id="site-navigation"><button class="floating-plus" id="nav-toggle" aria-label="Expand menu" aria-expanded="false">+</button>
 <nav class="pop-menu" id="quick-nav" hidden aria-label="Navigation">
  <button id="nav-home">⌂ Main Menu</button>
  <button id="nav-collection">Monster Collection</button>
  <button id="nav-team">Select Team</button>
-</nav>
+</nav></div>
 <main id="battle-screen" hidden>
  <div class="battle-top"><span class="battle-brand">⚔ Monsters Clash</span><label>Battlefield <select id="stage"></select></label></div>
  <div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas></div>
@@ -297,13 +302,10 @@ function toggleQuickNav(force){
  $('nav-toggle').setAttribute('aria-expanded',String(navOpen));
 }
 function bindMenu(){
- $('menu-team').onclick=()=>{renderTeam();openView('team')};
  $('menu-collection').onclick=()=>openView('collection');
  $('home-start').onclick=()=>{renderTeam();openView('team')};
  document.querySelectorAll('.app-back').forEach(el=>el.onclick=()=>openView('home'));
- $('battle-team').onclick=()=>{renderTeam();openView('team')};
  $('start-game').onclick=()=>{$('stage').value=$('team-stage').value;reset();openView('battle');launchLandscape()};
- $('battle-fullscreen').onclick=launchLandscape;
  $('nav-toggle').onclick=()=>toggleQuickNav();
  $('nav-home').onclick=()=>openView('home');
  $('nav-collection').onclick=()=>openView('collection');
