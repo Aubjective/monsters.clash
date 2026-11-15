@@ -48,3 +48,20 @@ The monster sprites that are already uploaded are preserved. Tower filenames are
 3. Future tower abilities can be recorded in the `abilities` field without renaming assets.
 
 Current game mechanics remain experimental, and future tower abilities still require engine implementation.
+
+## Music and sound effects
+
+- `assets/bgms/main-menu-bgm.mp3`: uploaded menu music.
+- `assets/bgms/battle-bgm-001.mp3`: uploaded battle music.
+- `audio.json`: volume, looping, and named SFX event presets. The existing tracks are referenced directly; no duplicates were created.
+- `assets/sfx/`: upload reusable sound clips when available, and set each matching preset's `file` field in `audio.json`. Until then, lightweight synthesized cues cover summon, attack, impact, skill, shield, stun, freeze, tower hit, victory and defeat. Stun and freeze cues are prepared, but their gameplay status effects have not yet been implemented.
+- Music and SFX can be independently disabled through the `+` menu. Music starts following user interaction, respecting browser autoplay policies.
+- The Pet Slime collection from BENNESSism/NoanLi is CC BY 4.0: https://github.com/bennessism/musicstation/blob/main/music/pet-slime-bgm/music_license.txt
+
+## Cooldown-only deployment rules
+
+- `battle_rules.json` sets the maximum 10 active monsters per side, rarity / summon-tier caps, and enemy summon interval.
+- Each monster's `deployment.cooldown_seconds` and `deployment.max_active_copies` provide individual balance. Its effective cap is the smaller of the tier cap and individual cap.
+- No mana resource is consumed. Deploy buttons show cooldown or active count.
+- Initial balance: Mossguard 8s cooldown / 5 copies; Cinderhorn 6s cooldown / 5 copies. Team selection still uses two monster types in the current UI.
+- Monsters and enemy AI must obey total capacity, per-type caps and cooldown. Dead units free their slots.
