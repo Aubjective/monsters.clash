@@ -39,7 +39,7 @@
   "deployment": {
     "mana_cost": 5,
     "cooldown_seconds": 8,
-    "max_active_copies": 5,
+    "max_active_copies": 2,
     "summon_tier": "common"
   },
   "attack": {
