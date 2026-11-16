@@ -366,7 +366,6 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
 const backgroundImages=new Map(),towerImages={ally:new Image(),enemy:new Image()};
-const towerSheetRows={ally:1,enemy:1};
 const towerCooldowns={ally:0,enemy:0},towerAttackAnims={ally:0,enemy:0};
 let towerProjectiles=[],unitSerial=0,chargeEffects=[];
 function mapBackground(path){
@@ -450,16 +449,8 @@ async function loadGameCatalog(){
   const id=towers?.default_towers?.[side];
   const cfg=towers?.towers?.find(t=>t.id===id)||null;
   towerConfigs[side]=cfg;
+  // Normalized damage sheet: four horizontal cells, no legacy fallback.
   if(cfg?.sheet)towerImages[side].src=cfg.sheet;
-  if(cfg?.next_sheet){
-   const candidate=new Image();
-   candidate.onload=()=>{
-    if(!readyImage(candidate))return;
-    towerImages[side]=candidate;
-    towerSheetRows[side]=Number(cfg.next_sheet_rows)||2;
-   };
-   candidate.src=cfg.next_sheet;
-  }
  }
  for(const [id,selector] of [['m001','.lobby-moss'],['m002','.lobby-cinder']]){
   const m=catalog.find(entry=>entry.id===id);
@@ -831,8 +822,13 @@ function step(dt){
    const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?enemyScale():1);
    if(target)dmg(target,amount);else hitTower(u.side,amount);
    if(u.side===1)soundEffect(target?'attack':'tower_hit');
-   u.atk=u.m.attack.interval_seconds;u.motion=.24;
-   u.anim={type:'attack',duration:.34,remaining:.34};
+   u.atk=u.m.attack.interval_seconds;
+   // Mossguard uses a short shell/body lunge; Cinderhorn uses a horn-first thrust.
+   u.motion=u.m.id==='m002'?.34:.24;
+   u.anim={type:'attack',duration:u.m.id==='m002'?.4:.34,remaining:u.m.id==='m002'?.4:.34};
+   if(u.m.id==='m002')chargeEffects.push({
+     x:u.x+u.facing*42,y:u.y-48,life:.16,maxLife:.16,impact:true,side:u.side
+   });
   }
   if(u.skill<=0&&u.m.skill?.effect?.type==='shield_self'){
    u.shield=Math.max(u.shield,u.m.skill.effect.amount);
@@ -860,13 +856,8 @@ function drawTower(side,x,hp){
  if(readyImage(img)){
    const width=154,height=182;
    // Sprite art occupies a consistent cell; leave room for banners and rubble.
-   const rows=towerSheetRows[side]||1;
-   let displayFrame=frame;
-   if(rows>1&&frame===0&&towerAttackAnims[side]>0){
-    const progress=1-towerAttackAnims[side]/.45;
-    displayFrame=4+Math.min(3,Math.floor(progress*4));
-   }
-   spriteFrame(img,displayFrame,x-width/2,y-16,width,height,4,rows);
+   spriteFrame(img,frame,x-width/2,y-16,width,height,
+     towerConfigs[side]?.sheet_columns||4,towerConfigs[side]?.sheet_rows||1);
  }else{
    // Keep old game playable until the tower sheets are uploaded.
    ctx.fillStyle=side==='ally'?'#4d8cc1':'#aa5364';
@@ -924,7 +915,10 @@ function draw(){
    const size=u.m.id==='m001'?134:128;
    ctx.save();ctx.globalAlpha=.22;ctx.fillStyle='#192b22';ctx.beginPath();ctx.ellipse(u.x,u.y-3,size*.28,6,0,0,Math.PI*2);ctx.fill();ctx.restore();
    ctx.save();ctx.translate(u.x,u.y-hover);ctx.scale(u.facing||u.side,1);
-   if(u.motion>0)ctx.translate(-4*u.motion/.24,0);
+   if(u.motion>0){
+     const intensity=Math.max(0,Math.min(1,u.motion/(u.m.id==='m002'?.34:.24)));
+     ctx.translate(u.facing*(u.m.id==='m002'?10:4)*intensity,0);
+   }
    if(u.charge?.phase==='windup'){ctx.translate(-u.facing*9,0);ctx.rotate(-u.facing*.075)}
    if(u.charge?.phase==='rush'){ctx.rotate(u.facing*.065);ctx.scale(1.12,.92)}
    if(u.charge?.phase==='recover')ctx.scale(.97,1.03);
