@@ -696,7 +696,7 @@ function performCharge(u,dt){
   const beforeX=u.x,beforeY=u.y;
   const dir=Math.sign(targetX-u.x)||u.facing;u.facing=dir;
   const distance=unitDistance(u,{x:targetX,y:targetY});
-  const hitDistance=c.target?u.radius+c.target.radius+8:Math.max(12,Number(u.m.attack.range)||32);
+  const hitDistance=c.target?u.radius+c.target.radius+8:9;
   const remainingDash=Math.max(0,c.distance-c.travel);
   const delta=Math.min(remainingDash,360*dt,Math.max(0,distance-hitDistance));
   if(delta>0){
@@ -712,7 +712,7 @@ function performCharge(u,dt){
     const damage=Number(u.m.skill.effect.damage)||0;
     const power=damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?enemyScale():1);
     if(c.target&&c.target.hp>0&&unitDistance(u,c.target)<u.radius+c.target.radius+28)dmg(c.target,power);
-    else if(!c.target&&unitDistance(u,c.destination)<90)hitTower(u.side,power);
+    else if(!c.target&&unitDistance(u,c.destination)<18)hitTower(u.side,power);
     c.hit=true;u.motion=.22;
     chargeEffects.push({x:u.x,y:u.y-38,life:.34,maxLife:.34,impact:true,side:u.side});
    }
@@ -807,10 +807,10 @@ function step(dt){
   const distance=Math.hypot(dx,dy*1.45);
   // A melee unit must reach the tower's near-side attack slot, not the visual center.
   const attackRange=target?(u.m.attack.range||32)+u.radius+target.radius:
-    Math.min(43,Number(u.m.attack.range)||32)+10;
+    (slot.rank===0?9:10);
   const atTarget=distance<=attackRange;
   const canCharge=u.m.skill?.effect?.type==='dash_hit'&&u.skill<=0;
-  if(canCharge&&distance<=Math.max(130,Number(u.m.skill.effect.distance)||0)+attackRange&&distance>20){
+  if(canCharge&&(target||slot.rank===0)&&distance<=Math.max(130,Number(u.m.skill.effect.distance)||0)+attackRange&&distance>20){
     beginCharge(u,target,point);continue;
   }
   u.walking=!atTarget;
@@ -826,7 +826,7 @@ function step(dt){
    // The towers occupy protected zones, never enter their physical footprints.
    u.x=Math.max(171,Math.min(789,u.x));
    u.y=Math.max(343,Math.min(429,u.y));
-  }else if(u.atk<=0){
+  }else if(u.atk<=0&&(target||slot.rank===0)){
    const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?enemyScale():1);
    if(target)dmg(target,amount);else hitTower(u.side,amount);
    if(u.side===1)soundEffect(target?'attack':'tower_hit');
