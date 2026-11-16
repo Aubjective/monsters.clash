@@ -684,7 +684,8 @@ function hitTower(side,amount){
 }
 function performCharge(u,dt){
  const c=u.charge;if(!c)return false;
- u.walking=false;u.anim={type:'skill',duration:.8,remaining:Math.max(.01,c.time)};
+ u.walking=false;c.elapsed+=dt;
+ u.anim={type:'skill',duration:.82,remaining:Math.max(.001,.82-c.elapsed)};
  c.time-=dt;
  const intended=c.target&&c.target.hp>0?c.target:c.destination;
  const targetX=intended.x,targetY=intended.y;
@@ -728,7 +729,7 @@ function performCharge(u,dt){
 }
 function beginCharge(u,target,point){
  const skill=u.m.skill?.effect;if(skill?.type!=='dash_hit')return false;
- u.charge={phase:'windup',time:.24,target:target||null,destination:{x:point.x,y:point.y},distance:Math.max(0,Number(skill.distance)||0),travel:0,hit:false};
+ u.charge={phase:'windup',time:.24,target:target||null,destination:{x:point.x,y:point.y},distance:Math.max(0,Number(skill.distance)||0),travel:0,elapsed:0,hit:false};
  u.atk=Math.max(u.atk,.8);u.skill=u.m.skill.cooldown_seconds;
  u.anim={type:'skill',duration:.8,remaining:.8};
  if(u.side===1)soundEffect('skill');
