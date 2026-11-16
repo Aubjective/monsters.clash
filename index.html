@@ -257,6 +257,11 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .battle-team-flag{display:grid;place-items:center;width:35px;height:35px;min-width:35px;font-size:28px;line-height:1;text-shadow:0 2px 3px #0008}
 .flag-blue{color:#64b7ff}.flag-red{color:#ff766d}
 @media(max-height:460px){.battle-team-flag{width:25px;height:25px;min-width:25px;font-size:22px}.battle-brand{font-size:clamp(12px,1.6vw,17px)}.battlefield-name{font-size:clamp(10px,1.1vw,14px)}}
+/* Keep a single navigation control: the floating + replaces duplicate
+   back buttons on menu screens; battle has its own pause button. */
+#team-screen .page-head .app-back{display:none}
+#battle-screen #battle-menu-toggle{border-radius:10px;width:39px;height:38px;font-size:20px}
+#battle-screen #battle-menu{width:min(230px,70vw)}
 </style>
 </head>
 <body>
@@ -344,17 +349,17 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  </div>
  <div class="battle-bottom">
   <div class="cards" id="cards"></div>
-  <div class="battle-stats"><strong id="unit-count"></strong><button id="restart">Restart Run</button><span id="status"></span></div>
+  <div class="battle-stats"><strong id="unit-count"></strong><button id="restart" hidden>Restart Run</button><span id="status"></span></div>
  </div>
- <button id="battle-menu-toggle" class="floating-plus" aria-label="Expand battle menu" aria-expanded="false">+</button>
+ <button id="battle-menu-toggle" class="floating-plus" aria-label="Pause battle" aria-expanded="false">Ⅱ</button>
  <nav class="pop-menu" id="battle-menu" hidden aria-label="Battle menu">
   <div class="battle-paused">PAUSED</div>
   <button id="battle-resume">Resume</button>
   <button id="battle-restart">Restart Run</button>
-  <button id="battle-menu-team">Select Team</button>
-  <button id="battle-music">Music: On</button>
-  <button id="battle-sfx">SFX: On</button>
-  <button id="battle-menu-fullscreen">Landscape Fullscreen</button>
+  <button id="battle-menu-team" hidden>Select Team</button>
+  <button id="battle-music" hidden>Music: On</button>
+  <button id="battle-sfx" hidden>SFX: On</button>
+  <button id="battle-menu-fullscreen" hidden>Landscape Fullscreen</button>
   <button id="battle-menu-home">Main Menu</button>
  </nav>
 </main>
@@ -363,7 +368,7 @@ const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d
 const backgroundImages=new Map(),towerImages={ally:new Image(),enemy:new Image()};
 const towerSheetRows={ally:1,enemy:1};
 const towerCooldowns={ally:0,enemy:0},towerAttackAnims={ally:0,enemy:0};
-let towerProjectiles=[];
+let towerProjectiles=[],unitSerial=0,chargeEffects=[];
 function mapBackground(path){
  if(!path)return null;
  if(!backgroundImages.has(path)){
@@ -627,7 +632,7 @@ function reset(){
  state={units:[],allyBase:towerConfigs.ally?.max_hp||1900,enemyBase:enemyBaseMax,enemyBaseMax,time:0,ended:false,rewarded:false,award:null};
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  towerCooldowns.ally=1;towerCooldowns.enemy=1;
- towerAttackAnims.ally=0;towerAttackAnims.enemy=0;towerProjectiles=[];
+ towerAttackAnims.ally=0;towerAttackAnims.enemy=0;towerProjectiles=[];chargeEffects=[];unitSerial=0;
  $('run-results').hidden=true;
  $('run-progress').textContent='Battle '+run.battle;
  $('status').textContent='Deploy monsters when their cooldown is ready.';
@@ -656,9 +661,79 @@ const groundRows=[343,363,385,407,429];
 const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(best,Math.hypot((u.x-spawnX)*.8,(u.y-y)*1.4)),Infinity)})).sort((a,b)=>b.clearance-a.clearance)[0];
 const forward=side>0?1:-1;
 const x=spawnX+forward*Math.min(54,Math.max(0,54-row.clearance));
-state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,facing:side>0?1:-1});return true}
+state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});return true}
 function dmg(u,amount){const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;const shield=Math.min(u.shield,amount);u.shield-=shield;u.hp-=amount-shield;u.hit=.15;if(u.side===1)soundEffect('impact')}
 function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
+// Tower collision is separate from the visual center of the castle.
+const TOWER_APPROACH={ally:170,enemy:790};
+const TOWER_LANES=[350,373,396,419,441];
+function towerSlotFor(u){
+ const same=state.units.filter(a=>a.hp>0&&a.side===u.side&&a.assaultTower).sort((a,b)=>a.uid-b.uid);
+ const index=Math.max(0,same.indexOf(u));
+ const row=index%TOWER_LANES.length,rank=Math.floor(index/TOWER_LANES.length);
+ const enemySide=u.side>0?'enemy':'ally';
+ const frontline=TOWER_APPROACH[enemySide];
+ const x=frontline-u.side*rank*52;
+ return {x,y:TOWER_LANES[row],rank};
+}
+function hitTower(side,amount){
+ const reduction=Math.max(0,Math.min(.9,Number(battleRules.towers?.common_passive?.direct_damage_reduction_pct)||0));
+ const amountDone=Math.max(0,amount*(1-reduction));
+ if(side>0)state.enemyBase=Math.max(0,state.enemyBase-amountDone);
+ else state.allyBase=Math.max(0,state.allyBase-amountDone);
+}
+function performCharge(u,dt){
+ const c=u.charge;if(!c)return false;
+ u.walking=false;u.anim={type:'skill',duration:.8,remaining:Math.max(.01,c.time)};
+ c.time-=dt;
+ const intended=c.target&&c.target.hp>0?c.target:c.destination;
+ const targetX=intended.x,targetY=intended.y;
+ if(c.phase==='windup'){
+  if(c.time<=0){c.phase='rush';c.time=.36}
+  return true;
+ }
+ if(c.phase==='rush'){
+  const beforeX=u.x,beforeY=u.y;
+  const dir=Math.sign(targetX-u.x)||u.facing;u.facing=dir;
+  const distance=unitDistance(u,{x:targetX,y:targetY});
+  const hitDistance=c.target?u.radius+c.target.radius+8:Math.max(12,Number(u.m.attack.range)||32);
+  const remainingDash=Math.max(0,c.distance-c.travel);
+  const delta=Math.min(remainingDash,360*dt,Math.max(0,distance-hitDistance));
+  if(delta>0){
+   u.x+=dir*delta;u.y+=(targetY-u.y)*Math.min(1,delta/Math.max(1,Math.abs(targetX-u.x)));
+   u.x=Math.max(171,Math.min(789,u.x));
+   u.y=Math.max(343,Math.min(429,u.y));
+   c.travel+=Math.hypot(u.x-beforeX,u.y-beforeY);
+  }
+  chargeEffects.push({x:u.x-u.facing*24,y:u.y-20,life:.24,maxLife:.24,side:u.side});
+  const reached=unitDistance(u,{x:targetX,y:targetY})<=hitDistance+10||c.travel>=c.distance-1||c.time<=0;
+  if(reached){
+   if(!c.hit){
+    const damage=Number(u.m.skill.effect.damage)||0;
+    const power=damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?enemyScale():1);
+    if(c.target&&c.target.hp>0&&unitDistance(u,c.target)<u.radius+c.target.radius+28)dmg(c.target,power);
+    else if(!c.target&&unitDistance(u,c.destination)<90)hitTower(u.side,power);
+    c.hit=true;u.motion=.22;
+    chargeEffects.push({x:u.x,y:u.y-38,life:.34,maxLife:.34,impact:true,side:u.side});
+   }
+   c.phase='recover';c.time=.22;
+  }
+  return true;
+ }
+ if(c.phase==='recover'){
+  if(c.time<=0)u.charge=null;
+  return true;
+ }
+ return false;
+}
+function beginCharge(u,target,point){
+ const skill=u.m.skill?.effect;if(skill?.type!=='dash_hit')return false;
+ u.charge={phase:'windup',time:.24,target:target||null,destination:{x:point.x,y:point.y},distance:Math.max(0,Number(skill.distance)||0),travel:0,hit:false};
+ u.atk=Math.max(u.atk,.8);u.skill=u.m.skill.cooldown_seconds;
+ u.anim={type:'skill',duration:.8,remaining:.8};
+ if(u.side===1)soundEffect('skill');
+ return true;
+}
 function separateGroundUnits(){
   // Two small passes resolve physical overlaps; opposing monsters touch but never stack.
   const living=state.units.filter(u=>u.hp>0);
@@ -717,47 +792,55 @@ function step(dt){
  for(const u of state.units){
   if(u.hp<=0)continue;
   const gait=u.m.ai.locomotion;
-  u.phase+=dt*({gallop:14,dash:13,roll:12,walk:8,float:5}[gait]||8);
-  u.hit=Math.max(0,u.hit-dt);u.motion=Math.max(0,u.motion-dt);if(u.anim){u.anim.remaining-=dt;if(u.anim.remaining<=0)u.anim=null}u.atk-=dt;u.skill-=dt;
-  const target=state.units.filter(t=>t.side!==u.side&&t.hp>0).sort((a,b)=>unitDistance(u,a)-unitDistance(u,b))[0];
-  const dx=target?target.x-u.x:(u.side>0?904:56)-u.x;
-  const dy=target?target.y-u.y:0;
-  // Face the actual combat target, even after an enemy crosses behind us.
-  // Small dead zone prevents left/right flicker when monsters nearly overlap.
-  if(Math.abs(dx)>8)u.facing=dx>0?1:-1;
-  const dist=Math.hypot(dx,dy*1.45);
-  const reach=(u.m.attack.range||32)+(target?u.radius+target.radius:28);
-  const inrange=dist<=reach;
-  u.walking=!inrange;
-  if(!inrange){
+  u.phase+=dt*({gallop:14,dash:13,roll:12,walk:8,float:5,hop:11}[gait]||8);
+  u.hit=Math.max(0,u.hit-dt);u.motion=Math.max(0,u.motion-dt);
+  if(u.anim){u.anim.remaining-=dt;if(u.anim.remaining<=0)u.anim=null}
+  u.atk-=dt;u.skill-=dt;
+  if(u.charge&&performCharge(u,dt))continue;
+  const target=state.units.filter(t=>t!==u&&t.side!==u.side&&t.hp>0)
+      .sort((a,b)=>unitDistance(u,a)-unitDistance(u,b))[0];
+  u.assaultTower=!target;
+  const slot=target?null:towerSlotFor(u);
+  const point=target?{x:target.x,y:target.y}:slot;
+  const dx=point.x-u.x,dy=point.y-u.y;
+  u.facing=target?(Math.abs(dx)>8?(dx>0?1:-1):u.facing):u.side;
+  const distance=Math.hypot(dx,dy*1.45);
+  // A melee unit must reach the tower's near-side attack slot, not the visual center.
+  const attackRange=target?(u.m.attack.range||32)+u.radius+target.radius:
+    Math.min(43,Number(u.m.attack.range)||32)+10;
+  const atTarget=distance<=attackRange;
+  const canCharge=u.m.skill?.effect?.type==='dash_hit'&&u.skill<=0;
+  if(canCharge&&distance<=Math.max(130,Number(u.m.skill.effect.distance)||0)+attackRange&&distance>20){
+    beginCharge(u,target,point);continue;
+  }
+  u.walking=!atTarget;
+  if(!atTarget){
    const agility=Number(u.m.stats.agi)||12;
-   const agilityBonus=Math.max(-.08,Math.min(.24,(agility-12)*.008));
-   const travel=Math.min(dist,Math.max(0,u.m.stats.move_speed*(1+agilityBonus)*dt));
-   if(dist>0){u.x+=dx/dist*travel;u.y+=dy*1.45/dist*travel/1.45}
-   u.x=Math.max(72,Math.min(888,u.x));u.y=Math.max(343,Math.min(429,u.y));
+   const bonus=Math.max(-.08,Math.min(.24,(agility-12)*.008));
+   const speed=(Number(u.m.stats.move_speed)||28)*(1+bonus);
+   const travel=Math.min(Math.max(0,distance-attackRange+5),speed*dt);
+   if(distance>.01&&travel>0){
+     u.x+=dx/distance*travel;
+     u.y+=dy*1.45/distance*travel/1.45;
+   }
+   // The towers occupy protected zones, never enter their physical footprints.
+   u.x=Math.max(171,Math.min(789,u.x));
+   u.y=Math.max(343,Math.min(429,u.y));
   }else if(u.atk<=0){
    const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?enemyScale():1);
-   if(target)dmg(target,amount);
-   else{
-    const reduction=Math.max(0,Math.min(.9,Number(battleRules.towers?.common_passive?.direct_damage_reduction_pct)||0));
-    if(u.side>0)state.enemyBase=Math.max(0,state.enemyBase-amount*(1-reduction));
-    else state.allyBase=Math.max(0,state.allyBase-amount*(1-reduction));
-   }
+   if(target)dmg(target,amount);else hitTower(u.side,amount);
    if(u.side===1)soundEffect(target?'attack':'tower_hit');
-   u.atk=u.m.attack.interval_seconds;u.motion=.24;u.anim={type:'attack',duration:.34,remaining:.34};
+   u.atk=u.m.attack.interval_seconds;u.motion=.24;
+   u.anim={type:'attack',duration:.34,remaining:.34};
   }
-  if(u.skill<=0){
-   u.anim={type:'skill',duration:.55,remaining:.55};if(u.side===1)soundEffect(u.m.skill.effect.type==='shield_self'?'shield':'skill');
-   if(u.m.skill.effect.type==='shield_self')u.shield=Math.max(u.shield,u.m.skill.effect.amount);
-   else if(u.m.skill.effect.type==='dash_hit'){
-    u.x+=u.facing*u.m.skill.effect.distance;
-    u.x=Math.max(72,Math.min(888,u.x));
-    if(target&&unitDistance(u,target)<u.m.attack.range+u.radius+target.radius+22)dmg(target,u.m.skill.effect.damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?enemyScale():1));
-   }
-   u.skill=u.m.skill.cooldown_seconds;
+  if(u.skill<=0&&u.m.skill?.effect?.type==='shield_self'){
+   u.shield=Math.max(u.shield,u.m.skill.effect.amount);
+   u.anim={type:'skill',duration:.55,remaining:.55};
+   u.skill=u.m.skill.cooldown_seconds;if(u.side===1)soundEffect('shield');
   }
  }
  separateGroundUnits();
+ chargeEffects=chargeEffects.filter(p=>(p.life-=dt)>0);
  stepTowerDefense(dt);
  towerProjectiles=towerProjectiles.filter(p=>(p.age+=dt)<p.duration);
  state.units=state.units.filter(u=>u.hp>0);
@@ -825,6 +908,14 @@ function draw(){
  else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(-viewOffsetX,-viewOffsetY,cv.width,cv.height);ctx.fillStyle=colors[2];ctx.fillRect(-viewOffsetX,ground,cv.width,Math.max(0,cv.height-ground));ctx.fillStyle='#446b48';ctx.fillRect(-viewOffsetX,ground,cv.width,5)}
  drawTower('ally',80,state.allyBase);drawTower('enemy',880,state.enemyBase);
  drawTowerAttacks();
+ for(const fx of chargeEffects){
+  const fade=Math.max(0,fx.life/fx.maxLife);
+  ctx.save();ctx.globalAlpha=fade;ctx.strokeStyle=fx.impact?'#ffe7a0':'#ed8a45';
+  ctx.lineWidth=fx.impact?5:3;ctx.beginPath();
+  if(fx.impact){ctx.arc(fx.x,fx.y,18+(1-fade)*22,0,Math.PI*2)}
+  else{ctx.moveTo(fx.x-23,fx.y-7);ctx.lineTo(fx.x+23,fx.y-7);ctx.moveTo(fx.x-15,fx.y+7);ctx.lineTo(fx.x+12,fx.y+7)}
+  ctx.stroke();ctx.restore();
+ }
  // Depth-sort monsters by their individual ground positions.
  for(const u of [...state.units].sort((a,b)=>a.y-b.y)){
    const img=images[u.m.id],kind=u.m.ai.locomotion||'walk',flying=kind==='fly'||kind==='float';
@@ -833,6 +924,9 @@ function draw(){
    ctx.save();ctx.globalAlpha=.22;ctx.fillStyle='#192b22';ctx.beginPath();ctx.ellipse(u.x,u.y-3,size*.28,6,0,0,Math.PI*2);ctx.fill();ctx.restore();
    ctx.save();ctx.translate(u.x,u.y-hover);ctx.scale(u.facing||u.side,1);
    if(u.motion>0)ctx.translate(-4*u.motion/.24,0);
+   if(u.charge?.phase==='windup'){ctx.translate(-u.facing*9,0);ctx.rotate(-u.facing*.075)}
+   if(u.charge?.phase==='rush'){ctx.rotate(u.facing*.065);ctx.scale(1.12,.92)}
+   if(u.charge?.phase==='recover')ctx.scale(.97,1.03);
    if(readyImage(img)){
       // Sheet frames are uniform cells; footline sits ~82% down the image cell.
       const frame=monsterFrame(u);
@@ -860,6 +954,10 @@ function draw(){
 }
 
 function openView(name,fromRoute=false){
+ if(view==='battle'&&name!=='battle'&&run.active&&!state?.ended){
+   // Only the explicit pause-menu exit can leave a live match.
+   return;
+ }
  if(name==='bestiary')renderBestiary();if(name==='settings')refreshSettings();
  if(!fromRoute&&name!=='monster-profile')updateRoute(name,true);
  if(view==='battle'&&name!=='battle')run.active=false;
@@ -867,7 +965,9 @@ function openView(name,fromRoute=false){
  for(const id of ['home','team','bestiary','monster-profile','settings','battle'])$(id+'-screen').hidden=id!==name;
  $('battle-menu').hidden=true;$('quick-nav').hidden=true;
  $('battle-menu-toggle').setAttribute('aria-expanded','false');$('nav-toggle').setAttribute('aria-expanded','false');
+ $('battle-menu-toggle').textContent='Ⅱ';$('battle-menu-toggle').setAttribute('aria-label','Pause battle');
  $('nav-toggle').hidden=name==='battle';
+ $('site-navigation').hidden=name==='battle';
  last=performance.now();
  if(name!=='battle'&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});
  if(name!=='battle'&&screen.orientation?.unlock){try{screen.orientation.unlock()}catch(e){}}
@@ -1026,13 +1126,16 @@ function launchLandscape(){
   }catch(e){}
 }
 function toggleBattleMenu(force){
+ if(view!=='battle')return;
  battleMenuOpen=typeof force==='boolean'?force:!battleMenuOpen;
  $('battle-menu').hidden=!battleMenuOpen;
- $('battle-menu-toggle').textContent=battleMenuOpen?'×':'+';
+ $('battle-menu-toggle').textContent=battleMenuOpen?'▶':'Ⅱ';
+ $('battle-menu-toggle').setAttribute('aria-label',battleMenuOpen?'Resume battle':'Pause battle');
  $('battle-menu-toggle').setAttribute('aria-expanded',String(battleMenuOpen));
  last=performance.now();syncMusic();
 }
 function toggleQuickNav(force){
+ if(view==='battle')return;
  navOpen=typeof force==='boolean'?force:!navOpen;
  $('quick-nav').hidden=!navOpen;
  $('nav-toggle').textContent=navOpen?'×':'+';
@@ -1060,8 +1163,8 @@ function bindMenu(){
  $('battle-menu-toggle').onclick=()=>toggleBattleMenu();
  $('battle-resume').onclick=()=>toggleBattleMenu(false);
  $('battle-restart').onclick=restartRun;
- $('battle-menu-team').onclick=()=>{renderTeam();openView('team')};
- $('battle-menu-home').onclick=()=>openView('home');
+ $('battle-menu-team').onclick=()=>{};
+ $('battle-menu-home').onclick=()=>{run.active=false;toggleBattleMenu(false);openView('home')};
  $('battle-menu-fullscreen').onclick=()=>{toggleBattleMenu(false);launchLandscape()};
  $('restart').onclick=restartRun;
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view==='battle'&&!document.fullscreenElement){toggleBattleMenu()}});
