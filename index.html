@@ -210,6 +210,48 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .result-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:9px;margin-top:15px}
 .result-actions button{font-size:clamp(11px,1.3vw,14px);font-weight:800}
 @media(max-height:500px){.run-results{padding:11px 18px}.run-results h2{font-size:26px}.run-results p{margin:4px auto 7px}.run-result-metrics{margin:7px 0}.run-result-metrics>div{padding:4px}.result-actions{margin-top:8px}.result-actions button{padding:6px 9px}}
+
+/* Small-screen layout: keep menus native to the device orientation and scrollable.
+   Only the actual battlefield uses simulated landscape on portrait phones. */
+.app-screen{touch-action:pan-y;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}
+@media(orientation:portrait) and (max-width:699px){
+ html,body{overflow:hidden}
+ .app-screen{
+   position:fixed;inset:0;left:0;top:0;right:0;bottom:0;
+   width:100dvw;height:100dvh;transform:none;
+   padding:max(14px,env(safe-area-inset-top)) 14px max(22px,env(safe-area-inset-bottom));
+   overflow-y:auto;overflow-x:hidden;touch-action:pan-y;
+   overscroll-behavior-y:auto
+ }
+ #site-navigation{inset:0;left:0;top:0;width:100dvw;height:100dvh;transform:none}
+ #home-screen{overflow-y:auto!important}
+ #home-screen .lobby{min-height:max(100%,560px);height:auto}
+ #home-screen .lobby-world{min-height:185px}
+ #home-screen .lobby-controls{flex-shrink:0}
+ .hero{flex-wrap:wrap}
+ .hero-art{max-width:130px}
+ .menu-features{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .app-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .page-head{align-items:flex-start;flex-wrap:wrap}
+ .team-footer{align-items:stretch}
+ .team-footer select{max-width:100%;width:100%}
+ #battle-screen{
+   inset:auto;top:0;left:100dvw;right:auto;bottom:auto;
+   width:100dvh;height:100dvw;transform:rotate(90deg);transform-origin:top left;
+   padding:0;overflow:hidden
+ }
+}
+@media(orientation:landscape) and (max-height:460px){
+ .app-screen{overflow-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+ .page-inner{padding-bottom:12px}
+ #battle-screen{padding:0}
+ .battle-top{height:30px;min-height:30px}
+ .battle-bottom{height:52px;min-height:52px;max-height:52px}
+ .cards button{min-width:104px}
+}
+/* Canvas keeps its native 2:1 ratio; neither edge of the battle is cropped. */
+.arena-wrap{display:flex;align-items:center;justify-content:center;overflow:hidden}
+#game{width:auto;height:auto;max-width:100%;max-height:100%;aspect-ratio:2/1;object-fit:contain;flex:none}
 </style>
 </head>
 <body>
@@ -425,7 +467,13 @@ function towerDamageFrame(hp,maxHp=1900){
  const pct=hp/maxHp*100;
  return pct<30?2:pct<70?1:0;
 }
-function drawCover(img,x,y,w,h){const s=Math.max(w/img.naturalWidth,h/img.naturalHeight);const sw=w/s,sh=h/s;ctx.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,x,y,w,h)}
+function drawCover(img,x,y,w,h){
+ // Show the entire battlefield background instead of cropping its edges.
+ ctx.fillStyle='#173247';ctx.fillRect(x,y,w,h);
+ const scale=Math.min(w/img.naturalWidth,h/img.naturalHeight);
+ const iw=img.naturalWidth*scale,ih=img.naturalHeight*scale;
+ ctx.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih);
+}
 function monsterFrame(u){
  if(u.hit>0)return 6;
  if(u.anim&&u.anim.remaining>0){const elapsed=u.anim.duration-u.anim.remaining;const progress=Math.max(0,Math.min(.999,elapsed/u.anim.duration));return (u.anim.type==='skill'?12:8)+Math.floor(progress*4)}
@@ -755,7 +803,7 @@ function draw(){
  const backdrop=mapBackground(stageBackgroundPath(s));
  if(readyImage(backdrop))drawCover(backdrop,0,0,W,H);
  else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);ctx.fillStyle=colors[2];ctx.fillRect(0,ground,W,H-ground);ctx.fillStyle='#446b48';ctx.fillRect(0,ground,W,5)}
- drawTower('ally',51,state.allyBase);drawTower('enemy',909,state.enemyBase);
+ drawTower('ally',80,state.allyBase);drawTower('enemy',880,state.enemyBase);
  drawTowerAttacks();
  // Depth-sort monsters by their individual ground positions.
  for(const u of [...state.units].sort((a,b)=>a.y-b.y)){
