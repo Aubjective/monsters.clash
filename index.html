@@ -486,6 +486,10 @@ function resizeBattleCanvas(){
  if(cv.height!==nextHeight)cv.height=nextHeight;
 }
 function monsterFrame(u){
+ if(u.anim?.type==='skill'&&u.anim.remaining>0){
+  const p=Math.max(0,Math.min(.999,(u.anim.duration-u.anim.remaining)/u.anim.duration));
+  return 12+Math.floor(p*4);
+ }
  if(u.hit>0)return 6;
  if(u.anim&&u.anim.remaining>0){const elapsed=u.anim.duration-u.anim.remaining;const progress=Math.max(0,Math.min(.999,elapsed/u.anim.duration));return (u.anim.type==='skill'?12:8)+Math.floor(progress*4)}
  if(u.walking)return Math.floor((u.phase%(Math.PI*2))/(Math.PI*2)*4)%4;
@@ -652,8 +656,22 @@ const groundRows=[343,363,385,407,429];
 const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(best,Math.hypot((u.x-spawnX)*.8,(u.y-y)*1.4)),Infinity)})).sort((a,b)=>b.clearance-a.clearance)[0];
 const forward=side>0?1:-1;
 const x=spawnX+forward*Math.min(54,Math.max(0,54-row.clearance));
-state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});return true}
-function dmg(u,amount){const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;const shield=Math.min(u.shield,amount);u.shield-=shield;u.hp-=amount-shield;u.hit=.15;if(u.side===1)soundEffect('impact')}
+state.units.push({m,side,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,shieldTime:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});return true}
+function dmg(u,amount){
+ const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;
+ if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;
+ const shield=Math.min(u.shieldTime>0?u.shield:0,amount);
+ u.shield=Math.max(0,u.shield-shield);u.hp-=amount-shield;u.hit=.15;
+ if(u.side===1)soundEffect('impact');
+}
+function activateShield(u){
+ const effect=u.m.skill?.effect;if(effect?.type!=='shield_self')return;
+ u.shield=Math.max(u.shield,Number(effect.amount)||0);
+ u.shieldTime=Math.max(0,Number(effect.duration_seconds)||0);
+ u.anim={type:'skill',duration:.55,remaining:.55};
+ u.atk=Math.max(u.atk,.4);u.skill=u.m.skill.cooldown_seconds;
+ if(u.side===1)soundEffect('shield');
+}
 function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
 // Tower collision is separate from the visual center of the castle.
 const TOWER_APPROACH={ally:170,enemy:790};
@@ -685,17 +703,17 @@ function performCharge(u,dt){
   return true;
  }
  if(c.phase==='rush'){
-  const beforeX=u.x,beforeY=u.y;
-  const dir=Math.sign(targetX-u.x)||u.facing;u.facing=dir;
-  const distance=unitDistance(u,{x:targetX,y:targetY});
+  const dx=targetX-u.x,dy=targetY-u.y;
+  if(Math.abs(dx)>3)u.facing=dx>0?1:-1;
+  const distance=Math.hypot(dx,dy*1.45);
   const hitDistance=c.target?u.radius+c.target.radius+8:9;
   const remainingDash=Math.max(0,c.distance-c.travel);
   const delta=Math.min(remainingDash,360*dt,Math.max(0,distance-hitDistance));
-  if(delta>0){
-   u.x+=dir*delta;u.y+=(targetY-u.y)*Math.min(1,delta/Math.max(1,Math.abs(targetX-u.x)));
-   u.x=Math.max(171,Math.min(789,u.x));
-   u.y=Math.max(343,Math.min(429,u.y));
-   c.travel+=Math.hypot(u.x-beforeX,u.y-beforeY);
+  if(delta>0&&distance>0){
+   u.x+=dx/distance*delta;
+   u.y+=dy/distance*delta;
+   u.x=Math.max(171,Math.min(789,u.x));u.y=Math.max(343,Math.min(429,u.y));
+   c.travel+=delta;
   }
   chargeEffects.push({x:u.x-u.facing*24,y:u.y-20,life:.24,maxLife:.24,side:u.side});
   const reached=unitDistance(u,{x:targetX,y:targetY})<=hitDistance+10||c.travel>=c.distance-1||c.time<=0;
@@ -703,10 +721,14 @@ function performCharge(u,dt){
    if(!c.hit){
     const damage=Number(u.m.skill.effect.damage)||0;
     const power=damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?enemyScale():1);
-    if(c.target&&c.target.hp>0&&unitDistance(u,c.target)<u.radius+c.target.radius+28)dmg(c.target,power);
-    else if(!c.target&&unitDistance(u,c.destination)<18)hitTower(u.side,power);
+    let landed=false;
+    if(c.target&&c.target.hp>0&&unitDistance(u,c.target)<u.radius+c.target.radius+18){
+     dmg(c.target,power);landed=true;
+    }else if(!c.target&&unitDistance(u,c.destination)<18){
+     hitTower(u.side,power);landed=true;
+    }
     c.hit=true;u.motion=.22;
-    chargeEffects.push({x:u.x,y:u.y-38,life:.34,maxLife:.34,impact:true,side:u.side});
+    if(landed)chargeEffects.push({x:u.x,y:u.y-38,life:.34,maxLife:.34,impact:true,side:u.side});
    }
    c.phase='recover';c.time=.22;
   }
@@ -787,8 +809,12 @@ function step(dt){
   u.phase+=dt*({gallop:14,dash:13,roll:12,walk:8,float:5,hop:11}[gait]||8);
   u.hit=Math.max(0,u.hit-dt);u.motion=Math.max(0,u.motion-dt);
   if(u.anim){u.anim.remaining-=dt;if(u.anim.remaining<=0)u.anim=null}
+  if(u.shieldTime>0){u.shieldTime=Math.max(0,u.shieldTime-dt);if(u.shieldTime===0)u.shield=0}
   u.atk-=dt;u.skill-=dt;
   if(u.charge&&performCharge(u,dt))continue;
+  if(u.skill<=0&&u.m.skill?.effect?.type==='shield_self'){
+    activateShield(u);continue;
+  }
   const target=state.units.filter(t=>t!==u&&t.side!==u.side&&t.hp>0)
       .sort((a,b)=>unitDistance(u,a)-unitDistance(u,b))[0];
   u.assaultTower=!target;
@@ -831,11 +857,7 @@ function step(dt){
      x:u.x+u.facing*42,y:u.y-48,life:.16,maxLife:.16,impact:true,side:u.side
    });
   }
-  if(u.skill<=0&&u.m.skill?.effect?.type==='shield_self'){
-   u.shield=Math.max(u.shield,u.m.skill.effect.amount);
-   u.anim={type:'skill',duration:.55,remaining:.55};
-   u.skill=u.m.skill.cooldown_seconds;if(u.side===1)soundEffect('shield');
-  }
+
  }
  separateGroundUnits();
  chargeEffects=chargeEffects.filter(p=>(p.life-=dt)>0);
@@ -915,13 +937,17 @@ function draw(){
    const hover=flying?13+Math.sin(u.phase)*4:0;
    const size=u.m.id==='m001'?134:128;
    ctx.save();ctx.globalAlpha=.22;ctx.fillStyle='#192b22';ctx.beginPath();ctx.ellipse(u.x,u.y-3,size*.28,6,0,0,Math.PI*2);ctx.fill();ctx.restore();
+   if(u.shield>0&&u.shieldTime>0){
+    ctx.save();ctx.strokeStyle='rgba(125,236,175,'+(.6+.12*Math.sin(state.time*9))+')';
+    ctx.lineWidth=3.5;ctx.beginPath();ctx.ellipse(u.x,u.y-52,56,60,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+   }
    ctx.save();ctx.translate(u.x,u.y-hover);ctx.scale(u.facing||u.side,1);
    if(u.motion>0){
      const intensity=Math.max(0,Math.min(1,u.motion/(u.m.id==='m002'?.34:.24)));
-     ctx.translate(u.facing*(u.m.id==='m002'?10:4)*intensity,0);
+     ctx.translate((u.m.id==='m002'?10:4)*intensity,0);
    }
-   if(u.charge?.phase==='windup'){ctx.translate(-u.facing*9,0);ctx.rotate(-u.facing*.075)}
-   if(u.charge?.phase==='rush'){ctx.rotate(u.facing*.065);ctx.scale(1.12,.92)}
+   if(u.charge?.phase==='windup'){ctx.translate(-9,0);ctx.rotate(-.075)}
+   if(u.charge?.phase==='rush'){ctx.rotate(.065);ctx.scale(1.12,.92)}
    if(u.charge?.phase==='recover')ctx.scale(.97,1.03);
    if(readyImage(img)){
       // Sheet frames are uniform cells; footline sits ~82% down the image cell.
