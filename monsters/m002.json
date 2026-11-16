@@ -90,8 +90,8 @@
       "cycle_ms": 550
     },
     "attack": {
-      "motion": "lunge",
-      "duration_ms": 300
+      "motion": "horn_thrust",
+      "duration_ms": 340
     },
     "hit": {
       "motion": "flash_recoil",
@@ -111,6 +111,10 @@
       "reaction": 1,
       "attack": 2,
       "skill": 3
+    },
+    "skill": {
+      "motion": "horn_charge",
+      "duration_ms": 820
     }
   },
   "art": {
