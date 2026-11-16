@@ -802,7 +802,8 @@ function step(dt){
     (slot.rank===0?9:10);
   const atTarget=distance<=attackRange;
   const canCharge=u.m.skill?.effect?.type==='dash_hit'&&u.skill<=0;
-  if(canCharge&&(target||slot.rank===0)&&distance<=Math.max(130,Number(u.m.skill.effect.distance)||0)+attackRange&&distance>20){
+  const chargeReach=(Number(u.m.skill?.effect?.distance)||0)+(target?u.radius+target.radius+15:17);
+  if(canCharge&&(target||slot.rank===0)&&distance<=chargeReach&&distance>20){
     beginCharge(u,target,point);continue;
   }
   u.walking=!atTarget;
