@@ -70,22 +70,19 @@ Current game mechanics remain experimental, and future tower abilities still req
 
 ## Battlefield backgrounds and locked map rules
 
-- [Map rules](docs/map_rules.md) define the standardized layout shared by Fire, Water, Earth, Nature and Metal (960 × 480 game coordinates, fixed towers, one continuous battle floor).
-- The current Water-element battlefield is **Frost Plain**, themed as Ice. `data/maps/water-ice.json` is the **single authoritative** source for its stats, snow/wind and chill/freeze hazard rules. `stage_affinities.json` references that JSON by path.
-- Existing working backdrop: `assets/backgrounds/frost-plain.png`. The approved new Ice layout image is awaiting binary artwork upload; it must replace the background only once uploaded, not by an invalid file reference.
-- Other current stage backgrounds: `whisper-meadow.png` (Nature), `ember-wasteland.png` (Fire), and `ancient-ruins.svg` (Earth).
-- Poison/Toxic Marsh is preserved in the map registry with `enabled:false`, excluded from random battles. Metal's first map is planned but not uploaded or active.
-- `modules/elements/environment.js` directly owns atmospheric animation **and map-sourced statuses**, controlled by map JSON. `environment_effects.json` was removed; no duplicate effects preset system remains.
-- Frost Plain: snow and occasional wind; both teams' non-Water units may suffer -20% speed for 3 seconds and a 20% chance of 0.6-second freeze after hazard intervals. Water units are immune to **map** effects, not necessarily to monster skills.
-- Ice is a specialization of Water, not a separate core element. Frostwhisp's primary element has been normalized to Water.
+- The only **active battle map** is **Frostveil Valley**, Water element / Ice theme. Its image is `assets/backgrounds/frostveil_valley.png`, and `data/maps/water-ice.json` owns its environment and hazard settings.
+- `stage_affinities.json` registers **only** `data/maps/water-ice.json`. Deleted battle maps are not registered; future maps can be added when ready.
+- Preserve `assets/backgrounds/whisper-meadow.png` **only as the main-menu/lobby background**. It is not an active battle map.
+- [Map layout rules](docs/map_rules.md) lock shared battlefield geometry and no baked sun, moon, stars or time-of-day lighting.
+- `modules/elements/environment.js` is the single environmental effects engine; it renders falling snow and icy wind, with map-sourced Chill/Freeze applied to non-Water units.
+- Poison and the other future elemental maps remain conceptual/on hold rather than appearing in the playable map registry.
+- Ice is a Water specialization, not a sixth core element.
 
 ## Random battlefields
 
-- Players do not select stages. The game randomly chooses from **enabled** map JSONs only, avoiding the previous map where alternatives exist.
-- Matching-element damage/defense bonuses apply equally to allies and enemies.
-- Environmental hazards and cosmetic weather are distinct engine behaviors; ambient particles do not deal damage.
-- Add new maps using the locked rules. A map-specific JSON can be referenced from `stage_affinities.json`; do not create a separate override or duplicate configuration.
-- A full elemental counter matrix is not yet implemented.
+- Battle selection chooses only registered, enabled maps. With one map uploaded, all battles use Frostveil Valley.
+- Matching-element bonuses and environmental hazards apply to both player and enemy units.
+- No old deleted map backgrounds are restored as placeholders.
 
 ## Team carrying slots and coins (prototype economy)
 
