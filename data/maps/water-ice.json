@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0.0",
-  "id": "frost_plain",
-  "name": "Frost Plain",
+  "id": "frostveil_valley",
+  "name": "Frostveil Valley",
   "enabled": true,
   "element": "water",
   "affinity": "water",
   "environment_theme": "ice",
-  "background": "assets/backgrounds/frost-plain.png",
+  "background": "assets/backgrounds/frostveil_valley.png",
   "layout": "standard_landscape_v2",
   "modifier": {
     "outgoing_damage_bonus_pct": 0.1,
@@ -53,7 +53,7 @@
     "time_of_day_independent": true,
     "preferred_art_ratio": "16:9",
     "reference": "docs/map_rules.md",
-    "approved_asset_status": "pending_png_upload"
+    "approved_asset_status": "uploaded"
   },
   "time_of_day": {
     "mode": "neutral_until_engine_ready",
