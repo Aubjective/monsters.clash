@@ -297,7 +297,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </section>
 <section class="app-screen" id="bestiary-screen" hidden>
  <div class="page-inner">
-  <div class="page-head"><div><div class="eyebrow">Field journal</div><h2>Monster Bestiary</h2></div></div>
+  <div class="page-head"><div><div class="eyebrow">Monster Collection</div><h2>Bestiary</h2></div></div>
   <p class="page-sub" id="bestiary-progress"></p>
   <div class="app-grid" id="bestiary-grid"></div>
  </div>
@@ -313,7 +313,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </section>
 <section class="app-screen" id="settings-screen" hidden>
  <div class="page-inner">
-  <div class="page-head"><div><div class="eyebrow">Options</div><h2>Settings</h2></div></div>
+  <div class="page-head"><div><div class="eyebrow">Game Settings</div><h2>Settings</h2></div></div>
   <div class="settings-panel">
    <label class="setting-row"><span>Background Music <output id="bgm-volume-label">16%</output></span><input id="bgm-volume" type="range" min="0" max="100" value="16"></label>
    <label class="setting-row"><span>Sound Effects <output id="sfx-volume-label">42%</output></span><input id="sfx-volume" type="range" min="0" max="100" value="42"></label>
@@ -323,11 +323,11 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </section>
 <section class="app-screen" id="team-screen" hidden>
  <div class="page-inner">
-  <div class="page-head"><div><div class="eyebrow">Battle preparation</div><h2>My Team</h2></div></div>
-  <p class="page-sub">Build your battle squad from owned monsters. Eight carrying slots are available initially; earn coins from victories to unlock more. Battlefields are random.</p>
+  <div class="page-head"><div><div class="eyebrow">Battle Preparation</div><h2>My Team</h2></div></div>
+  <p class="page-sub">Choose monsters for your team. You start with eight team slots and can unlock more using coins earned in battle.</p>
   <div class="app-grid" id="team-options"></div>
   <div class="team-slot-head"><strong id="team-slot-count">Team slots: 8</strong><span id="team-wallet"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> <span id="team-wallet-amount">0</span></span><button id="unlock-team-slot" type="button">Unlock slot</button></div><div class="team-slot-grid" id="team-slots"></div><p class="muted" id="team-message" aria-live="polite"></p>
-  <div class="team-footer"><span class="muted">Battlefield selected randomly at battle start</span><button class="primary" id="start-game">Start Battle</button></div>
+  <div class="team-footer"><span class="muted">Battlefield selected automatically</span><button class="primary" id="start-game">Start Battle</button></div>
  </div>
 </section>
 <div id="site-navigation"><button class="floating-plus" id="nav-toggle" aria-label="Expand menu" aria-expanded="false">+</button>
@@ -335,17 +335,17 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  <button id="nav-home">⌂ Main Menu</button>
  <button id="nav-bestiary">Bestiary</button>
  <button id="nav-settings">Settings</button>
- <button id="nav-team">Select Team</button>
+ <button id="nav-team">My Team</button>
  <button id="nav-music">Music: On</button>
- <button id="nav-sfx">SFX: On</button>
+ <button id="nav-sfx">Sound Effects: On</button>
 </nav></div>
 <main id="battle-screen" hidden>
  <div class="battle-top">
   <div class="battle-top-side battle-top-ally"><span class="battle-team-flag flag-blue" role="img" aria-label="Blue team">⚑</span><span class="battle-brand">⚔ Monsters Clash <small id="run-progress">Battle 1</small></span></div>
-  <div class="battle-top-side battle-top-enemy"><button type="button" id="stage-info-toggle" aria-label="View battlefield information" aria-expanded="false" aria-controls="stage-info-panel"><span class="battlefield-name" id="stage-label" aria-live="polite"></span><span class="map-info-symbol" aria-hidden="true">i</span></button><span class="battle-team-flag flag-red" role="img" aria-label="Red team">⚑</span></div>
+  <div class="battle-top-side battle-top-enemy"><button type="button" id="stage-info-toggle" aria-label="View Battlefield Information" aria-expanded="false" aria-controls="stage-info-panel"><span class="battlefield-name" id="stage-label" aria-live="polite"></span><span class="map-info-symbol" aria-hidden="true">i</span></button><span class="battle-team-flag flag-red" role="img" aria-label="Red team">⚑</span></div>
  </div>
  <aside id="stage-info-panel" hidden aria-label="Battlefield information">
-  <button type="button" id="stage-info-close" aria-label="Close battlefield information">×</button>
+  <button type="button" id="stage-info-close" aria-label="Close Battlefield Information">×</button>
   <h3 id="stage-info-title">Battlefield</h3>
   <div class="map-info-kind" id="stage-info-kind"></div>
   <p class="map-info-desc" id="stage-info-desc"></p>
@@ -353,7 +353,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  </aside>
  <div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas>
   <section class="run-results" id="run-results" hidden aria-live="polite" aria-label="Battle result">
-    <h2 id="result-heading">VICTORY</h2>
+    <h2 id="result-heading">Victory</h2>
     <p id="result-stage"></p>
     <div class="run-result-metrics">
       <div><strong id="result-battle">1</strong><small>Battle</small></div>
@@ -363,8 +363,8 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
     <p id="result-reward"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> <strong id="result-coin-amount">+0</strong> coins this battle</p>
     <p id="result-run-coins"></p>
     <div class="result-actions">
-      <button class="primary" id="next-battle">NEXT BATTLE</button>
-      <button id="restart-run-result">RESTART RUN</button>
+      <button class="primary" id="next-battle">Next Battle</button>
+      <button id="restart-run-result">Restart Run</button>
 
     </div>
   </section>
@@ -375,13 +375,13 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  </div>
  <button id="battle-menu-toggle" class="floating-plus" aria-label="Open battle menu" aria-expanded="false">+</button>
  <nav class="pop-menu" id="battle-menu" hidden aria-label="Battle menu">
-  <div class="battle-paused">PAUSED</div>
+  <div class="battle-paused">Paused</div>
   <button id="battle-resume">Resume</button>
   <button id="battle-restart">Restart Run</button>
-  <button id="battle-menu-team" hidden>Select Team</button>
+  <button id="battle-menu-team" hidden>My Team</button>
   <button id="battle-music" hidden>Music: On</button>
-  <button id="battle-sfx" hidden>SFX: On</button>
-  <button id="battle-menu-fullscreen" hidden>Landscape Fullscreen</button>
+  <button id="battle-sfx" hidden>Sound Effects: On</button>
+  <button id="battle-menu-fullscreen" hidden>Fullscreen</button>
   <button id="battle-menu-home">Main Menu</button>
  </nav>
 </main>
@@ -443,7 +443,7 @@ function syncMusic(){
 }
 function audioLabels(){
  for(const id of ['nav-music','battle-music']){const button=$(id);if(button)button.textContent='Music: '+(musicEnabled?'On':'Off')}
- for(const id of ['nav-sfx','battle-sfx']){const button=$(id);if(button)button.textContent='SFX: '+(sfxEnabled?'On':'Off')}
+ for(const id of ['nav-sfx','battle-sfx']){const button=$(id);if(button)button.textContent='Sound Effects: '+(sfxEnabled?'On':'Off')}
 }
 function toggleMusic(){musicEnabled=!musicEnabled;audioLabels();syncMusic();saveAudioPreferences()}
 function toggleSfx(){sfxEnabled=!sfxEnabled;audioLabels();saveAudioPreferences()}
@@ -548,7 +548,7 @@ function enemyScale(){return 1+Math.max(0,run.battle-1)*.05}
 function showResult(){
  const victory=state.enemyBase<=0;
  $('run-results').hidden=false;
- $('result-heading').textContent=victory?'VICTORY':'DEFEAT';
+ $('result-heading').textContent=victory?'Victory':'Defeat';
  $('result-stage').textContent=(stage()?.name||'Battlefield')+' · Battle '+run.battle;
  $('result-battle').textContent=String(run.battle);
  $('result-time').textContent=Math.floor(state.time)+'s';
@@ -585,10 +585,10 @@ function nextSlotPrice(){
 }
 function purchaseSlot(){
  const price=nextSlotPrice();
- if(price===null){$('team-message').textContent='All team slots unlocked.';return}
- if(profile.coins<price){$('team-message').textContent='Not enough coins. Win battles to earn '+(price-profile.coins)+' more.';return}
+ if(price===null){$('team-message').textContent='All Team Slots Unlocked.';return}
+ if(profile.coins<price){$('team-message').textContent='Not Enough Coins. Win battles to earn '+(price-profile.coins)+' more.';return}
  profile.coins-=price;profile.teamSlots+=1;storeProfile();renderTeam();
- $('team-message').textContent='Team slot '+profile.teamSlots+' unlocked!';
+ $('team-message').textContent='Team Slot '+profile.teamSlots+' Unlocked!';
 }
 function victoryCoins(seconds){
  const base=Number(progression.coins.win_base)||100;
@@ -653,7 +653,9 @@ function chooseRandomStage(){
 function renderStageInfo(){
  const map=currentStage;if(!map)return;
  $('stage-info-title').textContent=map.name||'Battlefield';
- $('stage-info-kind').textContent=(map.element||map.affinity||'Neutral')+' element'+(map.environment_theme&&map.environment_theme!==map.element?' · '+map.environment_theme+' environment':'');
+ const element=map.element||map.affinity||'Neutral';
+ const displayName=value=>String(value).replaceAll('_',' ').replace(/\b\w/g,letter=>letter.toUpperCase());
+ $('stage-info-kind').textContent=displayName(element)+' Element'+(map.environment_theme&&map.environment_theme!==element?' · '+displayName(map.environment_theme)+' Environment':'');
  $('stage-info-desc').textContent=map.description||'Elemental terrain affects both teams during battle.';
  const box=$('stage-info-details');box.replaceChildren();
  const line=(name,value)=>{
@@ -664,24 +666,24 @@ function renderStageInfo(){
  };
  const heading=value=>{const node=document.createElement('div');node.className='map-info-subhead';node.textContent=value;box.append(node)};
  const pct=value=>(Math.round(Number(value||0)*1000)/10)+'%';
- heading('Matching element benefits');
+ heading(displayName(element)+' Monster Bonuses');
  const mod=map.modifier||{};
- if(Number(mod.outgoing_damage_bonus_pct))line('Outgoing damage','+'+pct(mod.outgoing_damage_bonus_pct));
- if(Number(mod.incoming_damage_reduction_pct))line('Damage reduction','+'+pct(mod.incoming_damage_reduction_pct));
+ if(Number(mod.outgoing_damage_bonus_pct))line('Attack Damage','+'+pct(mod.outgoing_damage_bonus_pct));
+ if(Number(mod.incoming_damage_reduction_pct))line('Damage Reduction','+'+pct(mod.incoming_damage_reduction_pct));
  if(Number(mod.max_hp_bonus_pct))line('Maximum HP','+'+pct(mod.max_hp_bonus_pct));
- if(!Object.values(mod).some(v=>Number(v)>0))line('Affinity bonus','None');
+ if(!Object.values(mod).some(v=>Number(v)>0))line('Elemental Bonus','None');
  const hazard=map.hazard;
- heading('Environmental hazard');
- if(!hazard?.enabled){line('Hazard','Inactive');return;}
+ heading('Environmental Hazards');
+ if(!hazard?.enabled){line('Hazards','None');return;}
  if(hazard.type==='chill_freeze'){
-  line('Chill','−'+pct(hazard.slow_pct)+' movement speed · '+(Number(hazard.slow_duration_seconds)||0)+'s');
-  line('Freeze',pct(hazard.freeze_chance)+' chance · '+(Number(hazard.freeze_duration_seconds)||0)+'s');
+  line('Chill','−'+pct(hazard.slow_pct)+' Movement Speed · '+(Number(hazard.slow_duration_seconds)||0)+'s');
+  line('Freeze',pct(hazard.freeze_chance)+' Chance · '+(Number(hazard.freeze_duration_seconds)||0)+'s');
  }else if(hazard.type==='instant_damage'){
-  line('Impact damage',String(hazard.damage||0));
+  line('Impact Damage',String(hazard.damage||0));
  }else line('Effect',String(hazard.type||'Environmental effect').replaceAll('_',' '));
- if(Array.isArray(hazard.interval_seconds))line('Hazard frequency',hazard.interval_seconds.join('–')+'s');
- if(hazard.matching_element_immune)line('Map hazard immunity',(map.element||map.affinity||'Matching')+' monsters');
- if(hazard.affects==='both_teams')line('Affected teams','Allies and enemies');
+ if(Array.isArray(hazard.interval_seconds))line('Hazard Interval',hazard.interval_seconds.join('–')+'s');
+ if(hazard.matching_element_immune)line('Hazard Immunity',displayName(element)+' Monsters');
+ if(hazard.affects==='both_teams')line('Affected Teams','Both Teams');
 }
 function toggleStageInfo(force){
  if(view!=='battle')return;
@@ -699,7 +701,7 @@ function reset(){
  towerAttackAnims.ally=0;towerAttackAnims.enemy=0;towerProjectiles=[];chargeEffects=[];unitSerial=0;
  $('run-results').hidden=true;
  $('run-progress').textContent='Battle '+run.battle;
- $('status').textContent='Deploy monsters when their cooldown is ready.';
+ $('status').textContent='Deploy monsters when ready.';
 }
 function teamCount(side){return state.units.filter(u=>u.hp>0&&u.side===side).length}
 function maxTeamUnits(){return Math.max(1,Number(battleRules.summoning?.max_active_per_team)||10)}
@@ -944,7 +946,7 @@ function step(dt){
   state.ended=true;state.enemyBase=Math.max(0,state.enemyBase);state.allyBase=Math.max(0,state.allyBase);
   run.totalSeconds+=state.time;
   settleBattle();soundEffect(state.enemyBase<=0?'victory':'defeat');
-  $('status').textContent=state.enemyBase<=0?'Victory — '+state.award.total+' coins earned!':'Defeat — run ended.';
+  $('status').textContent=state.enemyBase<=0?'Victory — '+state.award.total+' Coins Earned':'Defeat — Run Ended';
   showResult();
  }
 }
@@ -1094,13 +1096,13 @@ function draw(){
  }
  if(state.ended){ctx.fillStyle='#06152578';ctx.fillRect(0,0,W,H)}
  ctx.restore();
- $('unit-count').textContent='Units '+teamCount(1)+'/'+maxTeamUnits();
+ $('unit-count').textContent='Allied Monsters '+teamCount(1)+'/'+maxTeamUnits();
  for(const m of roster){
   const btn=$('card_'+m.id);if(!btn)continue;
   btn.style.display=team.includes(m.id)?'flex':'none';
   const remaining=cooldowns.ally[m.id]||0,active=deployedCount(1,m.id),cap=unitCap(m);
   const info=$('cooldown_'+m.id);
-  if(info)info.textContent=remaining>0?remaining.toFixed(1)+'s':active>=cap?active+'/'+cap+' full':teamCount(1)>=maxTeamUnits()?'Field full':active+'/'+cap+' · Ready';
+  if(info)info.textContent=remaining>0?remaining.toFixed(1)+'s':active>=cap?active+'/'+cap+' Deployed':teamCount(1)>=maxTeamUnits()?'Battlefield Full':active+'/'+cap+' · Ready';
   btn.disabled=!canSummon(m,1);
  }
 }
@@ -1134,8 +1136,8 @@ function cardFor(m,selectable){
  const desc=document.createElement('span');
  desc.innerHTML='<strong></strong><br><small></small><br><em class="app-pending"></em>';
  desc.querySelector('strong').textContent=m.name;
- desc.querySelector('small').textContent=m.element+' · '+m.role+' · '+m.deployment.cooldown_seconds+'s cooldown · max '+unitCap(m);
- desc.querySelector('em').textContent=!unlocked?'Locked':ready?'Owned · Battle ready':'Owned · Artwork pending';
+ desc.querySelector('small').textContent=m.element+' · '+m.role+' · '+m.deployment.cooldown_seconds+'s Cooldown · Max '+unitCap(m);
+ desc.querySelector('em').textContent=!unlocked?'Locked':ready?'Owned · Battle Ready':'Owned · Artwork Pending';
  node.append(art,desc);
  if(!selectable)node.disabled=true;
  else{
@@ -1211,7 +1213,7 @@ function readBestiaryRoute(){
 }
 function renderBestiary(){
  const count=catalog.filter(m=>encountered(m.id)).length;
- $('bestiary-progress').textContent=count+' / '+catalog.length+' encountered. Meet monsters in battle to discover them.';
+ $('bestiary-progress').textContent=count+'/'+catalog.length+' Monsters Discovered · Encounter more monsters in battle.';
  const entries=catalog.map(m=>{
   const known=encountered(m.id),node=document.createElement('button');
   node.type='button';node.className='app-card journal-entry '+(known?'journal-known':'journal-unknown');
@@ -1223,7 +1225,7 @@ function renderBestiary(){
   const desc=document.createElement('span');
   const title=document.createElement('strong'),detail=document.createElement('small'),status=document.createElement('em');
   title.textContent=known?m.name:'???';
-  detail.textContent=known?m.element+' · '+m.role:'Not yet encountered';
+  detail.textContent=known?m.element+' · '+m.role:'Not Yet Discovered';
   status.className='app-pending';
   status.textContent=known?(owns(m.id)?'Owned':'Encountered'):'Undiscovered';
   desc.append(title,document.createElement('br'),detail,document.createElement('br'),status);
@@ -1237,20 +1239,20 @@ function renderTeam(){
   const select=cardFor(m,true);
   const profileButton=document.createElement('button');
   profileButton.type='button';profileButton.className='team-profile-button';
-  profileButton.textContent='View profile';
+  profileButton.textContent='View Profile';
   profileButton.setAttribute('aria-label','Open '+m.name+' profile');
   profileButton.onclick=()=>showMonsterProfile(m.id);
   wrapper.append(select,profileButton);
   return wrapper;
  }));
- $('team-slot-count').textContent='Team slots: '+team.length+' / '+profile.teamSlots;
+ $('team-slot-count').textContent='Team Slots: '+team.length+'/'+profile.teamSlots;
  refreshCoinDisplays();
  const price=nextSlotPrice(),unlock=$('unlock-team-slot');
  unlock.hidden=price===null;
  unlock.replaceChildren();
- if(price===null){unlock.textContent='All slots unlocked'}
+ if(price===null){unlock.textContent='All Slots Unlocked'}
  else{
-  unlock.append(document.createTextNode('Unlock slot · '));
+  unlock.append(document.createTextNode('Unlock Slot · '));
   const img=document.createElement('img');img.className='coin-icon';img.src='assets/ui/coin.svg';img.alt='';
   unlock.append(img,document.createTextNode(' '+price.toLocaleString('en-US')));
  }
