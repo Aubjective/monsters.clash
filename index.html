@@ -394,7 +394,10 @@ let towerProjectiles=[],unitSerial=0,chargeEffects=[];
 function mapBackground(path){
  if(!path)return null;
  if(!backgroundImages.has(path)){
-  const img=new Image();img.src=path;
+  const img=new Image();
+  // Each page load requests the latest image even when an upload reused the same filename.
+  // Keep the repository pathname unchanged; query version only bypasses the browser/CDN cache.
+  img.src=path+(path.includes('?')?'&':'?')+'v='+Date.now();
   backgroundImages.set(path,img);
  }
  return backgroundImages.get(path);
