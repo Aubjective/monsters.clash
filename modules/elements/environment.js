@@ -17,7 +17,7 @@ function matchesElement(unitOrMonster){
  const m=unitOrMonster?.m||unitOrMonster;
  const element=String(m?.elemental?.primary||m?.element||'neutral').toLowerCase();
  const mapElement=String(stage?.element||stage?.affinity||'neutral').toLowerCase();
- return element===mapElement||(mapElement==='water'&&element==='ice');
+ return element===mapElement;
 }
 function seed(initial=false){
  const k=ambient.type,up=k==='embers'||k==='spores';
