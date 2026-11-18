@@ -1092,8 +1092,6 @@ function draw(){
    ctx.fillStyle='#1f2e40';ctx.fillRect(u.x-31,barY,62,6);
    ctx.fillStyle=u.side>0?'#6dde8a':'#fa7777';ctx.fillRect(u.x-31,barY,62*Math.max(0,u.hp/u.maxhp),6);
  }
- ctx.fillStyle='#1b3755cc';ctx.fillRect(328,12,304,40);
- ctx.fillStyle='white';ctx.textAlign='center';ctx.font='bold 18px system-ui';ctx.fillText(s?.name||'Battlefield',480,38);
  if(state.ended){ctx.fillStyle='#06152578';ctx.fillRect(0,0,W,H)}
  ctx.restore();
  $('unit-count').textContent='Units '+teamCount(1)+'/'+maxTeamUnits();
