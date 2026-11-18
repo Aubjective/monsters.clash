@@ -1,47 +1,84 @@
-# Monsters Clash — Locked Standard Battlefield Layout v1
+# Monsters Clash — Locked Elemental Map Layout Rules v2
 
-## Visual master
-The approved Water/Ice illustration `moonlit_aurora_ice_battlefield.png` is the **composition master** for all five basic elements. Keep its open, continuous horizontal combat floor, layered distant scenery, left/right side scenery and clear monster/tower silhouettes. Replace only environment-specific visuals, colors, textures and weather. Do not embed units, towers, UI, text, damage indicators, status icons or combat particles into the static map artwork.
+## 1. Master design
+The approved **Water/Ice battlefield without a visible sun, moon, stars or celestial glow** is the new layout reference. All five basic elemental maps reuse its composition, silhouette clearance, continuous ground and fixed gameplay coordinates. Replace terrain, palette, flora, geology and ambient weather—not the geometry.
 
-## Shared battlefield geometry (authoritative gameplay coordinates)
-- Internal canvas: **960 × 480**. Render artwork with cover-fit while retaining the combat anchors; background art can be 16:9 but must tolerate horizontal/vertical cover cropping.
-- Ally tower center: **x=80**; enemy tower center: **x=880**. Keep their scenery zones visually uncluttered.
-- Tower approaches: **x=170** (ally) and **x=790** (enemy).
-- Unit spawn positions: x=198 (ally), x=762 (enemy).
-- Ground battle lanes: **y=343, 363, 385, 407, 429**. This is a continuous fightable floor, not floating platforms.
-- The shared world geometry determines damage zones; background pixels do not create collision. New maps must never supply separate collision geometry in Phase 1.
-- Prefer landscape artwork of a uniform source size for every map (for example, **1600 × 900**, 16:9), preserving a clear playable floor. No labels or game elements baked into static images.
+**Forbidden in all static map artwork:**
+- Sun, moon, stars, constellations, planets, sunrise/sunset discs, visible sunbeams or moonbeams
+- Fixed day/night sky gradients, strong directional sunlight or moonlight, baked celestial shadows
+- Permanent weather particles that should move (falling snow, rain, sparks, embers, drifting leaves)
+- Monsters, towers, weapons, attack animations, hazard telegraphs, HUD, text, logos, markers
 
-## Five basic elements
-- Fire — Ember Wasteland: embers / burning hazard (future)
-- Water — Frost Plain (Ice theme): snow, icy wind, chill and short freeze
-- Earth — Stonefall Canyon: dust / tremors (future)
-- Nature — Whisper Meadow: leaves / roots (future)
-- Metal — Silvercrest Valley: metallic glimmers / shards (future)
-- Poison — Toxic Marsh: **disabled/hidden**, retained for later.
+The sky must be a **time-neutral atmosphere** with sky color, clouds, haze or distant mountains allowed. Crystals and ice may be naturally bright, but should not fake a moonlit or sunlit scene. Ambient snow must be provided by the environment renderer, not painted as fixed sky specks.
 
-Water is the core elemental affinity. Ice and snow are environment themes and attack specializations; Ice-specialized monsters have primary element `water` with specialization `ice`, so no compatibility aliases are needed.
+## 2. Shared composition and ground geometry
+- Game world canvas: **960 × 480** logical units; identical for all maps.
+- Preferred artwork ratio: **16:9** (for example 1600 × 900 or 1920 × 1080). Keep a safe center crop for cover rendering.
+- **Single uninterrupted, horizontal battle floor.** No holes, stairs, cliffs crossing the combat zone, multi-height platforms or terrain obstacles.
+- Combat center kept open. Background hills, arches, trees, ore towers and rocks belong behind the units.
+- Ground battle positions from the existing game: y = **343, 363, 385, 407, 429**; keep sufficient visible ground texture behind every row.
+- Tower centers: ally x = **80**, enemy x = **880**, near-side approaches x = **170** and **790**.
+- Unit spawn x: **198** (ally), **762** (enemy). Avoid a tall foreground prop occluding either spawn area.
+- Left and right scenery frame the image without extending into the primary fight area.
+- Keep combat silhouettes readable at small screen sizes; avoid intense high-contrast center decorations.
+- Background pixels are decorative; the Battle Engine owns real collision, lane positions and targeting.
 
-## Engine ownership
-- Map IDs, active state, background, affinity and hazard parameters are stored in **one authoritative map entry**, not repeated in additional overlay files.
-- The Water/Ice map's source is `data/maps/water-ice.json`; `stage_affinities.json` references that path. Other active maps currently remain inline in `stage_affinities.json` until migrated.
-- `modules/elements/environment.js` owns all weather particles, weather status timers and environmental hazard triggers. No separate patch/helper engine.
-- The main battle loop only calls this module's public methods; its existing `dmg()` remains the authoritative damage calculation for current attacks.
-- Ambient snow is cosmetic; a frost hazard event alone applies status.
-- Hazard checks target living, non-matching monsters on **both teams**, with a short post-summon protection period.
-- Environmental status and bonuses are separate from monster abilities; Water affinity is immune only to **map-sourced** chill/freeze.
-- A map with `enabled:false` is excluded from selection and does not play in live random battles.
+## 3. Visual layers — composited at runtime
+1. **Static map background:** sky, distant horizon, midground silhouettes, side scenery and flat ground.
+2. **Time-of-day atmosphere:** Day/Night Engine will tint the existing base map; no baked celestial objects.
+3. **Ambient environment:** Elements Engine renders floating snow, leaves, embers, dust, metallic motes etc.
+4. **Battle:** towers, monsters, attack projectiles and HP/status indicators.
+5. **Triggered environmental hazards:** frost pulses, fire bursts, earth tremors, roots and metal shards, drawn only when a hazard event occurs.
+6. **HUD:** buttons, cooldowns, coins, match progress and pause.
 
-## Water/Ice environmental sequence
-1. Frost Plain selected -> load snowy backdrop and ambient snow effect.
-2. Snow falls continuously and wind streaks pass occasionally.
-3. First hazard triggers after ~10 seconds; subsequent events every 15–22 seconds.
-4. Nonmatching, eligible monsters are chilled: movement speed -20% for 3 seconds.
-5. Each eligible target has a 20% chance of a 0.6-second freeze during the event.
-6. Fire, Metal, Earth, Nature and Neutral units can be affected; Water units, including Ice-specialized Water units, are immune.
-7. Environmental hazards do **not** lower HP on this map; other future hazards can call the regular damage engine.
+The game may choose an implementation-specific draw order for effects in front of or behind sprites, but **ownership** is always separate. Ambient particles never cause combat damage by themselves.
 
-## Migration and assets
-The approved image is held as a locally generated PNG pending a binary-safe repository upload. Until it is uploaded the Water/Ice JSON points to the existing working `assets/backgrounds/frost-plain.png`. Do not fabricate a path to an uncommitted file or replace the approved artwork with unrelated art.
+## 4. Time-of-day design (future engine)
+- All elemental maps use **one master artwork per landscape**; do not draw separate Day and Night copies to simulate basic lighting.
+- Day/Night control belongs to a future `modules/day-night/` engine. It will manage the current phase, sky tint, brightness, contrast, distant fog, lighting transitions and optionally dynamic stars or celestial objects.
+- Sky objects, if ever added, are **optional runtime assets controlled by Day/Night** and must not appear in the static backgrounds. We can also choose to have no celestial objects at all.
+- The future Light/Dark elements will read the Day/Night phase through a documented interface, not by examining background pixels or changing base map files.
+- **Day/Night is independent of the map element.** Fire/Water/Earth/Nature/Metal maps can all run in Day or Night.
+- During this first stage, `time_of_day.mode = "neutral_until_engine_ready"` is metadata only and does **not** imply working Day/Night gameplay.
 
-**Status:** Map rules locked; Water/Ice engine implemented. Other elemental hazard types are deliberately not activated until designed.
+## 5. Standard element maps and reuse
+| Core element | First map | Environmental style | Hazard |
+| --- | --- | --- | --- |
+| Fire | Ember Wasteland | Scorched volcanic floor, embers | Burn (planned) |
+| Water | Frost Plain — Ice theme | Frozen level floor, blue cliffs, frost | Chill / short Freeze (implemented) |
+| Earth | Stonefall Canyon | Rocky level floor, dust | Tremor (planned) |
+| Nature | Whisper Meadow | Grassy level floor, leaves | Roots (planned) |
+| Metal | Silvercrest Valley | Ore/crystal level floor, metallic glimmers | Shards (planned) |
+| Poison | Toxic Marsh | Swamp | **Disabled/on hold** |
+
+Water is the **core element**. Ice is the environment/attack specialization and is **not** a separate sixth core element.
+
+## 6. Authoritative module and map data ownership
+- The Water/Ice map is configured exclusively in `data/maps/water-ice.json`. `stage_affinities.json` contains only the source pointer for this map.
+- `modules/elements/environment.js` owns environmental animations, map-sourced hazard timers, element immunity and status durations.
+- The Battle Engine owns monster damage and normal movement; it consumes the documented environment API rather than copying environmental rules.
+- No duplicate per-map JavaScript engines, map-effects helpers, override layers or legacy presets.
+- Disabled maps must never appear in the random map pool.
+- Time-of-day metadata is reserved for `modules/day-night/` and must not be interpreted as an implemented feature.
+
+## 7. Frost Plain Water/Ice rules
+- Background: **neutral-sky Ice battlefield**. Approved regenerated PNG is not yet uploaded to GitHub; live game temporarily keeps the existing `assets/backgrounds/frost-plain.png`.
+- Ambient: snow (continuous) and periodic icy wind, configurable independently of hazards.
+- Water units—including Ice-specialized Water monsters—receive affinity buffs and ignore **map-sourced** Chill and Freeze.
+- Nonmatching monsters on either side may receive -20% movement speed for 3 seconds and 20% chance of 0.6-second Freeze; first hazard about 10 seconds into battle, then every 15–22 seconds.
+- Newly deployed monsters get 2 seconds of hazard protection.
+- This map does not apply environmental HP damage. Monster-inflicted Freeze still follows the monster/status rules, not automatic environmental immunity.
+
+## 8. Asset quality checklist
+- [ ] Same dimensions/aspect ratio and combat floor composition as the master
+- [ ] Open center and consistent ground horizon
+- [ ] Two towers and spawn areas have clear space
+- [ ] No sun, moon, stars or baked time-of-day lighting
+- [ ] No permanent moving weather particles or hazard visuals
+- [ ] No monsters, bases, projectiles, UI, labels or text
+- [ ] Appropriate terrain texture and element visual identity
+- [ ] Readable in Day, Night and narrow landscape cover crops
+- [ ] Background file exists in the repository **before** its JSON path is switched
+
+## 9. Implementation status
+The **rules** are locked for future artwork and engines. The Water/Ice hazard/ambient engine exists; no Day/Night simulation or Light/Dark combat bonuses have been implemented yet. The newly regenerated neutral-sky Ice image is a design deliverable pending repository binary transfer.
