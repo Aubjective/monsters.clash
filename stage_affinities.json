@@ -31,5 +31,27 @@
       "max_hp_bonus_pct": 0
     },
     "background": "assets/backgrounds/frost-plain.png"
+  },
+  {
+    "id": "ancient_ruins",
+    "name": "Ancient Ruins",
+    "affinity": "earth",
+    "modifier": {
+      "outgoing_damage_bonus_pct": 0.1,
+      "incoming_damage_reduction_pct": 0.05,
+      "max_hp_bonus_pct": 0
+    },
+    "background": "assets/backgrounds/ancient-ruins.svg"
+  },
+  {
+    "id": "toxic_marsh",
+    "name": "Toxic Marsh",
+    "affinity": "neutral",
+    "modifier": {
+      "outgoing_damage_bonus_pct": 0,
+      "incoming_damage_reduction_pct": 0,
+      "max_hp_bonus_pct": 0
+    },
+    "background": "assets/backgrounds/toxic-marsh.svg"
   }
 ]
