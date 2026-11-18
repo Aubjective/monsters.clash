@@ -5,13 +5,14 @@
   "family": "monster",
   "description": "A delicate floating ice familiar that slows enemies.",
   "rarity": "common",
-  "element": "ice",
+  "element": "water",
   "elemental": {
-    "primary": "ice",
+    "primary": "water",
     "secondary": null,
     "resistances": {},
     "status_immunities": [],
-    "stage_affinity_enabled": true
+    "stage_affinity_enabled": true,
+    "specialization": "ice"
   },
   "combat_position": "ranged",
   "role": "mage",
