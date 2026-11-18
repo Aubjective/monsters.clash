@@ -363,6 +363,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <button id="battle-menu-home">Main Menu</button>
  </nav>
 </main>
+<script src="modules/elements/environment.js"></script>
 <script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
 const backgroundImages=new Map(),towerImages={ally:new Image(),enemy:new Image()};
@@ -608,7 +609,7 @@ function setAudioLevel(kind,value){
 }
 
 let roster=[],catalog=[],team=[],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;
-async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json',{cache:'no-store'})).json();if(!Array.isArray(stages))stages=stages.stages||[];for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();if(allowBestiaryHash&&location.hash.startsWith('#/bestiary'))readBestiaryRoute();window.addEventListener('popstate',readBestiaryRoute);window.addEventListener('hashchange',readBestiaryRoute);requestAnimationFrame(frame)}
+async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json',{cache:'no-store'})).json();if(!Array.isArray(stages))stages=stages.stages||[];await fetch('environment_effects.json',{cache:'no-store'}).then(r=>r.ok?r.json():{}).then(cfg=>window.MonstersClashEnvironment?.register(cfg)).catch(()=>{});for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();if(allowBestiaryHash&&location.hash.startsWith('#/bestiary'))readBestiaryRoute();window.addEventListener('popstate',readBestiaryRoute);window.addEventListener('hashchange',readBestiaryRoute);requestAnimationFrame(frame)}
 let currentStage=null;
 function stageBackgroundPath(s){
  // The JSON is authoritative. Existing older manifests may omit background;
@@ -619,6 +620,7 @@ function chooseRandomStage(){
  const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;
  currentStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;
  if(currentStage){run.lastStageId=currentStage.id;mapBackground(stageBackgroundPath(currentStage))};
+ window.MonstersClashEnvironment?.configure(currentStage);
  const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name+' · '+currentStage.affinity:'Battlefield';
 }
 function reset(){
@@ -982,6 +984,7 @@ function draw(){
  const backdrop=mapBackground(stageBackgroundPath(s));
  if(readyImage(backdrop))drawCover(backdrop,-viewOffsetX,-viewOffsetY,cv.width,cv.height);
  else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(-viewOffsetX,-viewOffsetY,cv.width,cv.height);ctx.fillStyle=colors[2];ctx.fillRect(-viewOffsetX,ground,cv.width,Math.max(0,cv.height-ground));ctx.fillStyle='#446b48';ctx.fillRect(-viewOffsetX,ground,cv.width,5)}
+ window.MonstersClashEnvironment?.render(ctx,'background');
  drawTower('ally',80,state.allyBase);drawTower('enemy',880,state.enemyBase);
  drawTowerAttacks();
  for(const fx of chargeEffects){
@@ -1251,5 +1254,5 @@ function bindMenu(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view==='battle'&&!document.fullscreenElement){toggleBattleMenu()}});
 }
 
-function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){if(!battleMenuOpen)step(dt);draw()}requestAnimationFrame(frame)}init().catch(e=>{$('status').textContent='Loading failed: '+e.message});
+function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){if(!battleMenuOpen){step(dt);window.MonstersClashEnvironment?.update(dt)}draw()}requestAnimationFrame(frame)}init().catch(e=>{$('status').textContent='Loading failed: '+e.message});
 </script></body></html>
