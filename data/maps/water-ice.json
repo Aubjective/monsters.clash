@@ -61,5 +61,6 @@
       "night"
     ],
     "runtime_lighting_module": "modules/day-night/"
-  }
+  },
+  "description": "A frozen mountain valley where icy winds and sudden frost challenge every non-Water monster."
 }
