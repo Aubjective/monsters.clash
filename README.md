@@ -68,19 +68,24 @@ Current game mechanics remain experimental, and future tower abilities still req
 - Initial balance: Mossguard 8s cooldown / 5 copies; Cinderhorn 6s cooldown / 5 copies. Team selection still uses two monster types in the current UI.
 - Monsters and enemy AI must obey total capacity, per-type caps and cooldown. Dead units free their slots.
 
-## Battlefield backgrounds
+## Battlefield backgrounds and locked map rules
 
-- Each map registers its background image path directly in `stage_affinities.json` under `background`. The renderer uses this field for any map, regardless of its element, and caches background images by path.
-- Ready in the repository: `whisper-meadow.png` (Nature), `ember-wasteland.png` (Fire), `frost-plain.png` (Ice), `ancient-ruins.svg` (Earth), and `toxic-marsh.svg` (Neutral).
-- Ancient Ruins and Toxic Marsh currently have original SVG backgrounds for play testing. Their previously designed high-resolution PNG replacements are not yet uploaded to the repository; update the corresponding paths in `stage_affinities.json` when approved PNGs are added.
-- Ambient particles are implemented only in `modules/elements/environment.js`, configured by `environment_effects.json`: meadow leaves, volcanic embers, frost snow, ruin dust, and marsh floating spores. They are visual-only and do not affect elemental combat bonuses.
-- Add a future map by adding its name, ID, affinity, modifiers, and background path to the same JSON file; no additional hardcoded renderer case is required.
+- [Map rules](docs/map_rules.md) define the standardized layout shared by Fire, Water, Earth, Nature and Metal (960 × 480 game coordinates, fixed towers, one continuous battle floor).
+- The current Water-element battlefield is **Frost Plain**, themed as Ice. `data/maps/water-ice.json` is the **single authoritative** source for its stats, snow/wind and chill/freeze hazard rules. `stage_affinities.json` references that JSON by path.
+- Existing working backdrop: `assets/backgrounds/frost-plain.png`. The approved new Ice layout image is awaiting binary artwork upload; it must replace the background only once uploaded, not by an invalid file reference.
+- Other current stage backgrounds: `whisper-meadow.png` (Nature), `ember-wasteland.png` (Fire), and `ancient-ruins.svg` (Earth).
+- Poison/Toxic Marsh is preserved in the map registry with `enabled:false`, excluded from random battles. Metal's first map is planned but not uploaded or active.
+- `modules/elements/environment.js` directly owns atmospheric animation **and map-sourced statuses**, controlled by map JSON. `environment_effects.json` was removed; no duplicate effects preset system remains.
+- Frost Plain: snow and occasional wind; both teams' non-Water units may suffer -20% speed for 3 seconds and a 20% chance of 0.6-second freeze after hazard intervals. Water units are immune to **map** effects, not necessarily to monster skills.
+- Ice is a specialization of Water, not a separate core element. Frostwhisp's primary element has been normalized to Water.
 
 ## Random battlefields
 
-- Players do not select the battlefield. The game picks randomly from `stage_affinities.json` whenever a battle begins or is restarted.
-- The selected stage's name and element are displayed in battle.
-- Existing stage-affinity buffs apply to both allied and enemy monsters matching that stage's element. Nonmatching monsters do not receive those buffs. A full elemental advantage/disadvantage interaction matrix (e.g. specific water-vs-fire penalties) has **not** yet been defined or implemented.
+- Players do not select stages. The game randomly chooses from **enabled** map JSONs only, avoiding the previous map where alternatives exist.
+- Matching-element damage/defense bonuses apply equally to allies and enemies.
+- Environmental hazards and cosmetic weather are distinct engine behaviors; ambient particles do not deal damage.
+- Add new maps using the locked rules. A map-specific JSON can be referenced from `stage_affinities.json`; do not create a separate override or duplicate configuration.
+- A full elemental counter matrix is not yet implemented.
 
 ## Team carrying slots and coins (prototype economy)
 
