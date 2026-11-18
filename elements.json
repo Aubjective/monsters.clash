@@ -4,47 +4,76 @@
     {
       "id": "neutral",
       "name": "Neutral",
-      "color": "#9ca3af"
+      "color": "#9ca3af",
+      "core": false,
+      "enabled": true
     },
     {
       "id": "fire",
       "name": "Fire",
-      "color": "#f15b36"
+      "color": "#f15b36",
+      "core": true,
+      "enabled": true
     },
     {
       "id": "water",
       "name": "Water",
-      "color": "#3bace8"
+      "color": "#3bace8",
+      "core": true,
+      "enabled": true
     },
     {
       "id": "nature",
       "name": "Nature",
-      "color": "#63b34b"
+      "color": "#63b34b",
+      "core": true,
+      "enabled": true
     },
     {
       "id": "earth",
       "name": "Earth",
-      "color": "#ac8b55"
-    },
-    {
-      "id": "ice",
-      "name": "Ice",
-      "color": "#85cbe9"
+      "color": "#ac8b55",
+      "core": true,
+      "enabled": true
     },
     {
       "id": "lightning",
       "name": "Lightning",
-      "color": "#f0c443"
+      "color": "#f0c443",
+      "core": false,
+      "enabled": false
     },
     {
       "id": "light",
       "name": "Light",
-      "color": "#e8dba4"
+      "color": "#e8dba4",
+      "core": false,
+      "enabled": false
     },
     {
       "id": "dark",
       "name": "Dark",
-      "color": "#8359af"
+      "color": "#8359af",
+      "core": false,
+      "enabled": false
+    },
+    {
+      "id": "metal",
+      "name": "Metal",
+      "color": "#b3c6d4",
+      "core": true,
+      "enabled": true
     }
-  ]
+  ],
+  "specializations": {
+    "ice": {
+      "parent_element": "water",
+      "effect_types": [
+        "chill",
+        "freeze",
+        "slow"
+      ]
+    }
+  },
+  "note": "Five basic elements: Fire, Water, Earth, Nature, Metal. Ice is a Water specialization. Neutral is non-elemental; other entries are reserved."
 }
