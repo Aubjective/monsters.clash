@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "id": "frost_plain",
+  "name": "Frost Plain",
+  "enabled": true,
+  "element": "water",
+  "affinity": "water",
+  "environment_theme": "ice",
+  "background": "assets/backgrounds/frost-plain.png",
+  "layout": "standard_landscape_v1",
+  "modifier": {
+    "outgoing_damage_bonus_pct": 0.1,
+    "incoming_damage_reduction_pct": 0.05,
+    "max_hp_bonus_pct": 0
+  },
+  "ambient": {
+    "enabled": true,
+    "type": "snow",
+    "count": 66,
+    "speed": 27,
+    "drift": -10,
+    "opacity": 0.73,
+    "size": 3.2,
+    "layer": "background",
+    "icy_wind": {
+      "enabled": true,
+      "gust_period_seconds": 8,
+      "gust_duration_seconds": 2.4,
+      "opacity": 0.19
+    }
+  },
+  "hazard": {
+    "enabled": true,
+    "type": "chill_freeze",
+    "interval_seconds": [
+      15,
+      22
+    ],
+    "first_trigger_seconds": 10,
+    "target": "non_matching_monsters",
+    "affects": "both_teams",
+    "matching_element_immune": true,
+    "slow_pct": 0.2,
+    "slow_duration_seconds": 3,
+    "freeze_chance": 0.2,
+    "freeze_duration_seconds": 0.6,
+    "minimum_spawn_age_seconds": 2
+  }
+}
