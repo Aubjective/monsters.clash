@@ -614,7 +614,7 @@ let currentStage=null;
 function stageBackgroundPath(s){
  // The JSON is authoritative. Existing older manifests may omit background;
  // their stable IDs follow the repository's established hyphenated filenames.
- return s?.background||(s?.id?'assets/backgrounds/'+s.id.replaceAll('_','-')+'.png':null);
+ return s?.background||null;
 }
 function chooseRandomStage(){
  const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;
