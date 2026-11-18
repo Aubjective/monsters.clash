@@ -8,7 +8,7 @@ The battle loop calls `configure(map)` at stage selection, `update(dt, units, dm
 
 Water/Ice parameters are owned by `data/maps/water-ice.json`, referenced in `stage_affinities.json`. Other maps retain their ambient settings directly in the stage registry pending their own JSON migration. No duplicate `environment_effects.json` is used.
 
-- Water affinity includes legacy Ice monster types, for matching bonuses and map-hazard immunity.
+- Ice specialists are stored as primary element `water`; no legacy element matching aliases remain.
 - Only map-generated chill/freeze is exempted for Water units. Monster attacks can later use different resistance rules.
 - Environmental hazards are symmetrical for both teams, with 2 seconds of newly summoned-unit protection.
 - Toggle entire environment using `setEnabled(false)` or gameplay hazards only using `setHazardsEnabled(false)` in development tests.
