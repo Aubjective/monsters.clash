@@ -1,78 +1,133 @@
-/* Monsters Clash — authoritative ambient map effects engine.
-   Visual-only: affects no HP, physics, elemental bonuses or deployment.
-   Stage-specific presets live in environment_effects.json. */
+/* Monsters Clash - single authoritative environmental map engine.
+   Owns ambient weather and map-sourced statuses; map data comes from stage JSON. */
 (function(global){
-  'use strict';
-  const WIDTH=960, HEIGHT=480;
-  let presets={}, config=null, particles=[], time=0, enabled=true;
-  const rand=(a,b)=>a+Math.random()*(b-a);
-  const palette={
-    leaves:['#b3e87b','#75b951','#d6d77c','#edf2a9'],
-    embers:['#ffe18c','#ff9c35','#ff692e','#f7c35a'],
-    snow:['#ffffff','#e5f8ff','#c0e9f8'],
-    dust:['#d9c9a5','#b6a68c','#f1e3bf'],
-    spores:['#a4e8a0','#72c4a8','#c9e7a5'],
-    rain:['#b7def1','#8cc6d9']
-  };
-  function normalize(input){
-    if(!input||typeof input!=='object')return null;
-    const kind=palette[input.type]?input.type:'leaves';
-    return {type:kind,count:Math.min(110,Math.max(0,Math.round(Number(input.count)||0))),
-      speed:Math.min(260,Math.max(2,Number(input.speed)||25)),
-      drift:Number(input.drift)||0,opacity:Math.min(1,Math.max(.05,Number(input.opacity)||.6)),
-      size:Math.min(14,Math.max(.8,Number(input.size)||4)),layer:input.layer==='foreground'?'foreground':'background'};
-  }
-  function seed(p,initial){
-    const kind=p.type;return {
-      x:rand(-40,WIDTH+40),y:initial?rand(-30,HEIGHT):kind==='embers'?HEIGHT+25:-25,
-      size:rand(.5,1.4)*p.size,phase:rand(0,Math.PI*2),wobble:rand(4,24),speed:rand(.6,1.4)*p.speed,
-      color:palette[kind][Math.floor(rand(0,palette[kind].length))],
-      angle:rand(0,Math.PI*2)
-    };
-  }
-  function configure(stage){
-    const next=presets[stage?.id]||stage?.environment_effect||null;
-    config=normalize(next);particles=[];time=0;
-    if(config)for(let i=0;i<config.count;i++)particles.push(seed(config,true));
-  }
-  function update(dt){
-    if(!enabled||!config)return;
-    time+=Math.max(0,Math.min(dt,.06));
-    const p=config,k=p.type,up=k==='embers'||k==='spores',rain=k==='rain';
-    for(let i=0;i<particles.length;i++){
-      const a=particles[i];
-      a.y+=(up?-1:1)*a.speed*dt*(rain?2.3:1);
-      a.x+=(p.drift+Math.sin(time*1.8+a.phase)*a.wobble*.3)*dt;
-      a.angle+=dt*(up?1.5:.7);
-      if((up&&a.y< -35)||(!up&&a.y>HEIGHT+35)||a.x< -90||a.x>WIDTH+90)particles[i]=seed(p,false);
-    }
-  }
-  function render(ctx,layer='background'){
-    if(!enabled||!config||config.layer!==layer)return;
-    const k=config.type;
-    ctx.save();ctx.globalAlpha=config.opacity;
-    for(const p of particles){
-      ctx.fillStyle=p.color;ctx.strokeStyle=p.color;
-      ctx.save();ctx.translate(p.x,p.y);
-      if(k==='leaves'){
-        ctx.rotate(p.angle);ctx.beginPath();ctx.ellipse(0,0,p.size*1.8,p.size*.7,.4,0,Math.PI*2);ctx.fill();
-        ctx.globalAlpha*=.7;ctx.beginPath();ctx.moveTo(-p.size,0);ctx.lineTo(p.size,0);ctx.stroke();
-      }else if(k==='snow'){
-        ctx.beginPath();ctx.arc(0,0,p.size*.6,0,Math.PI*2);ctx.fill();
-      }else if(k==='embers'){
-        ctx.shadowBlur=8;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(0,0,p.size*.65,0,Math.PI*2);ctx.fill();
-      }else if(k==='dust'){
-        ctx.globalAlpha*=.5;ctx.beginPath();ctx.ellipse(0,0,p.size*2,p.size,0,0,Math.PI*2);ctx.fill();
-      }else if(k==='spores'){
-        ctx.shadowBlur=5;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(0,0,p.size*.65,0,Math.PI*2);ctx.fill();
-      }else if(k==='rain'){
-        ctx.lineWidth=Math.max(1,p.size*.25);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-p.size*.8,p.size*3.5);ctx.stroke();
-      }
-      ctx.restore();
-    }
-    ctx.restore();
-  }
-  function register(configurations){presets=(!Array.isArray(configurations)&&configurations)||{};}
-  function setEnabled(v){enabled=!!v;}
-  global.MonstersClashEnvironment=Object.freeze({register,configure,update,render,setEnabled,isEnabled:()=>enabled});
+'use strict';
+const W=960,H=480,rand=(a,b)=>a+Math.random()*(b-a);
+const palettes={
+ leaves:['#b3e87b','#75b951','#d6d77c','#edf2a9'],
+ embers:['#ffe18c','#ff9c35','#ff692e','#f7c35a'],
+ snow:['#ffffff','#e5f8ff','#c0e9f8'],
+ dust:['#d9c9a5','#b6a68c','#f1e3bf'],
+ spores:['#a4e8a0','#72c4a8','#c9e7a5'],
+ rain:['#b7def1','#8cc6d9'],
+ metal:['#d7e5f2','#9aaec4','#fff1b8']
+};
+let stage=null,ambient=null,hazard=null,particles=[],elapsed=0,hazardIn=Infinity,gustClock=0,enabled=true,hazardsEnabled=true;
+function matchesElement(unitOrMonster){
+ const m=unitOrMonster?.m||unitOrMonster;
+ const element=String(m?.elemental?.primary||m?.element||'neutral').toLowerCase();
+ const mapElement=String(stage?.element||stage?.affinity||'neutral').toLowerCase();
+ return element===mapElement||(mapElement==='water'&&element==='ice');
+}
+function seed(initial=false){
+ const k=ambient.type,up=k==='embers'||k==='spores';
+ return {x:rand(-30,W+30),y:initial?rand(-20,H+20):(up?H+25:-25),size:rand(.55,1.35)*ambient.size,
+ speed:rand(.7,1.3)*ambient.speed,phase:rand(0,7),rotation:rand(0,7),
+ color:palettes[k][Math.floor(rand(0,palettes[k].length))]};
+}
+function configure(map){
+ stage=map?.enabled===false?null:(map||null);
+ const a=stage?.ambient;
+ ambient=a?.enabled!==false&&a&&palettes[a.type]?{
+   type:a.type,count:Math.max(0,Math.min(130,Math.round(Number(a.count)||0))),
+   speed:Math.max(0,Math.min(250,Number(a.speed)||20)),drift:Number(a.drift)||0,
+   opacity:Math.min(1,Math.max(0,Number(a.opacity)||.6)),
+   size:Math.min(12,Math.max(.5,Number(a.size)||3)),
+   layer:a.layer==='foreground'?'foreground':'background',
+   icy_wind:a.icy_wind||null
+ }:null;
+ hazard=stage?.hazard?.enabled?stage.hazard:null;
+ elapsed=0;gustClock=0;particles=[];
+ if(ambient)for(let i=0;i<ambient.count;i++)particles.push(seed(true));
+ hazardIn=hazard?Math.max(1,Number(hazard.first_trigger_seconds)||10):Infinity;
+}
+function status(u){
+ if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1};
+ return u.environmentStatus;
+}
+function movementMultiplier(u){const s=u?.environmentStatus;return s?.freezeTime>0?0:(s?.slowTime>0?1-s.slowPct:1)}
+function canAct(u){return !(u?.environmentStatus?.freezeTime>0)}
+function update(dt,units,applyDamage){
+ if(!stage||!enabled)return;
+ dt=Math.max(0,Math.min(.06,Number(dt)||0));if(!dt)return;
+ elapsed+=dt;gustClock+=dt;
+ if(ambient){
+   const up=ambient.type==='embers'||ambient.type==='spores';
+   const gust=ambient.icy_wind?.enabled?Math.max(0,Math.sin(gustClock*Math.PI*2/(Number(ambient.icy_wind.gust_period_seconds)||8))):0;
+   for(let i=0;i<particles.length;i++){
+     const p=particles[i];
+     p.y+=(up?-1:1)*p.speed*dt;
+     p.x+=(ambient.drift+gust*12+Math.sin(elapsed*2+p.phase)*8)*dt;
+     p.rotation+=dt*.5;
+     if(p.y < -35||p.y > H+35||p.x < -55||p.x>W+55)particles[i]=seed(false);
+   }
+ }
+ if(!Array.isArray(units))return;
+ for(const u of units){
+   if(!u||u.hp<=0)continue;
+   u.environmentAge=(u.environmentAge||0)+dt;
+   const s=status(u);
+   s.slowTime=Math.max(0,s.slowTime-dt);
+   s.freezeTime=Math.max(0,s.freezeTime-dt);
+   if(s.slowTime===0)s.slowPct=0;
+ }
+ if(!hazardsEnabled||!hazard)return;
+ hazardIn-=dt;
+ if(hazardIn>0)return;
+ const limits=Array.isArray(hazard.interval_seconds)?hazard.interval_seconds:[15,22];
+ hazardIn=rand(Math.max(1,Number(limits[0])||15),Math.max(1,Number(limits[1])||22));
+ for(const u of units){
+   if(!u||u.hp<=0||matchesElement(u)||u.environmentAge<(Number(hazard.minimum_spawn_age_seconds)||0))continue;
+   if(hazard.type==='chill_freeze'){
+     const s=status(u);
+     s.slowTime=Math.max(s.slowTime,Number(hazard.slow_duration_seconds)||3);
+     s.slowPct=Math.max(s.slowPct,Math.min(.9,Math.max(0,Number(hazard.slow_pct)||.2)));
+     if(Math.random()<Math.min(1,Math.max(0,Number(hazard.freeze_chance)||0)))
+       s.freezeTime=Math.max(s.freezeTime,Number(hazard.freeze_duration_seconds)||.6);
+   }else if(hazard.type==='instant_damage'&&typeof applyDamage==='function'){
+     applyDamage(u,Math.max(0,Number(hazard.damage)||0));
+   }
+ }
+}
+function render(ctx,layer='background'){
+ if(!stage||!enabled||!ambient||ambient.layer!==layer)return;
+ ctx.save();ctx.globalAlpha=ambient.opacity;
+ for(const p of particles){
+   ctx.save();ctx.translate(p.x,p.y);ctx.fillStyle=p.color;ctx.strokeStyle=p.color;
+   switch(ambient.type){
+   case 'leaves':ctx.rotate(p.rotation);ctx.beginPath();ctx.ellipse(0,0,p.size*1.7,p.size*.65,0,0,Math.PI*2);ctx.fill();break;
+   case 'snow':ctx.beginPath();ctx.arc(0,0,p.size*.65,0,Math.PI*2);ctx.fill();break;
+   case 'embers':case 'spores':ctx.shadowBlur=8;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(0,0,p.size*.6,0,Math.PI*2);ctx.fill();break;
+   case 'dust':ctx.globalAlpha*=.45;ctx.beginPath();ctx.ellipse(0,0,p.size*1.6,p.size*.65,0,0,Math.PI*2);ctx.fill();break;
+   case 'rain':ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-p.size,p.size*4);ctx.stroke();break;
+   case 'metal':ctx.rotate(p.rotation);ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);break;
+   }
+   ctx.restore();
+ }
+ if(ambient.icy_wind?.enabled){
+   const period=Math.max(2,Number(ambient.icy_wind.gust_period_seconds)||8);
+   const phase=(gustClock%period)/period;
+   const strength=Math.max(0,Math.sin(phase*Math.PI*2))*(Number(ambient.icy_wind.opacity)||.18);
+   if(strength>.01){
+     ctx.lineCap='round';ctx.lineWidth=2;ctx.strokeStyle='#e2faff';ctx.globalAlpha=strength;
+     for(let i=0;i<7;i++){
+       const y=85+i*48;
+       const x=((elapsed*145+i*150)%1130)-120;
+       ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+35,y-8,x+95,y-4);ctx.stroke();
+     }
+   }
+ }
+ ctx.restore();
+}
+function renderStatus(ctx,u){
+ const s=u?.environmentStatus;if(!s||(s.slowTime<=0&&s.freezeTime<=0))return;
+ const frozen=s.freezeTime>0, cx=u.x,cy=u.y-45;
+ ctx.save();ctx.strokeStyle=frozen?'#b9f6ff':'#91d8f7';ctx.lineWidth=frozen?4:2;ctx.globalAlpha=frozen?.75:.45;
+ ctx.beginPath();ctx.ellipse(cx,cy,37,42,0,0,Math.PI*2);ctx.stroke();
+ if(frozen){ctx.fillStyle='#aaf3ff';for(let i=0;i<4;i++){let a=i*Math.PI/2+elapsed*.35;ctx.fillRect(cx+Math.cos(a)*30-3,cy+Math.sin(a)*33-3,6,6)}}
+ ctx.restore();
+}
+function setEnabled(v){enabled=!!v}
+function setHazardsEnabled(v){hazardsEnabled=!!v}
+global.MonstersClashEnvironment=Object.freeze({configure,update,render,renderStatus,matchesElement,movementMultiplier,canAct,setEnabled,setHazardsEnabled});
 })(window);
