@@ -1,7 +1,7 @@
 # Monsters Clash — Locked Elemental Map Layout Rules v2
 
 ## 1. Master design
-The approved **Water/Ice battlefield without a visible sun, moon, stars or celestial glow** is the new layout reference. All five basic elemental maps reuse its composition, silhouette clearance, continuous ground and fixed gameplay coordinates. Replace terrain, palette, flora, geology and ambient weather—not the geometry.
+The approved **Frostveil Valley Water/Ice battlefield without a visible sun, moon, stars or celestial glow** is the new layout reference. All five basic elemental maps reuse its composition, silhouette clearance, continuous ground and fixed gameplay coordinates. Replace terrain, palette, flora, geology and ambient weather—not the geometry.
 
 **Forbidden in all static map artwork:**
 - Sun, moon, stars, constellations, planets, sunrise/sunset discs, visible sunbeams or moonbeams
@@ -45,7 +45,7 @@ The game may choose an implementation-specific draw order for effects in front o
 | Core element | First map | Environmental style | Hazard |
 | --- | --- | --- | --- |
 | Fire | Ember Wasteland | Scorched volcanic floor, embers | Burn (planned) |
-| Water | Frost Plain — Ice theme | Frozen level floor, blue cliffs, frost | Chill / short Freeze (implemented) |
+| Water | Frostveil Valley — Ice theme | Frozen level floor, blue cliffs, frost | Chill / short Freeze (implemented) |
 | Earth | Stonefall Canyon | Rocky level floor, dust | Tremor (planned) |
 | Nature | Whisper Meadow | Grassy level floor, leaves | Roots (planned) |
 | Metal | Silvercrest Valley | Ore/crystal level floor, metallic glimmers | Shards (planned) |
@@ -61,8 +61,8 @@ Water is the **core element**. Ice is the environment/attack specialization and 
 - Disabled maps must never appear in the random map pool.
 - Time-of-day metadata is reserved for `modules/day-night/` and must not be interpreted as an implemented feature.
 
-## 7. Frost Plain Water/Ice rules
-- Background: **neutral-sky Ice battlefield**. Approved regenerated PNG is not yet uploaded to GitHub; live game temporarily keeps the existing `assets/backgrounds/frost-plain.png`.
+## 7. Frostveil Valley Water/Ice rules
+- Background: **neutral-sky Ice battlefield** in `assets/backgrounds/frostveil_valley.png`, uploaded and used by the live map configuration.
 - Ambient: snow (continuous) and periodic icy wind, configurable independently of hazards.
 - Water units—including Ice-specialized Water monsters—receive affinity buffs and ignore **map-sourced** Chill and Freeze.
 - Nonmatching monsters on either side may receive -20% movement speed for 3 seconds and 20% chance of 0.6-second Freeze; first hazard about 10 seconds into battle, then every 15–22 seconds.
@@ -81,4 +81,4 @@ Water is the **core element**. Ice is the environment/attack specialization and 
 - [ ] Background file exists in the repository **before** its JSON path is switched
 
 ## 9. Implementation status
-The **rules** are locked for future artwork and engines. The Water/Ice hazard/ambient engine exists; no Day/Night simulation or Light/Dark combat bonuses have been implemented yet. The newly regenerated neutral-sky Ice image is a design deliverable pending repository binary transfer.
+The **rules** are locked for future artwork and engines. The Water/Ice hazard/ambient engine exists; no Day/Night simulation or Light/Dark combat bonuses have been implemented yet. The updated Frostveil Valley artwork is uploaded. Only Frostveil Valley is currently registered for battle. `assets/backgrounds/whisper-meadow.png` is retained exclusively as the main-menu background.
