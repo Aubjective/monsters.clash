@@ -70,7 +70,7 @@ Current game mechanics remain experimental, and future tower abilities still req
 
 ## Battlefield backgrounds and locked map rules
 
-- The only **active battle map** is **Frostveil Valley**, Water element / Ice theme. Its image is `assets/backgrounds/frostveil_valley.png`, and `data/maps/water-ice.json` owns its environment and hazard settings.
+- The only **active battle map** is **Frostveil Valley**, Water element / Ice theme. Its image is `assets/backgrounds/frostveil-valley.png`, and `data/maps/water-ice.json` owns its environment and hazard settings.
 - `stage_affinities.json` registers **only** `data/maps/water-ice.json`. Deleted battle maps are not registered; future maps can be added when ready.
 - Preserve `assets/backgrounds/whisper-meadow.png` **only as the main-menu/lobby background**. It is not an active battle map.
 - [Map layout rules](docs/map_rules.md) lock shared battlefield geometry and no baked sun, moon, stars or time-of-day lighting.

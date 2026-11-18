@@ -6,7 +6,7 @@
   "element": "water",
   "affinity": "water",
   "environment_theme": "ice",
-  "background": "assets/backgrounds/frostveil_valley.png",
+  "background": "assets/backgrounds/frostveil-valley.png",
   "layout": "standard_landscape_v2",
   "modifier": {
     "outgoing_damage_bonus_pct": 0.1,

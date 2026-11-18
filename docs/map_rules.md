@@ -62,7 +62,7 @@ Water is the **core element**. Ice is the environment/attack specialization and 
 - Time-of-day metadata is reserved for `modules/day-night/` and must not be interpreted as an implemented feature.
 
 ## 7. Frostveil Valley Water/Ice rules
-- Background: **neutral-sky Ice battlefield** in `assets/backgrounds/frostveil_valley.png`, uploaded and used by the live map configuration.
+- Background: **neutral-sky Ice battlefield** in `assets/backgrounds/frostveil-valley.png`, uploaded and used by the live map configuration.
 - Ambient: snow (continuous) and periodic icy wind, configurable independently of hazards.
 - Water units—including Ice-specialized Water monsters—receive affinity buffs and ignore **map-sourced** Chill and Freeze.
 - Nonmatching monsters on either side may receive -20% movement speed for 3 seconds and 20% chance of 0.6-second Freeze; first hazard about 10 seconds into battle, then every 15–22 seconds.
