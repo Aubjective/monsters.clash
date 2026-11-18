@@ -259,7 +259,8 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 @media(max-height:460px){.battle-team-flag{width:25px;height:25px;min-width:25px;font-size:22px}.battle-brand{font-size:clamp(12px,1.6vw,17px)}.battlefield-name{font-size:clamp(10px,1.1vw,14px)}}
 /* Keep a single navigation control: the floating + replaces duplicate
    back buttons on menu screens; battle has its own pause button. */
-#team-screen .page-head .app-back{display:none}
+/* One + menu controls navigation; no duplicate textual back-to-menu buttons. */
+.app-screen .page-head .app-back{display:none}
 #battle-screen #battle-menu-toggle{border-radius:10px;width:39px;height:38px;font-size:20px}
 #battle-screen #battle-menu{width:min(230px,70vw)}
 </style>
@@ -282,7 +283,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </section>
 <section class="app-screen" id="bestiary-screen" hidden>
  <div class="page-inner">
-  <div class="page-head"><div><div class="eyebrow">Field journal</div><h2>Monster Bestiary</h2></div><button class="app-back">← Main Menu</button></div>
+  <div class="page-head"><div><div class="eyebrow">Field journal</div><h2>Monster Bestiary</h2></div></div>
   <p class="page-sub" id="bestiary-progress"></p>
   <div class="app-grid" id="bestiary-grid"></div>
  </div>
@@ -298,7 +299,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </section>
 <section class="app-screen" id="settings-screen" hidden>
  <div class="page-inner">
-  <div class="page-head"><div><div class="eyebrow">Options</div><h2>Settings</h2></div><button class="app-back">← Main Menu</button></div>
+  <div class="page-head"><div><div class="eyebrow">Options</div><h2>Settings</h2></div></div>
   <div class="settings-panel">
    <label class="setting-row"><span>Background Music <output id="bgm-volume-label">16%</output></span><input id="bgm-volume" type="range" min="0" max="100" value="16"></label>
    <label class="setting-row"><span>Sound Effects <output id="sfx-volume-label">42%</output></span><input id="sfx-volume" type="range" min="0" max="100" value="42"></label>
@@ -308,7 +309,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </section>
 <section class="app-screen" id="team-screen" hidden>
  <div class="page-inner">
-  <div class="page-head"><div><div class="eyebrow">Battle preparation</div><h2>My Team</h2></div><button class="app-back">← Main Menu</button></div>
+  <div class="page-head"><div><div class="eyebrow">Battle preparation</div><h2>My Team</h2></div></div>
   <p class="page-sub">Build your battle squad from owned monsters. Eight carrying slots are available initially; earn coins from victories to unlock more. Battlefields are random.</p>
   <div class="app-grid" id="team-options"></div>
   <div class="team-slot-head"><strong id="team-slot-count">Team slots: 8</strong><span id="team-wallet"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> <span id="team-wallet-amount">0</span></span><button id="unlock-team-slot" type="button">Unlock slot</button></div><div class="team-slot-grid" id="team-slots"></div><p class="muted" id="team-message" aria-live="polite"></p>
@@ -343,7 +344,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
     <div class="result-actions">
       <button class="primary" id="next-battle">NEXT BATTLE</button>
       <button id="restart-run-result">RESTART RUN</button>
-      <button id="result-menu">MAIN MENU</button>
+
     </div>
   </section>
  </div>
@@ -351,7 +352,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <div class="cards" id="cards"></div>
   <div class="battle-stats"><strong id="unit-count"></strong><button id="restart" hidden>Restart Run</button><span id="status"></span></div>
  </div>
- <button id="battle-menu-toggle" class="floating-plus" aria-label="Pause battle" aria-expanded="false">Ⅱ</button>
+ <button id="battle-menu-toggle" class="floating-plus" aria-label="Open battle menu" aria-expanded="false">+</button>
  <nav class="pop-menu" id="battle-menu" hidden aria-label="Battle menu">
   <div class="battle-paused">PAUSED</div>
   <button id="battle-resume">Resume</button>
@@ -1052,7 +1053,7 @@ function openView(name,fromRoute=false){
  for(const id of ['home','team','bestiary','monster-profile','settings','battle'])$(id+'-screen').hidden=id!==name;
  $('battle-menu').hidden=true;$('quick-nav').hidden=true;
  $('battle-menu-toggle').setAttribute('aria-expanded','false');$('nav-toggle').setAttribute('aria-expanded','false');
- $('battle-menu-toggle').textContent='Ⅱ';$('battle-menu-toggle').setAttribute('aria-label','Pause battle');
+ $('battle-menu-toggle').textContent='+';$('battle-menu-toggle').setAttribute('aria-label','Open battle menu');
  $('nav-toggle').hidden=name==='battle';
  $('site-navigation').hidden=name==='battle';
  last=performance.now();
@@ -1216,8 +1217,8 @@ function toggleBattleMenu(force){
  if(view!=='battle')return;
  battleMenuOpen=typeof force==='boolean'?force:!battleMenuOpen;
  $('battle-menu').hidden=!battleMenuOpen;
- $('battle-menu-toggle').textContent=battleMenuOpen?'▶':'Ⅱ';
- $('battle-menu-toggle').setAttribute('aria-label',battleMenuOpen?'Resume battle':'Pause battle');
+ $('battle-menu-toggle').textContent=battleMenuOpen?'×':'+';
+ $('battle-menu-toggle').setAttribute('aria-label',battleMenuOpen?'Close battle menu':'Open battle menu');
  $('battle-menu-toggle').setAttribute('aria-expanded',String(battleMenuOpen));
  last=performance.now();syncMusic();
 }
@@ -1235,11 +1236,11 @@ function bindMenu(){
  $('menu-team-home').onclick=()=>{renderTeam();openView('team')};
  $('unlock-team-slot').onclick=purchaseSlot;
  $('home-start').onclick=()=>{if(team.length===0){renderTeam();openView('team');return}startRun()};
- document.querySelectorAll('.app-back').forEach(el=>el.onclick=()=>openView('home'));
+
  $('start-game').onclick=startRun;
  $('next-battle').onclick=nextBattle;
  $('restart-run-result').onclick=restartRun;
- $('result-menu').onclick=endRun;
+
  $('nav-toggle').onclick=()=>toggleQuickNav();
  $('nav-home').onclick=()=>openView('home');
  $('nav-team').onclick=()=>{renderTeam();openView('team')};
