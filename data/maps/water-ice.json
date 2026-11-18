@@ -24,9 +24,8 @@
     "layer": "background",
     "icy_wind": {
       "enabled": true,
-      "gust_period_seconds": 8,
-      "gust_duration_seconds": 2.4,
-      "opacity": 0.19
+      "gust_period_seconds": 11,
+      "gust_strength": 18
     }
   },
   "hazard": {
