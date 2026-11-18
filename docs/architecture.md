@@ -3,7 +3,7 @@
 Each system has one authoritative module. No override layers, duplicate engines or temporary compatibility logic that becomes permanent. Preserve the working `index.html` while migrating one feature at a time.
 
 ## Modules
-battle, monsters, elements, collection, leveling, evolution, team, deployment, towers, disasters, guardians, economy, progression, save, animation.
+battle, monsters, elements, collection, leveling, evolution, team, deployment, towers, disasters, guardians, economy, progression, save, animation, day-night (reserved).
 
 ## Current engine status
 - `modules/elements/environment.js`: **active**, directly loaded by `index.html`. Owns weather particles and environmental hazard statuses.
@@ -11,6 +11,10 @@ battle, monsters, elements, collection, leveling, evolution, team, deployment, t
 - `docs/map_rules.md`: locked standard battlefield geometry and visual layout.
 - `stage_affinities.json`: registered stages; disabled maps excluded at runtime; other maps retain their ambient values inline until migrated.
 - Remaining modules: reserved folders; their real engines have not been extracted from the existing game yet.
+
+## Reserved day/night responsibilities
+- `modules/day-night/` is reserved for later time-of-day phase and ambient lighting. It must not change monster combat unless enabled and connected by the elemental engine.
+- Static elemental map backgrounds have no sun, moon, stars, or fixed time-of-day effects. See `docs/map_rules.md`.
 
 ## Migration rules
 1. Commit existing working baseline.
