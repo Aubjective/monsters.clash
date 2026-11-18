@@ -53,12 +53,20 @@ function update(dt,units,applyDamage){
  elapsed+=dt;gustClock+=dt;
  if(ambient){
    const up=ambient.type==='embers'||ambient.type==='spores';
-   const gust=ambient.icy_wind?.enabled?Math.max(0,Math.sin(gustClock*Math.PI*2/(Number(ambient.icy_wind.gust_period_seconds)||8))):0;
+   // Wind is expressed by gently varied particle motion, never by drawn lines.
+   // Two overlapping smooth pulses prevent a synchronized, mechanical gust.
+   const wind=ambient.icy_wind?.enabled?ambient.icy_wind:null;
+   const period=Math.max(3,Number(wind?.gust_period_seconds)||8);
+   const phase=gustClock/period;
+   const gust=wind?Math.max(0,Math.sin(phase*Math.PI*2)*.65+Math.sin(phase*Math.PI*3.41+.8)*.35):0;
+   const gustPower=wind?Math.max(0,Number(wind.gust_strength)||16):0;
    for(let i=0;i<particles.length;i++){
      const p=particles[i];
-     p.y+=(up?-1:1)*p.speed*dt;
-     p.x+=(ambient.drift+gust*12+Math.sin(elapsed*2+p.phase)*8)*dt;
-     p.rotation+=dt*.5;
+     const flutter=Math.sin(elapsed*.85+p.phase)*4+Math.sin(elapsed*1.8+p.phase*.72)*2.4;
+     const drift=ambient.drift+gust*gustPower+flutter;
+     p.y+=(up?-1:1)*p.speed*dt*(1+.08*Math.sin(p.phase+elapsed));
+     p.x+=drift*dt*(.7+.3*Math.sin(p.phase*.5+1)**2);
+     p.rotation+=dt*.35;
      if(p.y < -35||p.y > H+35||p.x < -55||p.x>W+55)particles[i]=seed(false);
    }
  }
@@ -104,27 +112,48 @@ function render(ctx,layer='background'){
    }
    ctx.restore();
  }
- if(ambient.icy_wind?.enabled){
-   const period=Math.max(2,Number(ambient.icy_wind.gust_period_seconds)||8);
-   const phase=(gustClock%period)/period;
-   const strength=Math.max(0,Math.sin(phase*Math.PI*2))*(Number(ambient.icy_wind.opacity)||.18);
-   if(strength>.01){
-     ctx.lineCap='round';ctx.lineWidth=2;ctx.strokeStyle='#e2faff';ctx.globalAlpha=strength;
-     for(let i=0;i<7;i++){
-       const y=85+i*48;
-       const x=((elapsed*145+i*150)%1130)-120;
-       ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+35,y-8,x+95,y-4);ctx.stroke();
-     }
-   }
- }
+
  ctx.restore();
 }
 function renderStatus(ctx,u){
- const s=u?.environmentStatus;if(!s||(s.slowTime<=0&&s.freezeTime<=0))return;
- const frozen=s.freezeTime>0, cx=u.x,cy=u.y-45;
- ctx.save();ctx.strokeStyle=frozen?'#b9f6ff':'#91d8f7';ctx.lineWidth=frozen?4:2;ctx.globalAlpha=frozen?.75:.45;
- ctx.beginPath();ctx.ellipse(cx,cy,37,42,0,0,Math.PI*2);ctx.stroke();
- if(frozen){ctx.fillStyle='#aaf3ff';for(let i=0;i<4;i++){let a=i*Math.PI/2+elapsed*.35;ctx.fillRect(cx+Math.cos(a)*30-3,cy+Math.sin(a)*33-3,6,6)}}
+ const s=u?.environmentStatus;
+ if(!s||(s.slowTime<=0&&s.freezeTime<=0))return;
+ const freeze=s.freezeTime>0,slow=s.slowTime>0;
+ // Recognizable ice crystals rather than a blue status/debug circle.
+ const x=u.x,y=u.y-45, age=elapsed+(u.uid||0)*.33;
+ ctx.save();
+ if(freeze){
+   // Angular translucent crystalline casing: distinct from monster shields.
+   ctx.globalAlpha=.44;
+   ctx.fillStyle='#85ddfa';ctx.strokeStyle='#e0fbff';ctx.lineWidth=2.4;
+   ctx.beginPath();ctx.moveTo(x-27,y-36);ctx.lineTo(x-6,y-53);ctx.lineTo(x+23,y-42);
+   ctx.lineTo(x+36,y-11);ctx.lineTo(x+25,y+31);ctx.lineTo(x+3,y+44);
+   ctx.lineTo(x-29,y+26);ctx.lineTo(x-35,y-10);ctx.closePath();ctx.fill();ctx.stroke();
+   ctx.globalAlpha=.52;ctx.strokeStyle='#f3feff';ctx.lineWidth=1.5;
+   ctx.beginPath();ctx.moveTo(x-6,y-53);ctx.lineTo(x+3,y+44);ctx.moveTo(x-35,y-10);
+   ctx.lineTo(x+25,y+31);ctx.moveTo(x+23,y-42);ctx.lineTo(x-29,y+26);ctx.stroke();
+ }
+ if(slow||freeze){
+   // A handful of tiny diamond-shaped ice chips orbit around the lower body.
+   const count=freeze?8:5;
+   for(let i=0;i<count;i++){
+     const t=i/count*Math.PI*2+age*(i%2?-.46:.42);
+     const rx=freeze?35:30,ry=freeze?36:22;
+     const px=x+Math.cos(t)*rx,py=y+9+Math.sin(t)*ry;
+     const chip=freeze?4.8:3.3;
+     ctx.globalAlpha=freeze?.9:.63;
+     ctx.fillStyle=i%2?'#dffaff':'#76d1f1';
+     ctx.beginPath();ctx.moveTo(px,py-chip*1.5);ctx.lineTo(px+chip*.7,py);
+     ctx.lineTo(px,py+chip*1.5);ctx.lineTo(px-chip*.7,py);ctx.closePath();ctx.fill();
+   }
+   // Snowflake at shoulder height: clear status indicator at small sizes.
+   const fx=x,fy=y-56;
+   ctx.globalAlpha=freeze?1:.82;ctx.strokeStyle='#e7fcff';ctx.lineWidth=2;
+   for(let i=0;i<3;i++){
+     const a=i*Math.PI/3,dx=Math.cos(a)*7,dy=Math.sin(a)*7;
+     ctx.beginPath();ctx.moveTo(fx-dx,fy-dy);ctx.lineTo(fx+dx,fy+dy);ctx.stroke();
+   }
+ }
  ctx.restore();
 }
 function setEnabled(v){enabled=!!v}
