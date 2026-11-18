@@ -20,7 +20,7 @@ The approved Water/Ice illustration `moonlit_aurora_ice_battlefield.png` is the 
 - Metal — Silvercrest Valley: metallic glimmers / shards (future)
 - Poison — Toxic Marsh: **disabled/hidden**, retained for later.
 
-Water is the core elemental affinity. Ice and snow are environment themes and attack specializations; legacy `ice` monster IDs count as Water-compatible until their monster JSONs are individually normalized.
+Water is the core elemental affinity. Ice and snow are environment themes and attack specializations; Ice-specialized monsters have primary element `water` with specialization `ice`, so no compatibility aliases are needed.
 
 ## Engine ownership
 - Map IDs, active state, background, affinity and hazard parameters are stored in **one authoritative map entry**, not repeated in additional overlay files.
@@ -38,7 +38,7 @@ Water is the core elemental affinity. Ice and snow are environment themes and at
 3. First hazard triggers after ~10 seconds; subsequent events every 15–22 seconds.
 4. Nonmatching, eligible monsters are chilled: movement speed -20% for 3 seconds.
 5. Each eligible target has a 20% chance of a 0.6-second freeze during the event.
-6. Fire, Metal, Earth, Nature and Neutral units can be affected; Water and legacy Ice units are immune.
+6. Fire, Metal, Earth, Nature and Neutral units can be affected; Water units, including Ice-specialized Water units, are immune.
 7. Environmental hazards do **not** lower HP on this map; other future hazards can call the regular damage engine.
 
 ## Migration and assets
