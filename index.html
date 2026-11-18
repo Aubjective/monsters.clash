@@ -51,6 +51,20 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 @media(max-width:640px){.battle-top{padding-right:54px;gap:6px}.battle-top-side{gap:3px}.battle-team-flag{width:33px;height:44px}}
 .battle-brand{font-size:clamp(14px,1.8vw,19px);font-weight:800;white-space:nowrap}
 .battlefield-name{font-size:clamp(11px,1.5vw,15px);color:#e6d19f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+#stage-info-toggle{display:inline-flex;align-items:center;gap:5px;max-width:min(36vw,320px);padding:5px 7px;border:1px solid transparent;background:transparent;color:#e6d19f;border-radius:7px;cursor:pointer;font-weight:600;min-width:0}
+#stage-info-toggle:hover,#stage-info-toggle:focus-visible,#stage-info-toggle[aria-expanded="true"]{border-color:#7098b5;background:#24415b}
+#stage-info-toggle .map-info-symbol{flex:none;font-size:12px;border:1px solid #b1cedd;border-radius:50%;width:17px;height:17px;line-height:15px;text-align:center}
+#stage-info-panel{position:absolute;top:calc(52px + env(safe-area-inset-top));right:57px;z-index:35;width:min(345px,calc(100vw - 24px));max-height:min(73vh,420px);overflow-y:auto;border:1px solid #7498b4;border-radius:12px;background:#10263bf5;color:#e8f3ff;box-shadow:0 12px 35px #000a;padding:14px 16px;font-size:13px}
+#stage-info-panel[hidden]{display:none!important}
+#stage-info-panel h3{font-size:16px;color:#fff0b8;margin:0 28px 4px 0}
+#stage-info-panel .map-info-kind{font-size:11px;color:#a9d7ff;text-transform:capitalize;margin-bottom:9px}
+#stage-info-panel .map-info-desc{line-height:1.45;color:#c8dcef;margin:0 0 10px}
+#stage-info-panel .map-info-list{display:grid;gap:6px}
+#stage-info-panel .map-info-entry{display:flex;justify-content:space-between;gap:15px;padding:7px 8px;border-radius:7px;background:#223d54}
+#stage-info-panel .map-info-entry strong{text-align:right;color:#d8f6ff}
+#stage-info-panel .map-info-subhead{font-size:12px;font-weight:800;color:#f1d99d;margin:12px 0 6px}
+#stage-info-close{position:absolute;right:9px;top:8px;font-size:20px;line-height:1;width:28px;height:28px;padding:0;border:0;background:transparent;color:#e6efff;cursor:pointer}
+@media(max-height:500px){#stage-info-panel{top:35px;max-height:calc(100vh - 74px);padding:9px 12px;font-size:11px}#stage-info-panel .map-info-entry{padding:5px 7px}#stage-info-panel h3{font-size:14px}}
 .battle-top select{font-size:13px;padding:5px 10px;max-width:230px}
 .arena-wrap{flex:1;min-height:0;min-width:0;display:grid;place-items:center;background:#0d2134;overflow:hidden}
 #game{display:block;width:100%;height:100%;object-fit:contain;max-width:100%;max-height:100%;touch-action:none}
@@ -328,8 +342,15 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <main id="battle-screen" hidden>
  <div class="battle-top">
   <div class="battle-top-side battle-top-ally"><span class="battle-team-flag flag-blue" role="img" aria-label="Blue team">⚑</span><span class="battle-brand">⚔ Monsters Clash <small id="run-progress">Battle 1</small></span></div>
-  <div class="battle-top-side battle-top-enemy"><span class="battlefield-name" id="stage-label" aria-live="polite"></span><span class="battle-team-flag flag-red" role="img" aria-label="Red team">⚑</span></div>
+  <div class="battle-top-side battle-top-enemy"><button type="button" id="stage-info-toggle" aria-label="View battlefield information" aria-expanded="false" aria-controls="stage-info-panel"><span class="battlefield-name" id="stage-label" aria-live="polite"></span><span class="map-info-symbol" aria-hidden="true">i</span></button><span class="battle-team-flag flag-red" role="img" aria-label="Red team">⚑</span></div>
  </div>
+ <aside id="stage-info-panel" hidden aria-label="Battlefield information">
+  <button type="button" id="stage-info-close" aria-label="Close battlefield information">×</button>
+  <h3 id="stage-info-title">Battlefield</h3>
+  <div class="map-info-kind" id="stage-info-kind"></div>
+  <p class="map-info-desc" id="stage-info-desc"></p>
+  <div id="stage-info-details"></div>
+ </aside>
  <div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas>
   <section class="run-results" id="run-results" hidden aria-live="polite" aria-label="Battle result">
     <h2 id="result-heading">VICTORY</h2>
@@ -622,7 +643,49 @@ function chooseRandomStage(){
  currentStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;
  if(currentStage){run.lastStageId=currentStage.id;mapBackground(stageBackgroundPath(currentStage))};
  window.MonstersClashEnvironment?.configure(currentStage);
- const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name+' · '+currentStage.affinity:'Battlefield';
+ const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name:'Battlefield';
+ $('stage-info-panel').hidden=true;$('stage-info-toggle').setAttribute('aria-expanded','false');
+ renderStageInfo();
+}
+function renderStageInfo(){
+ const map=currentStage;if(!map)return;
+ $('stage-info-title').textContent=map.name||'Battlefield';
+ $('stage-info-kind').textContent=(map.element||map.affinity||'Neutral')+' element'+(map.environment_theme&&map.environment_theme!==map.element?' · '+map.environment_theme+' environment':'');
+ $('stage-info-desc').textContent=map.description||'Elemental terrain affects both teams during battle.';
+ const box=$('stage-info-details');box.replaceChildren();
+ const line=(name,value)=>{
+  const row=document.createElement('div');row.className='map-info-entry';
+  const label=document.createElement('span');label.textContent=name;
+  const detail=document.createElement('strong');detail.textContent=value;
+  row.append(label,detail);box.append(row);
+ };
+ const heading=value=>{const node=document.createElement('div');node.className='map-info-subhead';node.textContent=value;box.append(node)};
+ const pct=value=>(Math.round(Number(value||0)*1000)/10)+'%';
+ heading('Matching element benefits');
+ const mod=map.modifier||{};
+ if(Number(mod.outgoing_damage_bonus_pct))line('Outgoing damage','+'+pct(mod.outgoing_damage_bonus_pct));
+ if(Number(mod.incoming_damage_reduction_pct))line('Damage reduction','+'+pct(mod.incoming_damage_reduction_pct));
+ if(Number(mod.max_hp_bonus_pct))line('Maximum HP','+'+pct(mod.max_hp_bonus_pct));
+ if(!Object.values(mod).some(v=>Number(v)>0))line('Affinity bonus','None');
+ const hazard=map.hazard;
+ heading('Environmental hazard');
+ if(!hazard?.enabled){line('Hazard','Inactive');return;}
+ if(hazard.type==='chill_freeze'){
+  line('Chill','−'+pct(hazard.slow_pct)+' movement speed · '+(Number(hazard.slow_duration_seconds)||0)+'s');
+  line('Freeze',pct(hazard.freeze_chance)+' chance · '+(Number(hazard.freeze_duration_seconds)||0)+'s');
+ }else if(hazard.type==='instant_damage'){
+  line('Impact damage',String(hazard.damage||0));
+ }else line('Effect',String(hazard.type||'Environmental effect').replaceAll('_',' '));
+ if(Array.isArray(hazard.interval_seconds))line('Hazard frequency',hazard.interval_seconds.join('–')+'s');
+ if(hazard.matching_element_immune)line('Map hazard immunity',(map.element||map.affinity||'Matching')+' monsters');
+ if(hazard.affects==='both_teams')line('Affected teams','Allies and enemies');
+}
+function toggleStageInfo(force){
+ if(view!=='battle')return;
+ const open=typeof force==='boolean'?force:$('stage-info-panel').hidden;
+ $('stage-info-panel').hidden=!open;
+ $('stage-info-toggle').setAttribute('aria-expanded',String(open));
+ if(open){renderStageInfo();if(battleMenuOpen)toggleBattleMenu(false);}
 }
 function reset(){
  chooseRandomStage();
@@ -1051,7 +1114,7 @@ function openView(name,fromRoute=false){
  if(view==='battle'&&name!=='battle')run.active=false;
  view=name;battleMenuOpen=false;navOpen=false;syncMusic();
  for(const id of ['home','team','bestiary','monster-profile','settings','battle'])$(id+'-screen').hidden=id!==name;
- $('battle-menu').hidden=true;$('quick-nav').hidden=true;
+ $('battle-menu').hidden=true;$('quick-nav').hidden=true;$('stage-info-panel').hidden=true;$('stage-info-toggle').setAttribute('aria-expanded','false');
  $('battle-menu-toggle').setAttribute('aria-expanded','false');$('nav-toggle').setAttribute('aria-expanded','false');
  $('battle-menu-toggle').textContent='+';$('battle-menu-toggle').setAttribute('aria-label','Open battle menu');
  $('nav-toggle').hidden=name==='battle';
@@ -1216,6 +1279,7 @@ function launchLandscape(){
 function toggleBattleMenu(force){
  if(view!=='battle')return;
  battleMenuOpen=typeof force==='boolean'?force:!battleMenuOpen;
+ if(battleMenuOpen)toggleStageInfo(false);
  $('battle-menu').hidden=!battleMenuOpen;
  $('battle-menu-toggle').textContent=battleMenuOpen?'×':'+';
  $('battle-menu-toggle').setAttribute('aria-label',battleMenuOpen?'Close battle menu':'Open battle menu');
@@ -1248,6 +1312,8 @@ function bindMenu(){
  $('nav-settings').onclick=()=>openView('settings');
  $('nav-music').onclick=toggleMusic;$('battle-music').onclick=toggleMusic;
  $('nav-sfx').onclick=toggleSfx;$('battle-sfx').onclick=toggleSfx;
+ $('stage-info-toggle').onclick=()=>toggleStageInfo();
+ $('stage-info-close').onclick=()=>toggleStageInfo(false);
  $('battle-menu-toggle').onclick=()=>toggleBattleMenu();
  $('battle-resume').onclick=()=>toggleBattleMenu(false);
  $('battle-restart').onclick=restartRun;
@@ -1255,7 +1321,7 @@ function bindMenu(){
  $('battle-menu-home').onclick=()=>{run.active=false;toggleBattleMenu(false);openView('home')};
  $('battle-menu-fullscreen').onclick=()=>{toggleBattleMenu(false);launchLandscape()};
  $('restart').onclick=restartRun;
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view==='battle'&&!document.fullscreenElement){toggleBattleMenu()}});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view==='battle'){if(!$('stage-info-panel').hidden){toggleStageInfo(false);return;}if(!document.fullscreenElement)toggleBattleMenu()}});
 }
 
 function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){if(!battleMenuOpen)step(dt);draw()}requestAnimationFrame(frame)}init().catch(e=>{$('status').textContent='Loading failed: '+e.message});
