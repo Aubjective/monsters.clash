@@ -10,7 +10,6 @@ const palettes={
  dust:['#d9c9a5','#b6a68c','#f1e3bf'],
  spores:['#a4e8a0','#72c4a8','#c9e7a5'],
  rain:['#b7def1','#8cc6d9'],
- spray:['#c7fcff','#8eeaf2','#f2ffff'],
  metal:['#d7e5f2','#9aaec4','#fff1b8']
 };
 let stage=null,ambient=null,hazard=null,particles=[],elapsed=0,hazardIn=Infinity,gustClock=0,heavyRainTime=0,enabled=true,hazardsEnabled=true;
@@ -21,7 +20,7 @@ function matchesElement(unitOrMonster){
  return element===mapElement;
 }
 function seed(initial=false){
- const k=ambient.type,up=k==='embers'||k==='spores'||k==='spray';
+ const k=ambient.type,up=k==='embers'||k==='spores';
  return {x:rand(-30,W+30),y:initial?rand(-20,H+20):(up?H+25:-25),size:rand(.55,1.35)*ambient.size,
  speed:rand(.7,1.3)*ambient.speed,phase:rand(0,7),rotation:rand(0,7),
  color:palettes[k][Math.floor(rand(0,palettes[k].length))]};
@@ -56,7 +55,7 @@ function update(dt,units,applyDamage){
  elapsed+=dt;gustClock+=dt;
  heavyRainTime=Math.max(0,heavyRainTime-dt);
  if(ambient){
-   const up=ambient.type==='embers'||ambient.type==='spores'||ambient.type==='spray';
+   const up=ambient.type==='embers'||ambient.type==='spores';
    // Wind is expressed by gently varied particle motion, never by drawn lines.
    // Two overlapping smooth pulses prevent a synchronized, mechanical gust.
    const wind=ambient.icy_wind?.enabled?ambient.icy_wind:null;
@@ -127,7 +126,6 @@ function render(ctx,layer='background'){
      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-length*.24,length);ctx.stroke();
      break;
    }
-   case 'spray':ctx.globalAlpha*=.7;ctx.beginPath();ctx.ellipse(0,0,p.size*.55,p.size*.8,0,0,Math.PI*2);ctx.fill();break;
    case 'metal':ctx.rotate(p.rotation);ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);break;
    }
    ctx.restore();
