@@ -8,7 +8,7 @@
   "environment_theme": "coastal_water",
   "background": "assets/backgrounds/tideglass-bay.png",
   "layout": "standard_landscape_v2",
-  "description": "A sheltered coastal bay with turquoise waters, waterfalls, and sudden currents that slow non-Water Monsters.",
+  "description": "A coastal bay where gentle rainfall turns into sudden heavy showers, slowing non-Water Monsters.",
   "modifier": {
     "outgoing_damage_bonus_pct": 0.1,
     "incoming_damage_reduction_pct": 0.05,
@@ -16,22 +16,25 @@
   },
   "ambient": {
     "enabled": true,
-    "type": "spray",
-    "count": 34,
-    "speed": 17,
-    "drift": 8,
-    "opacity": 0.45,
-    "size": 2.8,
-    "layer": "background"
+    "type": "rain",
+    "count": 42,
+    "heavy_count": 96,
+    "speed": 165,
+    "drift": -35,
+    "opacity": 0.36,
+    "size": 2.1,
+    "layer": "background",
+    "ground_splashes": true
   },
   "hazard": {
     "enabled": true,
-    "type": "current_slow",
+    "type": "heavy_rain",
     "interval_seconds": [
       15,
       22
     ],
     "first_trigger_seconds": 10,
+    "visual_duration_seconds": 3.8,
     "target": "non_matching_monsters",
     "affects": "both_teams",
     "matching_element_immune": true,
@@ -46,7 +49,7 @@
     "time_of_day_independent": true,
     "preferred_art_ratio": "16:9",
     "reference": "docs/map_rules.md",
-    "approved_asset_status": "awaiting_upload"
+    "approved_asset_status": "uploaded"
   },
   "time_of_day": {
     "mode": "neutral_until_engine_ready",
