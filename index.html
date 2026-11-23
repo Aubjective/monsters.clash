@@ -1155,7 +1155,7 @@ function cardFor(m,selectable){
 const allowBestiaryHash=(()=>{
  try{return window.top===window.self&&!window.Telegram?.WebApp&&!location.hash.includes('tgWebApp')}catch(e){return false}
 })();
-let selectedMonsterId=null;
+let selectedMonsterId=null,profileReturnView='bestiary';
 function profileLink(id){return '#/bestiary/'+encodeURIComponent(id)}
 function routePath(name){return name==='bestiary'?'#/bestiary':location.pathname+location.search}
 function updateRoute(name,replace=false){
@@ -1169,6 +1169,10 @@ function showMonsterProfile(id,fromRoute=false){
  const monster=catalog.find(m=>m.id===id);
  if(!monster)return openView('bestiary',fromRoute);
  selectedMonsterId=id;
+ // A profile opened from My Team must return to team preparation, not the Bestiary.
+ // Deep links default to Bestiary unless the player came directly from My Team.
+ profileReturnView=view==='team'?'team':'bestiary';
+ $('profile-back').textContent=profileReturnView==='team'?'← My Team':'← Bestiary';
  const known=encountered(id);
  $('profile-name').textContent=known?monster.name:'??? · Undiscovered';
  const artwork=$('profile-art'),details=$('profile-info');
@@ -1209,6 +1213,7 @@ function readBestiaryRoute(){
  const match=location.hash.match(/^#\/bestiary\/([a-zA-Z0-9_-]+)$/);
  if(match){const id=decodeURIComponent(match[1]);if(catalog.some(m=>m.id===id))return showMonsterProfile(id,true)}
  if(location.hash==='#/bestiary')openView('bestiary',true);
+ else if(view==='monster-profile'&&profileReturnView==='team'){renderTeam();openView('team',true)}
  else if(view==='monster-profile'||view==='bestiary')openView('home',true);
 }
 function renderBestiary(){
@@ -1297,7 +1302,7 @@ function toggleQuickNav(force){
  $('nav-toggle').setAttribute('aria-expanded',String(navOpen));
 }
 function bindMenu(){
- $('profile-back').onclick=()=>openView('bestiary');
+ $('profile-back').onclick=()=>{if(profileReturnView==='team'){renderTeam();openView('team')}else openView('bestiary')};
  $('bgm-volume').oninput=e=>setAudioLevel('bgm',e.target.value);
  $('sfx-volume').oninput=e=>setAudioLevel('sfx',e.target.value);
  $('menu-team-home').onclick=()=>{renderTeam();openView('team')};
