@@ -82,3 +82,11 @@ Water is the **core element**. Ice is the environment/attack specialization and 
 
 ## 9. Implementation status
 The **rules** are locked for future artwork and engines. The Water/Ice hazard/ambient engine exists; no Day/Night simulation or Light/Dark combat bonuses have been implemented yet. The updated Frostveil Valley artwork is uploaded. Only Frostveil Valley is currently registered for battle. `assets/backgrounds/whisper-meadow.png` is retained exclusively as the main-menu background.
+
+## Tideglass Bay — Water environment (prepared)
+- Same locked ground layout and tower anchors as Frostveil Valley; solid flat coastal stone arena, ocean behind the battle line.
+- Core element: **Water**; theme: **Coastal Water**. This is a second Water map, not another core element.
+- Dynamic spray is cosmetic. Every 15–22 seconds, the **Coastal Current** causes eligible non-Water Monsters on both teams to move 15% slower for 2.5 seconds. Water Monsters are immune to this map hazard.
+- Config is authoritative at `data/maps/tideglass-bay.json`; the single Elements Engine owns both ambient droplets and hazard timing.
+- Image intended path is `assets/backgrounds/tideglass-bay.png` (1600 × 900). Until the image is uploaded, this map remains `enabled:false` and cannot be selected.
+- Keep sun, moon, stars, waves, rain droplets and moving water effects out of any fixed background art where possible. Preserve consistent gameplay geometry.
