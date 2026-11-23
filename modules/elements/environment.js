@@ -182,45 +182,76 @@ function render(ctx,layer='background'){
      ctx.beginPath();ctx.ellipse(x,y,(3+8*phase),1+2*phase,0,0,Math.PI*2);ctx.stroke();
    }
  }
- // Fire zones have distinct readable phases: gentle warning, ignition, living flames and fade.
+ // Burning ground is a soft irregular heat patch, not a perfect target circle.
  if(hazardsEnabled&&hazard?.type==='burning_areas')for(const zone of fireZones){
    const warning=zone.warning>0,warningTotal=Math.max(.3,Number(hazard.warning_seconds)||1);
    const duration=Math.max(.5,Number(hazard.active_seconds)||4);
    const age=warning?Math.max(0,warningTotal-zone.warning):Math.max(0,duration-zone.remaining);
-   const warningProgress=Math.min(1,age/warningTotal),activeProgress=Math.min(1,age/.5);
-   const fadeOut=warning?1:Math.min(1,zone.remaining/.65);
-   const strength=warning?(.12+.24*warningProgress):Math.min(1,activeProgress*1.6)*fadeOut;
-   const flicker=.94+.04*Math.sin(elapsed*8.9+zone.phase)+.02*Math.sin(elapsed*15.7+zone.phase*2);
+   const warm=Math.min(1,age/warningTotal);
+   const ignite=warning?0:Math.min(1,age/.38);
+   const extinguish=warning?1:Math.min(1,zone.remaining/.7);
+   const intensity=warning?(.28+.42*warm):ignite*extinguish;
+   const breathe=1+.022*Math.sin(elapsed*3.6+zone.phase)+.014*Math.sin(elapsed*6.1+zone.phase*1.9);
    ctx.save();ctx.translate(zone.x,zone.y);ctx.scale(1,.48);
-   // A soft radial glow rather than a flat orange disk.
-   const glow=ctx.createRadialGradient(0,0,zone.radius*.1,0,0,zone.radius);
-   glow.addColorStop(0,warning?'rgba(255,159,51,.29)':'rgba(255,91,18,.48)');
-   glow.addColorStop(.68,warning?'rgba(255,121,28,.18)':'rgba(255,106,27,.32)');
-   glow.addColorStop(1,'rgba(255,95,14,0)');
-   ctx.globalAlpha=strength;
-   ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,zone.radius,0,Math.PI*2);ctx.fill();
-   // Gentle pulsing rim gives players a clear full-second warning.
-   ctx.globalAlpha=(warning?.4+.28*warningProgress:.48*fadeOut)*flicker;
-   ctx.strokeStyle=warning?'#ffbd58':'#ff802b';ctx.lineWidth=warning?2.5:2;
-   ctx.setLineDash(warning?[10,9]:[]);
-   ctx.beginPath();ctx.ellipse(0,0,zone.radius*.96,zone.radius*.96,0,0,Math.PI*2);ctx.stroke();
+   // Uneven edge with several broad lobes; distortion remains subtle so the warning stays legible.
+   ctx.beginPath();
+   for(let i=0;i<=64;i++){
+     const theta=i/64*Math.PI*2;
+     const irregular=1+.065*Math.sin(theta*5+zone.phase)+.038*Math.sin(theta*9-zone.phase*2);
+     const radius=zone.radius*irregular*breathe;
+     const x=Math.cos(theta)*radius,y=Math.sin(theta)*radius;
+     if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+   }
+   ctx.closePath();
+   const heat=ctx.createRadialGradient(0,0,zone.radius*.08,0,0,zone.radius*1.12);
+   heat.addColorStop(0,warning?'rgba(255,130,28,.46)':'rgba(255,176,54,.75)');
+   heat.addColorStop(.43,warning?'rgba(236,74,13,.32)':'rgba(250,90,19,.59)');
+   heat.addColorStop(.82,'rgba(232,53,8,.18)');
+   heat.addColorStop(1,'rgba(218,46,7,0)');
+   ctx.globalAlpha=intensity*.76;ctx.fillStyle=heat;ctx.fill();
+   // During warning, keep a thin broken edge. During ignition, dissolve it into the flames.
+   if(warning){
+     ctx.globalAlpha=(.18+.31*warm)*(.95+.05*Math.sin(elapsed*8+zone.phase));
+     ctx.strokeStyle='#ffba58';ctx.lineWidth=2;
+     ctx.setLineDash([14,12]);ctx.stroke();ctx.setLineDash([]);
+   }
    ctx.restore();
    if(!warning){
-     // Offset individual flame tongues vertically; their oscillations are never in lockstep.
+     // Short overlapping ribbons of flame, independently swaying rather than repeated triangles.
      ctx.save();
-     const rise=Math.min(1,age/.42)*Math.min(1,zone.remaining/.55);
-     for(let i=0;i<12;i++){
-       const a=(i*2.399963+zone.phase)%6.283,dist=Math.sqrt((i+.55)/12)*zone.radius*.85;
-       const fx=zone.x+Math.cos(a)*dist,fy=zone.y+Math.sin(a)*dist*.44;
-       const phase=elapsed*(5.2+(i%4)*.8)+i*1.73+zone.phase;
-       const sway=Math.sin(phase)*3.5+Math.sin(phase*.55)*2;
-       const height=(13+(i%5)*3)*(1+.13*Math.sin(phase*.8))*rise*flicker;
-       ctx.globalAlpha=(.46+.16*Math.sin(phase*.7)**2)*fadeOut;
-       ctx.fillStyle=i%3===0?'#ffde7c':i%3===1?'#ffa43b':'#ee5c23';
-       ctx.beginPath();ctx.moveTo(fx-5,fy);
-       ctx.quadraticCurveTo(fx-6+sway*.3,fy-height*.48,fx+sway,fy-height);
-       ctx.quadraticCurveTo(fx+6+sway*.45,fy-height*.45,fx+5,fy);
+     for(let i=0;i<19;i++){
+       const angle=i*2.399963+zone.phase;
+       const distance=Math.sqrt((i+.5)/19)*zone.radius*.83;
+       const fx=zone.x+Math.cos(angle)*distance;
+       const fy=zone.y+Math.sin(angle)*distance*.43;
+       const phase=elapsed*(3.7+(i%5)*.43)+i*1.91+zone.phase;
+       const sway=Math.sin(phase)*5+Math.sin(phase*.61+i)*2.8;
+       const height=(13+(i%6)*3.7)*(.88+.13*Math.sin(phase*.74))*ignite*extinguish;
+       const width=4+(i%3)*1.4;
+       ctx.globalAlpha=(.43+.14*Math.sin(phase*.79)**2)*extinguish;
+       ctx.fillStyle=i%4===0?'#ffe28a':i%4===1?'#ffbd4b':i%4===2?'#ff8d27':'#ed5020';
+       ctx.beginPath();ctx.moveTo(fx-width,fy);
+       ctx.bezierCurveTo(fx-width*1.45,fy-height*.3,fx+sway-width,fy-height*.72,fx+sway*.8,fy-height);
+       ctx.bezierCurveTo(fx+sway+width*.65,fy-height*.67,fx+width*1.7,fy-height*.25,fx+width,fy);
        ctx.closePath();ctx.fill();
+       // A warmer inner tongue adds depth without taller flames hiding monsters.
+       if(i%3===0){
+         ctx.globalAlpha=.34*ignite*extinguish;ctx.fillStyle='#ffe6a1';
+         ctx.beginPath();ctx.moveTo(fx-width*.35,fy);
+         ctx.quadraticCurveTo(fx+sway*.2,fy-height*.55,fx+sway*.54,fy-height*.7);
+         ctx.quadraticCurveTo(fx+width*.75,fy-height*.27,fx+width*.35,fy);
+         ctx.closePath();ctx.fill();
+       }
+     }
+     // Tiny escaping cinders rise out of the burning patch and disappear softly.
+     for(let i=0;i<12;i++){
+       const offset=(i*47+zone.phase*23)%127-63;
+       const cycle=(elapsed*(.38+(i%4)*.07)+i*.137+zone.phase*.1)%1;
+       const x=zone.x+offset+Math.sin(elapsed*2+i*2.3)*7;
+       const y=zone.y-4-cycle*(24+(i%5)*7);
+       ctx.globalAlpha=.43*(1-cycle)*ignite*extinguish;
+       ctx.fillStyle=i%2?'#ffd280':'#ff8f3a';
+       ctx.beginPath();ctx.arc(x,y,1.1+(i%3)*.48,0,Math.PI*2);ctx.fill();
      }
      ctx.restore();
    }
