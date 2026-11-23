@@ -10,6 +10,7 @@ const palettes={
  dust:['#d9c9a5','#b6a68c','#f1e3bf'],
  spores:['#a4e8a0','#72c4a8','#c9e7a5'],
  rain:['#b7def1','#8cc6d9'],
+ spray:['#c7fcff','#8eeaf2','#f2ffff'],
  metal:['#d7e5f2','#9aaec4','#fff1b8']
 };
 let stage=null,ambient=null,hazard=null,particles=[],elapsed=0,hazardIn=Infinity,gustClock=0,enabled=true,hazardsEnabled=true;
@@ -20,7 +21,7 @@ function matchesElement(unitOrMonster){
  return element===mapElement;
 }
 function seed(initial=false){
- const k=ambient.type,up=k==='embers'||k==='spores';
+ const k=ambient.type,up=k==='embers'||k==='spores'||k==='spray';
  return {x:rand(-30,W+30),y:initial?rand(-20,H+20):(up?H+25:-25),size:rand(.55,1.35)*ambient.size,
  speed:rand(.7,1.3)*ambient.speed,phase:rand(0,7),rotation:rand(0,7),
  color:palettes[k][Math.floor(rand(0,palettes[k].length))]};
@@ -42,7 +43,7 @@ function configure(map){
  hazardIn=hazard?Math.max(1,Number(hazard.first_trigger_seconds)||10):Infinity;
 }
 function status(u){
- if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1};
+ if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null};
  return u.environmentStatus;
 }
 function movementMultiplier(u){const s=u?.environmentStatus;return s?.freezeTime>0?0:(s?.slowTime>0?1-s.slowPct:1)}
@@ -52,7 +53,7 @@ function update(dt,units,applyDamage){
  dt=Math.max(0,Math.min(.06,Number(dt)||0));if(!dt)return;
  elapsed+=dt;gustClock+=dt;
  if(ambient){
-   const up=ambient.type==='embers'||ambient.type==='spores';
+   const up=ambient.type==='embers'||ambient.type==='spores'||ambient.type==='spray';
    // Wind is expressed by gently varied particle motion, never by drawn lines.
    // Two overlapping smooth pulses prevent a synchronized, mechanical gust.
    const wind=ambient.icy_wind?.enabled?ambient.icy_wind:null;
@@ -77,7 +78,7 @@ function update(dt,units,applyDamage){
    const s=status(u);
    s.slowTime=Math.max(0,s.slowTime-dt);
    s.freezeTime=Math.max(0,s.freezeTime-dt);
-   if(s.slowTime===0)s.slowPct=0;
+   if(s.slowTime===0){s.slowPct=0;if(s.freezeTime===0)s.source=null;}
  }
  if(!hazardsEnabled||!hazard)return;
  hazardIn-=dt;
@@ -86,11 +87,13 @@ function update(dt,units,applyDamage){
  hazardIn=rand(Math.max(1,Number(limits[0])||15),Math.max(1,Number(limits[1])||22));
  for(const u of units){
    if(!u||u.hp<=0||matchesElement(u)||u.environmentAge<(Number(hazard.minimum_spawn_age_seconds)||0))continue;
-   if(hazard.type==='chill_freeze'){
+   if(hazard.type==='chill_freeze'||hazard.type==='current_slow'){
+     const isCurrent=hazard.type==='current_slow';
      const s=status(u);
      s.slowTime=Math.max(s.slowTime,Number(hazard.slow_duration_seconds)||3);
+     s.source=isCurrent?'water':'ice';
      s.slowPct=Math.max(s.slowPct,Math.min(.9,Math.max(0,Number(hazard.slow_pct)||.2)));
-     if(Math.random()<Math.min(1,Math.max(0,Number(hazard.freeze_chance)||0)))
+     if(!isCurrent&&Math.random()<Math.min(1,Math.max(0,Number(hazard.freeze_chance)||0)))
        s.freezeTime=Math.max(s.freezeTime,Number(hazard.freeze_duration_seconds)||.6);
    }else if(hazard.type==='instant_damage'&&typeof applyDamage==='function'){
      applyDamage(u,Math.max(0,Number(hazard.damage)||0));
@@ -108,6 +111,7 @@ function render(ctx,layer='background'){
    case 'embers':case 'spores':ctx.shadowBlur=8;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(0,0,p.size*.6,0,Math.PI*2);ctx.fill();break;
    case 'dust':ctx.globalAlpha*=.45;ctx.beginPath();ctx.ellipse(0,0,p.size*1.6,p.size*.65,0,0,Math.PI*2);ctx.fill();break;
    case 'rain':ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-p.size,p.size*4);ctx.stroke();break;
+   case 'spray':ctx.globalAlpha*=.7;ctx.beginPath();ctx.ellipse(0,0,p.size*.55,p.size*.8,0,0,Math.PI*2);ctx.fill();break;
    case 'metal':ctx.rotate(p.rotation);ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);break;
    }
    ctx.restore();
@@ -119,6 +123,19 @@ function renderStatus(ctx,u){
  const s=u?.environmentStatus;
  if(!s||(s.slowTime<=0&&s.freezeTime<=0))return;
  const freeze=s.freezeTime>0,slow=s.slowTime>0;
+ if(s.source==='water'&&slow&&!freeze){
+   // Coastal-current debuff is indicated by moving wavelets around the feet,
+   // never by ice crystals or an all-purpose blue status ring.
+   ctx.save();ctx.strokeStyle='#9beff6';ctx.lineWidth=2;ctx.lineCap='round';
+   for(let i=0;i<3;i++){
+     const progress=(elapsed*.6+i/3)%1;
+     const xx=u.x-30+progress*60,yy=u.y+4+(i%2)*5;
+     ctx.globalAlpha=.28+.45*(1-progress);
+     ctx.beginPath();ctx.moveTo(xx-9,yy);ctx.quadraticCurveTo(xx-4,yy-5,xx+1,yy);
+     ctx.quadraticCurveTo(xx+6,yy+5,xx+11,yy);ctx.stroke();
+   }
+   ctx.restore();return;
+ }
  // Recognizable ice crystals rather than a blue status/debug circle.
  const x=u.x,y=u.y-45, age=elapsed+(u.uid||0)*.33;
  ctx.save();
