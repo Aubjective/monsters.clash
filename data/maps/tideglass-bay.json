@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "id": "tideglass_bay",
   "name": "Tideglass Bay",
-  "enabled": false,
+  "enabled": true,
   "element": "water",
   "affinity": "water",
   "environment_theme": "coastal_water",
