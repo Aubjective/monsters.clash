@@ -1,5 +1,8 @@
 [
   {
     "source": "data/maps/water-ice.json"
+  },
+  {
+    "source": "data/maps/tideglass-bay.json"
   }
 ]
