@@ -678,8 +678,8 @@ function renderStageInfo(){
  if(hazard.type==='chill_freeze'){
   line('Chill','−'+pct(hazard.slow_pct)+' Movement Speed · '+(Number(hazard.slow_duration_seconds)||0)+'s');
   line('Freeze',pct(hazard.freeze_chance)+' Chance · '+(Number(hazard.freeze_duration_seconds)||0)+'s');
- }else if(hazard.type==='current_slow'){
-  line('Coastal Current','−'+pct(hazard.slow_pct)+' Movement Speed · '+(Number(hazard.slow_duration_seconds)||0)+'s');
+ }else if(hazard.type==='heavy_rain'){
+  line('Heavy Rain','−'+pct(hazard.slow_pct)+' Movement Speed · '+(Number(hazard.slow_duration_seconds)||0)+'s');
  }else if(hazard.type==='instant_damage'){
   line('Impact Damage',String(hazard.damage||0));
  }else line('Effect',String(hazard.type||'Environmental effect').replaceAll('_',' '));
