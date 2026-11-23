@@ -67,8 +67,11 @@ function update(dt,units,applyDamage){
    for(let i=0;i<visibleCount;i++){
      const p=particles[i];
      const flutter=Math.sin(elapsed*.85+p.phase)*4+Math.sin(elapsed*1.8+p.phase*.72)*2.4;
-     const drift=ambient.drift+gust*gustPower+flutter;
-     p.y+=(up?-1:1)*p.speed*dt*(1+.08*Math.sin(p.phase+elapsed));
+     const isEmber=ambient.type==='embers';
+     // Rising ash follows its own soft air currents; each mote sways at a different pace.
+     const sway=isEmber?Math.sin(elapsed*.48+p.phase)*9+Math.sin(elapsed*.94+p.phase*1.7)*3:0;
+     const drift=ambient.drift+gust*gustPower+flutter+sway;
+     p.y+=(up?-1:1)*p.speed*dt*(isEmber?.65+.22*Math.sin(p.phase+elapsed*.31):1+.08*Math.sin(p.phase+elapsed));
      p.x+=drift*dt*(.7+.3*Math.sin(p.phase*.5+1)**2);
      p.rotation+=dt*.35;
      // Rain travels down and sideways at a steady angle, without artificial wind strokes.
@@ -147,7 +150,15 @@ function render(ctx,layer='background'){
    switch(ambient.type){
    case 'leaves':ctx.rotate(p.rotation);ctx.beginPath();ctx.ellipse(0,0,p.size*1.7,p.size*.65,0,0,Math.PI*2);ctx.fill();break;
    case 'snow':ctx.beginPath();ctx.arc(0,0,p.size*.65,0,Math.PI*2);ctx.fill();break;
-   case 'embers':case 'spores':ctx.shadowBlur=8;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(0,0,p.size*.6,0,Math.PI*2);ctx.fill();break;
+   case 'embers':{
+     // Irregular glow and fade keep the particles from resembling synchronized dots.
+     const pulse=.68+.24*Math.sin(elapsed*(1.25+p.speed*.012)+p.phase);
+     ctx.globalAlpha*=Math.max(.2,pulse);
+     ctx.shadowBlur=p.size*2.5;ctx.shadowColor=p.color;
+     ctx.beginPath();ctx.ellipse(0,0,p.size*.45,p.size*.7,p.rotation,0,Math.PI*2);ctx.fill();
+     break;
+   }
+   case 'spores':ctx.shadowBlur=8;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(0,0,p.size*.6,0,Math.PI*2);ctx.fill();break;
    case 'dust':ctx.globalAlpha*=.45;ctx.beginPath();ctx.ellipse(0,0,p.size*1.6,p.size*.65,0,0,Math.PI*2);ctx.fill();break;
    case 'rain':{
      const length=p.size*(heavy?6:4);
@@ -171,31 +182,45 @@ function render(ctx,layer='background'){
      ctx.beginPath();ctx.ellipse(x,y,(3+8*phase),1+2*phase,0,0,Math.PI*2);ctx.stroke();
    }
  }
- // A burning area is unmistakable: warning heat glow, then animated flames.
+ // Fire zones have distinct readable phases: gentle warning, ignition, living flames and fade.
  if(hazardsEnabled&&hazard?.type==='burning_areas')for(const zone of fireZones){
-   const warning=zone.warning>0,life=zone.remaining/Math.max(.5,Number(hazard.active_seconds)||4);
-   const flicker=.88+.12*Math.sin(elapsed*17+zone.phase);
-   ctx.save();ctx.translate(zone.x,zone.y);
-   ctx.scale(1,.48);
-   ctx.globalAlpha=warning?.34+.12*Math.sin(elapsed*11):Math.min(.65,.32+.3*life);
-   ctx.fillStyle=warning?'#ff9c25':'#ff5b12';
-   ctx.beginPath();ctx.ellipse(0,0,zone.radius,zone.radius,0,0,Math.PI*2);ctx.fill();
-   ctx.globalAlpha=warning?.78:Math.min(1,.65+life*.25);
-   ctx.strokeStyle=warning?'#ffcd55':'#ffb03a';ctx.lineWidth=warning?4:3;
-   ctx.setLineDash(warning?[11,7]:[]);
-   ctx.beginPath();ctx.ellipse(0,0,zone.radius,zone.radius,0,0,Math.PI*2);ctx.stroke();
+   const warning=zone.warning>0,warningTotal=Math.max(.3,Number(hazard.warning_seconds)||1);
+   const duration=Math.max(.5,Number(hazard.active_seconds)||4);
+   const age=warning?Math.max(0,warningTotal-zone.warning):Math.max(0,duration-zone.remaining);
+   const warningProgress=Math.min(1,age/warningTotal),activeProgress=Math.min(1,age/.5);
+   const fadeOut=warning?1:Math.min(1,zone.remaining/.65);
+   const strength=warning?(.12+.24*warningProgress):Math.min(1,activeProgress*1.6)*fadeOut;
+   const flicker=.94+.04*Math.sin(elapsed*8.9+zone.phase)+.02*Math.sin(elapsed*15.7+zone.phase*2);
+   ctx.save();ctx.translate(zone.x,zone.y);ctx.scale(1,.48);
+   // A soft radial glow rather than a flat orange disk.
+   const glow=ctx.createRadialGradient(0,0,zone.radius*.1,0,0,zone.radius);
+   glow.addColorStop(0,warning?'rgba(255,159,51,.29)':'rgba(255,91,18,.48)');
+   glow.addColorStop(.68,warning?'rgba(255,121,28,.18)':'rgba(255,106,27,.32)');
+   glow.addColorStop(1,'rgba(255,95,14,0)');
+   ctx.globalAlpha=strength;
+   ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,zone.radius,0,Math.PI*2);ctx.fill();
+   // Gentle pulsing rim gives players a clear full-second warning.
+   ctx.globalAlpha=(warning?.4+.28*warningProgress:.48*fadeOut)*flicker;
+   ctx.strokeStyle=warning?'#ffbd58':'#ff802b';ctx.lineWidth=warning?2.5:2;
+   ctx.setLineDash(warning?[10,9]:[]);
+   ctx.beginPath();ctx.ellipse(0,0,zone.radius*.96,zone.radius*.96,0,0,Math.PI*2);ctx.stroke();
    ctx.restore();
    if(!warning){
-     // Flames rise inside the elliptical hot zone; no crystals or lava rivers.
+     // Offset individual flame tongues vertically; their oscillations are never in lockstep.
      ctx.save();
-     for(let i=0;i<11;i++){
-       const a=(i*2.399+zone.phase)%6.283,dist=Math.sqrt((i+.5)/11)*zone.radius;
+     const rise=Math.min(1,age/.42)*Math.min(1,zone.remaining/.55);
+     for(let i=0;i<12;i++){
+       const a=(i*2.399963+zone.phase)%6.283,dist=Math.sqrt((i+.55)/12)*zone.radius*.85;
        const fx=zone.x+Math.cos(a)*dist,fy=zone.y+Math.sin(a)*dist*.44;
-       const height=(10+(i%4)*5)*flicker*(.8+.2*Math.sin(elapsed*13+i));
-       ctx.globalAlpha=.52+.18*Math.sin(elapsed*12+i)**2;
-       ctx.fillStyle=i%3===0?'#ffe089':i%3===1?'#ffab32':'#f45417';
-       ctx.beginPath();ctx.moveTo(fx-5,fy);ctx.quadraticCurveTo(fx-6,fy-height*.5,fx+Math.sin(elapsed*9+i)*5,fy-height);
-       ctx.quadraticCurveTo(fx+7,fy-height*.42,fx+5,fy);ctx.closePath();ctx.fill();
+       const phase=elapsed*(5.2+(i%4)*.8)+i*1.73+zone.phase;
+       const sway=Math.sin(phase)*3.5+Math.sin(phase*.55)*2;
+       const height=(13+(i%5)*3)*(1+.13*Math.sin(phase*.8))*rise*flicker;
+       ctx.globalAlpha=(.46+.16*Math.sin(phase*.7)**2)*fadeOut;
+       ctx.fillStyle=i%3===0?'#ffde7c':i%3===1?'#ffa43b':'#ee5c23';
+       ctx.beginPath();ctx.moveTo(fx-5,fy);
+       ctx.quadraticCurveTo(fx-6+sway*.3,fy-height*.48,fx+sway,fy-height);
+       ctx.quadraticCurveTo(fx+6+sway*.45,fy-height*.45,fx+5,fy);
+       ctx.closePath();ctx.fill();
      }
      ctx.restore();
    }
