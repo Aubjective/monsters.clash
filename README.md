@@ -71,16 +71,17 @@ Current game mechanics remain experimental, and future tower abilities still req
 ## Battlefield backgrounds and locked map rules
 
 - **Frostveil Valley** is an active Water/Ice battle map. Its image is `assets/backgrounds/frostveil-valley.png`, and `data/maps/water-ice.json` owns its environment and hazard settings.
-- `stage_affinities.json` registers two playable maps: Frostveil Valley and Tideglass Bay. Deleted legacy battle maps remain unregistered.
+- `stage_affinities.json` registers three playable maps: Frostveil Valley, Tideglass Bay and Ember Wasteland. Deleted legacy battle maps remain unregistered.
 - Preserve `assets/backgrounds/whisper-meadow.png` **only as the main-menu/lobby background**. It is not an active battle map.
 - [Map layout rules](docs/map_rules.md) lock shared battlefield geometry and no baked sun, moon, stars or time-of-day lighting.
 - `modules/elements/environment.js` is the single environmental effects engine: Frostveil Valley uses snow, Chill and Freeze; Tideglass Bay uses Light Rain and Heavy Rain with a temporary slowdown. All values come from each map's own JSON.
-- **Tideglass Bay** (Water element / coastal environment) is active, configured in `data/maps/tideglass-bay.json` and backed by `assets/backgrounds/tideglass-bay.png`. Light Rain is cosmetic; Heavy Rain briefly slows eligible non-Water Monsters. Poison and other future elements remain on hold.
+- **Tideglass Bay** (Water element / coastal environment) is active, configured in `data/maps/tideglass-bay.json` and backed by `assets/backgrounds/tideglass-bay.png`. Light Rain is cosmetic; Heavy Rain briefly slows eligible non-Water Monsters.
+- **Ember Wasteland** (Fire element / volcanic environment) is active, configured in `data/maps/fire-volcanic.json` and backed by `assets/backgrounds/ember-wasteland.png`. Floating embers are cosmetic. Burning Areas show a warning before flames ignite and deal 1% maximum HP per second only to non-Fire Monsters within the zones. Poison and other future elements remain on hold.
 - Ice is a Water specialization, not a sixth core element.
 
 ## Random battlefields
 
-- Battle selection chooses only registered, enabled maps. Both Frostveil Valley and Tideglass Bay can be selected.
+- Battle selection chooses only registered, enabled maps. Frostveil Valley, Tideglass Bay and Ember Wasteland can be selected.
 - Matching-element bonuses and environmental hazards apply to both player and enemy units.
 - No old deleted map backgrounds are restored as placeholders.
 
