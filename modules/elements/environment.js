@@ -13,7 +13,7 @@ const palettes={
  spray:['#c7fcff','#8eeaf2','#f2ffff'],
  metal:['#d7e5f2','#9aaec4','#fff1b8']
 };
-let stage=null,ambient=null,hazard=null,particles=[],elapsed=0,hazardIn=Infinity,gustClock=0,enabled=true,hazardsEnabled=true;
+let stage=null,ambient=null,hazard=null,particles=[],elapsed=0,hazardIn=Infinity,gustClock=0,heavyRainTime=0,enabled=true,hazardsEnabled=true;
 function matchesElement(unitOrMonster){
  const m=unitOrMonster?.m||unitOrMonster;
  const element=String(m?.elemental?.primary||m?.element||'neutral').toLowerCase();
@@ -35,11 +35,13 @@ function configure(map){
    opacity:Math.min(1,Math.max(0,Number(a.opacity)||.6)),
    size:Math.min(12,Math.max(.5,Number(a.size)||3)),
    layer:a.layer==='foreground'?'foreground':'background',
+   heavy_count:Math.max(0,Math.min(140,Math.round(Number(a.heavy_count)||Number(a.count)||0))),
+   ground_splashes:!!a.ground_splashes,
    icy_wind:a.icy_wind||null
  }:null;
  hazard=stage?.hazard?.enabled?stage.hazard:null;
- elapsed=0;gustClock=0;particles=[];
- if(ambient)for(let i=0;i<ambient.count;i++)particles.push(seed(true));
+ elapsed=0;gustClock=0;heavyRainTime=0;particles=[];
+ if(ambient)for(let i=0;i<(ambient.type==='rain'?Math.max(ambient.count,ambient.heavy_count):ambient.count);i++)particles.push(seed(true));
  hazardIn=hazard?Math.max(1,Number(hazard.first_trigger_seconds)||10):Infinity;
 }
 function status(u){
@@ -52,6 +54,7 @@ function update(dt,units,applyDamage){
  if(!stage||!enabled)return;
  dt=Math.max(0,Math.min(.06,Number(dt)||0));if(!dt)return;
  elapsed+=dt;gustClock+=dt;
+ heavyRainTime=Math.max(0,heavyRainTime-dt);
  if(ambient){
    const up=ambient.type==='embers'||ambient.type==='spores'||ambient.type==='spray';
    // Wind is expressed by gently varied particle motion, never by drawn lines.
@@ -61,13 +64,15 @@ function update(dt,units,applyDamage){
    const phase=gustClock/period;
    const gust=wind?Math.max(0,Math.sin(phase*Math.PI*2)*.65+Math.sin(phase*Math.PI*3.41+.8)*.35):0;
    const gustPower=wind?Math.max(0,Number(wind.gust_strength)||16):0;
-   for(let i=0;i<particles.length;i++){
+   const visibleCount=ambient.type==='rain'&&heavyRainTime<=0?ambient.count:particles.length;
+   for(let i=0;i<visibleCount;i++){
      const p=particles[i];
      const flutter=Math.sin(elapsed*.85+p.phase)*4+Math.sin(elapsed*1.8+p.phase*.72)*2.4;
      const drift=ambient.drift+gust*gustPower+flutter;
      p.y+=(up?-1:1)*p.speed*dt*(1+.08*Math.sin(p.phase+elapsed));
      p.x+=drift*dt*(.7+.3*Math.sin(p.phase*.5+1)**2);
      p.rotation+=dt*.35;
+     // Rain travels down and sideways at a steady angle, without artificial wind strokes.
      if(p.y < -35||p.y > H+35||p.x < -55||p.x>W+55)particles[i]=seed(false);
    }
  }
@@ -83,17 +88,18 @@ function update(dt,units,applyDamage){
  if(!hazardsEnabled||!hazard)return;
  hazardIn-=dt;
  if(hazardIn>0)return;
+ if(hazard.type==='heavy_rain')heavyRainTime=Math.max(0,Number(hazard.visual_duration_seconds)||3.8);
  const limits=Array.isArray(hazard.interval_seconds)?hazard.interval_seconds:[15,22];
  hazardIn=rand(Math.max(1,Number(limits[0])||15),Math.max(1,Number(limits[1])||22));
  for(const u of units){
    if(!u||u.hp<=0||matchesElement(u)||u.environmentAge<(Number(hazard.minimum_spawn_age_seconds)||0))continue;
-   if(hazard.type==='chill_freeze'||hazard.type==='current_slow'){
-     const isCurrent=hazard.type==='current_slow';
+   if(hazard.type==='chill_freeze'||hazard.type==='heavy_rain'){
+     const isRain=hazard.type==='heavy_rain';
      const s=status(u);
      s.slowTime=Math.max(s.slowTime,Number(hazard.slow_duration_seconds)||3);
-     s.source=isCurrent?'water':'ice';
+     s.source=isRain?'rain':'ice';
      s.slowPct=Math.max(s.slowPct,Math.min(.9,Math.max(0,Number(hazard.slow_pct)||.2)));
-     if(!isCurrent&&Math.random()<Math.min(1,Math.max(0,Number(hazard.freeze_chance)||0)))
+     if(!isRain&&Math.random()<Math.min(1,Math.max(0,Number(hazard.freeze_chance)||0)))
        s.freezeTime=Math.max(s.freezeTime,Number(hazard.freeze_duration_seconds)||.6);
    }else if(hazard.type==='instant_damage'&&typeof applyDamage==='function'){
      applyDamage(u,Math.max(0,Number(hazard.damage)||0));
@@ -102,37 +108,55 @@ function update(dt,units,applyDamage){
 }
 function render(ctx,layer='background'){
  if(!stage||!enabled||!ambient||ambient.layer!==layer)return;
- ctx.save();ctx.globalAlpha=ambient.opacity;
- for(const p of particles){
+ ctx.save();
+ const heavy=ambient.type==='rain'&&heavyRainTime>0;
+ // Subtle overcast tint during heavy rain; never change permanent base-map artwork.
+ if(heavy){ctx.fillStyle='rgba(13,38,65,0.085)';ctx.fillRect(0,0,W,H);}
+ ctx.globalAlpha=ambient.opacity*(heavy?1.55:1);
+ const visibleCount=ambient.type==='rain'&&!heavy?ambient.count:particles.length;
+ for(let i=0;i<visibleCount;i++){const p=particles[i];
    ctx.save();ctx.translate(p.x,p.y);ctx.fillStyle=p.color;ctx.strokeStyle=p.color;
    switch(ambient.type){
    case 'leaves':ctx.rotate(p.rotation);ctx.beginPath();ctx.ellipse(0,0,p.size*1.7,p.size*.65,0,0,Math.PI*2);ctx.fill();break;
    case 'snow':ctx.beginPath();ctx.arc(0,0,p.size*.65,0,Math.PI*2);ctx.fill();break;
    case 'embers':case 'spores':ctx.shadowBlur=8;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(0,0,p.size*.6,0,Math.PI*2);ctx.fill();break;
    case 'dust':ctx.globalAlpha*=.45;ctx.beginPath();ctx.ellipse(0,0,p.size*1.6,p.size*.65,0,0,Math.PI*2);ctx.fill();break;
-   case 'rain':ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-p.size,p.size*4);ctx.stroke();break;
+   case 'rain':{
+     const length=p.size*(heavy?6:4);
+     ctx.lineWidth=heavy?1.35:.9;
+     ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-length*.24,length);ctx.stroke();
+     break;
+   }
    case 'spray':ctx.globalAlpha*=.7;ctx.beginPath();ctx.ellipse(0,0,p.size*.55,p.size*.8,0,0,Math.PI*2);ctx.fill();break;
    case 'metal':ctx.rotate(p.rotation);ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);break;
    }
    ctx.restore();
  }
 
+ if(ambient.type==='rain'&&ambient.ground_splashes){
+   // Tiny water ripples on the battle floor; deterministic across frames.
+   ctx.strokeStyle='#d7f7ff';ctx.lineWidth=1;
+   for(let i=0;i<(heavy?26:12);i++){
+     const p=particles[i*3%particles.length];
+     const phase=(elapsed*(heavy?2.7:1.8)+p.phase)%1;
+     const x=((p.x+i*113)%W+W)%W,y=327+(i*37)%108;
+     ctx.globalAlpha=(heavy?.24:.15)*(1-phase);
+     ctx.beginPath();ctx.ellipse(x,y,(3+8*phase),1+2*phase,0,0,Math.PI*2);ctx.stroke();
+   }
+ }
  ctx.restore();
 }
 function renderStatus(ctx,u){
  const s=u?.environmentStatus;
  if(!s||(s.slowTime<=0&&s.freezeTime<=0))return;
  const freeze=s.freezeTime>0,slow=s.slowTime>0;
- if(s.source==='water'&&slow&&!freeze){
-   // Coastal-current debuff is indicated by moving wavelets around the feet,
-   // never by ice crystals or an all-purpose blue status ring.
+ if(s.source==='rain'&&slow&&!freeze){
+   // Heavy Rain debuff: wet ground ripples around feet, not frost or current lines.
    ctx.save();ctx.strokeStyle='#9beff6';ctx.lineWidth=2;ctx.lineCap='round';
    for(let i=0;i<3;i++){
-     const progress=(elapsed*.6+i/3)%1;
-     const xx=u.x-30+progress*60,yy=u.y+4+(i%2)*5;
-     ctx.globalAlpha=.28+.45*(1-progress);
-     ctx.beginPath();ctx.moveTo(xx-9,yy);ctx.quadraticCurveTo(xx-4,yy-5,xx+1,yy);
-     ctx.quadraticCurveTo(xx+6,yy+5,xx+11,yy);ctx.stroke();
+     const phase=(elapsed*1.3+i/3)%1;
+     ctx.globalAlpha=.5*(1-phase);
+     ctx.beginPath();ctx.ellipse(u.x,u.y+3,(9+phase*23),(2+phase*4),0,0,Math.PI*2);ctx.stroke();
    }
    ctx.restore();return;
  }
