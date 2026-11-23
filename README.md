@@ -70,17 +70,17 @@ Current game mechanics remain experimental, and future tower abilities still req
 
 ## Battlefield backgrounds and locked map rules
 
-- The only **active battle map** is **Frostveil Valley**, Water element / Ice theme. Its image is `assets/backgrounds/frostveil-valley.png`, and `data/maps/water-ice.json` owns its environment and hazard settings.
-- `stage_affinities.json` registers Frostveil Valley as playable and Tideglass Bay as **disabled**, pending its PNG upload. Deleted legacy battle maps remain unregistered.
+- **Frostveil Valley** is an active Water/Ice battle map. Its image is `assets/backgrounds/frostveil-valley.png`, and `data/maps/water-ice.json` owns its environment and hazard settings.
+- `stage_affinities.json` registers two playable maps: Frostveil Valley and Tideglass Bay. Deleted legacy battle maps remain unregistered.
 - Preserve `assets/backgrounds/whisper-meadow.png` **only as the main-menu/lobby background**. It is not an active battle map.
 - [Map layout rules](docs/map_rules.md) lock shared battlefield geometry and no baked sun, moon, stars or time-of-day lighting.
-- `modules/elements/environment.js` is the single environmental effects engine; it renders Ice snowfall/Chill/Freeze and Water sea spray/Coastal Current, with parameters read from each map's own JSON.
-- **Tideglass Bay** (Water element / coastal environment) is prepared in `data/maps/tideglass-bay.json`, with ocean spray and Coastal Current slowdown. It remains disabled until `assets/backgrounds/tideglass-bay.png` is uploaded. Poison and other future elements remain on hold.
+- `modules/elements/environment.js` is the single environmental effects engine: Frostveil Valley uses snow, Chill and Freeze; Tideglass Bay uses Light Rain and Heavy Rain with a temporary slowdown. All values come from each map's own JSON.
+- **Tideglass Bay** (Water element / coastal environment) is active, configured in `data/maps/tideglass-bay.json` and backed by `assets/backgrounds/tideglass-bay.png`. Light Rain is cosmetic; Heavy Rain briefly slows eligible non-Water Monsters. Poison and other future elements remain on hold.
 - Ice is a Water specialization, not a sixth core element.
 
 ## Random battlefields
 
-- Battle selection chooses only registered, enabled maps. With one map uploaded, all battles use Frostveil Valley.
+- Battle selection chooses only registered, enabled maps. Both Frostveil Valley and Tideglass Bay can be selected.
 - Matching-element bonuses and environmental hazards apply to both player and enemy units.
 - No old deleted map backgrounds are restored as placeholders.
 
