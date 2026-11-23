@@ -680,6 +680,11 @@ function renderStageInfo(){
   line('Freeze',pct(hazard.freeze_chance)+' Chance · '+(Number(hazard.freeze_duration_seconds)||0)+'s');
  }else if(hazard.type==='heavy_rain'){
   line('Heavy Rain','−'+pct(hazard.slow_pct)+' Movement Speed · '+(Number(hazard.slow_duration_seconds)||0)+'s');
+ }else if(hazard.type==='burning_areas'){
+  const zoneCount=Array.isArray(hazard.zone_count)?hazard.zone_count.join('–'):'1';
+  line('Burning Areas',zoneCount+' Zones · '+(Number(hazard.active_seconds)||4)+'s');
+  line('Warning',String(Number(hazard.warning_seconds)||1)+'s');
+  line('Burn Damage',pct(hazard.damage_max_hp_pct_per_second)+' Max HP / Second');
  }else if(hazard.type==='instant_damage'){
   line('Impact Damage',String(hazard.damage||0));
  }else line('Effect',String(hazard.type||'Environmental effect').replaceAll('_',' '));
