@@ -12,7 +12,7 @@ const palettes={
  rain:['#b7def1','#8cc6d9'],
  metal:['#d7e5f2','#9aaec4','#fff1b8']
 };
-let stage=null,ambient=null,hazard=null,particles=[],elapsed=0,hazardIn=Infinity,gustClock=0,heavyRainTime=0,enabled=true,hazardsEnabled=true;
+let stage=null,ambient=null,hazard=null,particles=[],fireZones=[],elapsed=0,hazardIn=Infinity,gustClock=0,heavyRainTime=0,enabled=true,hazardsEnabled=true;
 function matchesElement(unitOrMonster){
  const m=unitOrMonster?.m||unitOrMonster;
  const element=String(m?.elemental?.primary||m?.element||'neutral').toLowerCase();
@@ -39,7 +39,7 @@ function configure(map){
    icy_wind:a.icy_wind||null
  }:null;
  hazard=stage?.hazard?.enabled?stage.hazard:null;
- elapsed=0;gustClock=0;heavyRainTime=0;particles=[];
+ elapsed=0;gustClock=0;heavyRainTime=0;particles=[];fireZones=[];
  if(ambient)for(let i=0;i<(ambient.type==='rain'?Math.max(ambient.count,ambient.heavy_count):ambient.count);i++)particles.push(seed(true));
  hazardIn=hazard?Math.max(1,Number(hazard.first_trigger_seconds)||10):Infinity;
 }
@@ -84,10 +84,39 @@ function update(dt,units,applyDamage){
    s.freezeTime=Math.max(0,s.freezeTime-dt);
    if(s.slowTime===0){s.slowPct=0;if(s.freezeTime===0)s.source=null;}
  }
- if(!hazardsEnabled||!hazard)return;
+ if(!hazardsEnabled||!hazard){fireZones=[];return;}
+ if(hazard.type==='burning_areas'){
+   // Zones are spatial hazards. They warn before igniting and damage only occupants.
+   for(const zone of fireZones){
+     if(zone.warning>0){
+       zone.warning=Math.max(0,zone.warning-dt);
+     }else if(zone.remaining>0){
+       zone.remaining=Math.max(0,zone.remaining-dt);
+       if(typeof applyDamage==='function')for(const u of units){
+         if(!u||u.hp<=0||matchesElement(u)||u.environmentAge<(Number(hazard.minimum_spawn_age_seconds)||0))continue;
+         const dx=(u.x-zone.x)/zone.radius,dy=(u.y-zone.y)/(zone.radius*.48);
+         if(dx*dx+dy*dy<=1)applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct_per_second)||0)*dt);
+       }
+     }
+   }
+   fireZones=fireZones.filter(zone=>zone.warning>0||zone.remaining>0);
+ }
  hazardIn-=dt;
  if(hazardIn>0)return;
  if(hazard.type==='heavy_rain')heavyRainTime=Math.max(0,Number(hazard.visual_duration_seconds)||3.8);
+ if(hazard.type==='burning_areas'){
+   const range=Array.isArray(hazard.zone_count)?hazard.zone_count:[1,2];
+   const low=Math.max(1,Math.round(Number(range[0])||1)),high=Math.max(low,Math.round(Number(range[1])||low));
+   const count=Math.min(2,Math.floor(rand(low,high+1)));
+   fireZones=[];
+   for(let i=0;i<count;i++){
+     const radius=Math.max(25,Math.min(95,Number(hazard.zone_radius)||73));
+     // Positions stay on the continuous battle floor, away from both towers.
+     const x=count===1?rand(320,640):i===0?rand(270,440):rand(520,690);
+     fireZones.push({x,y:rand(362,408),radius,warning:Math.max(.3,Number(hazard.warning_seconds)||1),
+       remaining:Math.max(.5,Number(hazard.active_seconds)||4),phase:rand(0,6)});
+   }
+ }
  const limits=Array.isArray(hazard.interval_seconds)?hazard.interval_seconds:[15,22];
  hazardIn=rand(Math.max(1,Number(limits[0])||15),Math.max(1,Number(limits[1])||22));
  for(const u of units){
@@ -140,6 +169,35 @@ function render(ctx,layer='background'){
      const x=((p.x+i*113)%W+W)%W,y=327+(i*37)%108;
      ctx.globalAlpha=(heavy?.24:.15)*(1-phase);
      ctx.beginPath();ctx.ellipse(x,y,(3+8*phase),1+2*phase,0,0,Math.PI*2);ctx.stroke();
+   }
+ }
+ // A burning area is unmistakable: warning heat glow, then animated flames.
+ if(hazardsEnabled&&hazard?.type==='burning_areas')for(const zone of fireZones){
+   const warning=zone.warning>0,life=zone.remaining/Math.max(.5,Number(hazard.active_seconds)||4);
+   const flicker=.88+.12*Math.sin(elapsed*17+zone.phase);
+   ctx.save();ctx.translate(zone.x,zone.y);
+   ctx.scale(1,.48);
+   ctx.globalAlpha=warning?.34+.12*Math.sin(elapsed*11):Math.min(.65,.32+.3*life);
+   ctx.fillStyle=warning?'#ff9c25':'#ff5b12';
+   ctx.beginPath();ctx.ellipse(0,0,zone.radius,zone.radius,0,0,Math.PI*2);ctx.fill();
+   ctx.globalAlpha=warning?.78:Math.min(1,.65+life*.25);
+   ctx.strokeStyle=warning?'#ffcd55':'#ffb03a';ctx.lineWidth=warning?4:3;
+   ctx.setLineDash(warning?[11,7]:[]);
+   ctx.beginPath();ctx.ellipse(0,0,zone.radius,zone.radius,0,0,Math.PI*2);ctx.stroke();
+   ctx.restore();
+   if(!warning){
+     // Flames rise inside the elliptical hot zone; no crystals or lava rivers.
+     ctx.save();
+     for(let i=0;i<11;i++){
+       const a=(i*2.399+zone.phase)%6.283,dist=Math.sqrt((i+.5)/11)*zone.radius;
+       const fx=zone.x+Math.cos(a)*dist,fy=zone.y+Math.sin(a)*dist*.44;
+       const height=(10+(i%4)*5)*flicker*(.8+.2*Math.sin(elapsed*13+i));
+       ctx.globalAlpha=.52+.18*Math.sin(elapsed*12+i)**2;
+       ctx.fillStyle=i%3===0?'#ffe089':i%3===1?'#ffab32':'#f45417';
+       ctx.beginPath();ctx.moveTo(fx-5,fy);ctx.quadraticCurveTo(fx-6,fy-height*.5,fx+Math.sin(elapsed*9+i)*5,fy-height);
+       ctx.quadraticCurveTo(fx+7,fy-height*.42,fx+5,fy);ctx.closePath();ctx.fill();
+     }
+     ctx.restore();
    }
  }
  ctx.restore();
