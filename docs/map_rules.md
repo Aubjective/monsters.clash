@@ -90,3 +90,11 @@ The **rules** are locked for future artwork and engines. The Water/Ice hazard/am
 - Config is authoritative at `data/maps/tideglass-bay.json`; the single Elements Engine owns both ambient droplets and hazard timing.
 - The uploaded image `assets/backgrounds/tideglass-bay.png` is playable and the map has `enabled:true`.
 - Keep sun, moon, stars, waves, rain droplets and moving water effects out of any fixed background art where possible. Preserve consistent gameplay geometry.
+
+## Ember Wasteland — Fire environment (active)
+- Uses the same flat, uninterrupted battle-floor geometry as Frostveil Valley, with solid volcanic rock, fissures, smoke and distant volcanic scenery; no Fire crystals or lava rivers through the battlefield.
+- Core element: **Fire**, environment: **Volcanic**. Matching Fire Monsters gain +10% Attack Damage and +5% Damage Reduction.
+- The Elements Engine renders **Floating Embers** continuously; these are harmless.
+- **Burning Areas** are localized hazards, distinct from Ice's global Chill/Freeze and Water's Heavy Rain. Every 15–22 seconds, one or two zones appear between the two towers. A clear orange **1-second warning** is displayed, then the zones burn for **4 seconds**. Eligible monsters standing in the burning area take **1% maximum HP per second**. Fire Monsters are immune. Both teams are affected. Castle bases are never damaged by these zones.
+- Glowing fissures painted in `assets/backgrounds/ember-wasteland.png` are purely decorative. Only dynamically rendered, warned Burning Areas apply damage.
+- Fire behavior is configured in `data/maps/fire-volcanic.json`, rendered and applied directly by the authoritative `modules/elements/environment.js`. No extra fire-effect module is introduced.
