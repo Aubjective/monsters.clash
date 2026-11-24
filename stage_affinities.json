@@ -13,5 +13,8 @@
   },
   {
     "source": "data/maps/earth-canyon.json"
+  },
+  {
+    "source": "data/maps/metal-citadel.json"
   }
 ]

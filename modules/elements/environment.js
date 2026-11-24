@@ -50,7 +50,7 @@ function configure(map){
  hazardIn=hazard?Math.max(1,Number(hazard.first_trigger_seconds)||10):Infinity;
 }
 function status(u){
- if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null,fireVisual:0,shatterTime:0,rootTime:0,rootRelease:0,staggerTime:0};
+ if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null,fireVisual:0,shatterTime:0,rootTime:0,rootRelease:0,staggerTime:0,bleedTime:0,bleedRate:0,bleedTick:0};
  return u.environmentStatus;
 }
 function movementMultiplier(u){const s=u?.environmentStatus;return (s?.freezeTime>0||s?.rootTime>0||s?.staggerTime>0)?0:(s?.slowTime>0?1-s.slowPct:1)}
@@ -101,6 +101,12 @@ function update(dt,units,applyDamage){
    const wasFrozen=s.freezeTime>0;
    s.freezeTime=Math.max(0,s.freezeTime-dt);
    s.staggerTime=Math.max(0,(s.staggerTime||0)-dt);
+   if(s.bleedTime>0){
+     if(!hazardsEnabled||hazard?.type!=='piercing_spikes'){s.bleedTime=0;s.bleedTick=0;}
+     else{const span=Math.min(dt,s.bleedTime);s.bleedTime=Math.max(0,s.bleedTime-span);s.bleedTick=(s.bleedTick||0)+span;
+       if(s.bleedTick>=.5||s.bleedTime<=0){if(typeof applyDamage==='function')applyDamage(u,u.maxhp*s.bleedRate*s.bleedTick);s.bleedTick=0;}
+     }
+   }
    const wasRooted=s.rootTime>0;
    s.rootTime=Math.max(0,(s.rootTime||0)-dt);
    s.rootRelease=Math.max(0,(s.rootRelease||0)-dt);
@@ -111,7 +117,7 @@ function update(dt,units,applyDamage){
    if(s.slowTime===0){s.slowPct=0;if(s.freezeTime===0)s.source=null;}
  }
  if(!hazardsEnabled||!hazard){hazardZones=[];return;}
- if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'||hazard.type==='earth_tremor'){
+ if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'||hazard.type==='earth_tremor'||hazard.type==='piercing_spikes'){
    // Zones are spatial hazards. They warn before igniting and damage only occupants.
    for(const zone of hazardZones){
      if(zone.warning>0){
@@ -119,13 +125,19 @@ function update(dt,units,applyDamage){
      }else if(zone.remaining>0){
        zone.remaining=Math.max(0,zone.remaining-dt);
        // Tremor is a single impact, not a repeated damage field.
-       const impact=hazard.type==='earth_tremor'&&!zone.impacted;
+       const impact=(hazard.type==='earth_tremor'||hazard.type==='piercing_spikes')&&!zone.impacted;
        if(impact)zone.impacted=true;
        for(const u of units){
          if(!u||u.hp<=0||matchesElement(u)||u.environmentAge<(Number(hazard.minimum_spawn_age_seconds)||0))continue;
          const dx=(u.x-zone.x)/zone.radius,dy=(u.y-zone.y)/(zone.radius*.48);
          if(dx*dx+dy*dy<=1){
-           if(hazard.type==='earth_tremor'){
+           if(hazard.type==='piercing_spikes'){
+             if(!impact||zone.caught.has(u))continue;
+             zone.caught.add(u);const st=status(u);
+             st.bleedTime=Math.max(st.bleedTime||0,Number(hazard.bleed_duration_seconds)||4);
+             st.bleedRate=Math.max(0,Number(hazard.bleed_max_hp_pct_per_second)||0);
+             if(typeof applyDamage==='function')applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct)||0));
+           }else if(hazard.type==='earth_tremor'){
              if(!impact||zone.caught.has(u))continue;
              zone.caught.add(u);const st=status(u);
              st.staggerTime=Math.max(st.staggerTime||0,Number(hazard.stagger_duration_seconds)||.8);
@@ -146,7 +158,7 @@ function update(dt,units,applyDamage){
  hazardIn-=dt;
  if(hazardIn>0)return;
  if(hazard.type==='heavy_rain')heavyRainTime=Math.max(0,Number(hazard.visual_duration_seconds)||3.8);
- if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'||hazard.type==='earth_tremor'){
+ if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'||hazard.type==='earth_tremor'||hazard.type==='piercing_spikes'){
    const range=Array.isArray(hazard.zone_count)?hazard.zone_count:[1,2];
    const low=Math.max(1,Math.round(Number(range[0])||1)),high=Math.max(low,Math.round(Number(range[1])||low));
    const count=Math.min(2,Math.floor(rand(low,high+1)));
@@ -217,7 +229,11 @@ function render(ctx,layer='background'){
      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-length*.24,length);ctx.stroke();
      break;
    }
-   case 'metal':ctx.rotate(p.rotation);ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);break;
+   case 'metal':{
+     const glint=.55+.45*Math.sin(elapsed*2.3+p.phase)**6;
+     ctx.globalAlpha*=glint;ctx.beginPath();ctx.arc(0,0,Math.min(1,p.size*.45),0,Math.PI*2);ctx.fill();
+     if(glint>.94){ctx.lineWidth=.55;ctx.beginPath();ctx.moveTo(-2,0);ctx.lineTo(2,0);ctx.moveTo(0,-2);ctx.lineTo(0,2);ctx.stroke();}break;
+   }
    }
    ctx.restore();
  }
@@ -263,6 +279,22 @@ function render(ctx,layer='background'){
      }
      ctx.restore();
    }
+ }
+ // Metal trap: floor warning, solid faceted steel cones, then retraction.
+ if(hazardsEnabled&&hazard?.type==='piercing_spikes')for(const zone of hazardZones){
+   const warning=zone.warning>0,wt=Math.max(.3,Number(hazard.warning_seconds)||1),dur=Math.max(.5,Number(hazard.active_seconds)||1.2);
+   const age=warning?wt-zone.warning:dur-zone.remaining,p=Math.max(0,Math.min(1,age/(warning?wt:dur))),r=zone.radius;
+   const rise=warning?.04+.07*p:Math.min(1,age/.12,zone.remaining/.32);
+   ctx.save();ctx.translate(zone.x,zone.y);ctx.save();ctx.scale(1,.48);
+   ctx.globalAlpha=warning?.4+.3*Math.sin(p*9)**2:.38*(1-p);ctx.fillStyle='#c6a05c';ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffe1a0';ctx.lineWidth=2;ctx.setLineDash(warning?[9,6]:[]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+   for(let row=0;row<3;row++)for(let col=0;col<4;col++){
+     const i=row*4+col,x=(col-1.5)*r*.43+Math.sin(i*2+zone.phase)*4,y=(row-1)*r*.28;
+     const w=(6+i%3*1.5),height=(25+i%4*8)*rise;
+     ctx.globalAlpha=warning?.75:Math.min(1,zone.remaining/.18);ctx.fillStyle='#303844';ctx.beginPath();ctx.ellipse(x,y,w*1.2,w*.42,0,0,Math.PI*2);ctx.fill();
+     const steel=ctx.createLinearGradient(x-w,y,x+w,y);steel.addColorStop(0,'#48515f');steel.addColorStop(.46,'#c8d3db');steel.addColorStop(.5,'#f3f8fc');steel.addColorStop(.72,'#8797a7');steel.addColorStop(1,'#414a56');
+     ctx.fillStyle=steel;ctx.strokeStyle='#414a56';ctx.lineWidth=.85;ctx.beginPath();ctx.moveTo(x-w,y);ctx.lineTo(x,y-height);ctx.lineTo(x+w,y);ctx.quadraticCurveTo(x,y+w*.7,x-w,y);ctx.closePath();ctx.fill();ctx.stroke();
+     if(!warning){ctx.globalAlpha=Math.max(0,1-age/.45);ctx.fillStyle='#ffe0a4';for(let n=0;n<3;n++){const a=i*2.4+n*2,dist=age*48;ctx.beginPath();ctx.arc(x+Math.cos(a)*dist,y-4-age*24+Math.sin(a)*dist*.4,.8,0,Math.PI*2);ctx.fill();}}
+   }ctx.restore();
  }
  // Earth tremor: cracked ground telegraph, one expanding impact, then falling debris.
  if(hazardsEnabled&&hazard?.type==='earth_tremor')for(const zone of hazardZones){
@@ -401,6 +433,11 @@ function renderStatus(ctx,u){
    const p=1-s.shatterTime/.38;ctx.save();ctx.globalAlpha=1-p;ctx.fillStyle='#b6efff';ctx.strokeStyle='#f4ffff';ctx.lineWidth=1;
    for(let i=0;i<10;i++){const a=i*2.399963, x=u.x+Math.cos(a)*(20+p*32),y=u.y-35+Math.sin(a)*(22+p*28)+p*p*22;
      ctx.save();ctx.translate(x,y);ctx.rotate(a+p*3);ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(4,2);ctx.lineTo(-3,5);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+   ctx.restore();
+ }
+ if(s.bleedTime>0){
+   ctx.save();ctx.translate(u.x,u.y);
+   for(let i=0;i<5;i++){const p=(elapsed*1.25+i*.2)%1,x=Math.sin(i*2.4)*17,y=-22+p*27;ctx.globalAlpha=(1-p)*.78;ctx.fillStyle='#b93642';ctx.beginPath();ctx.arc(x,y,1.3+(i%2)*.6,0,Math.PI*2);ctx.fill();}
    ctx.restore();
  }
  if(s.staggerTime>0){

@@ -103,3 +103,8 @@ The **rules** are locked for future artwork and engines. The Water/Ice hazard/am
 - Core element Earth; flat sandstone canyon with minimal foreground decorations and harmless drifting dust.
 - Earth Tremor: 1–2 warned zones, radius 75, warning 1 second, one impact per zone followed by a 1-second visual fade. Eligible monsters take 2% maximum HP damage, stagger for 0.8 seconds and move up to 20 logical units away from the impact within battlefield boundaries. Earth monsters are immune; both teams are affected, with 2-second spawn protection. Towers are unaffected.
 - Configuration: `data/maps/earth-canyon.json`; effects owned by `modules/elements/environment.js`. No separate engine.
+
+## Iron Citadel — Metal environment (prepared; disabled pending background upload)
+- Indoor metallic fortress, flat steel floor, no celestial objects; indoor lighting independent of future outdoor day/night phases.
+- Piercing Spikes: 1–2 zones, 65-unit radius, 1-second warning, 1.2-second animation. One impact per zone deals 3% maximum HP plus Bleeding at 1% maximum HP per second for 4 seconds. Bleeding refreshes duration rather than stacking rate. Both teams affected; Metal monsters immune, 2-second spawn protection, towers unaffected.
+- Configuration: `data/maps/metal-citadel.json`; existing `modules/elements/environment.js` owns the effects. Enable only after `assets/backgrounds/iron-citadel.png` is present.

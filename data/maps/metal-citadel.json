@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "id": "iron_citadel",
+  "name": "Iron Citadel",
+  "enabled": false,
+  "element": "metal",
+  "affinity": "metal",
+  "environment_theme": "indoor_fortress",
+  "background": "assets/backgrounds/iron-citadel.png",
+  "layout": "standard_landscape_v2",
+  "description": "A fortified metal hall where concealed floor spikes pierce non-Metal monsters and cause Bleeding.",
+  "modifier": {
+    "outgoing_damage_bonus_pct": 0.1,
+    "incoming_damage_reduction_pct": 0.05,
+    "max_hp_bonus_pct": 0
+  },
+  "ambient": {
+    "enabled": true,
+    "type": "metal",
+    "count": 34,
+    "speed": 9,
+    "drift": 7,
+    "opacity": 0.5,
+    "size": 1.7,
+    "layer": "background"
+  },
+  "hazard": {
+    "enabled": true,
+    "type": "piercing_spikes",
+    "interval_seconds": [
+      15,
+      22
+    ],
+    "first_trigger_seconds": 10,
+    "target": "monsters_inside_zones",
+    "affects": "both_teams",
+    "matching_element_immune": true,
+    "zone_count": [
+      1,
+      2
+    ],
+    "zone_radius": 65,
+    "warning_seconds": 1,
+    "active_seconds": 1.2,
+    "damage_max_hp_pct": 0.03,
+    "bleed_max_hp_pct_per_second": 0.01,
+    "bleed_duration_seconds": 4,
+    "minimum_spawn_age_seconds": 2
+  },
+  "visual_design": {
+    "base_art": "indoor_neutral",
+    "celestial_objects_baked": false,
+    "baked_weather": false,
+    "time_of_day_independent": true,
+    "preferred_art_ratio": "16:9",
+    "reference": "docs/map_rules.md",
+    "approved_asset_status": "pending_upload"
+  },
+  "time_of_day": {
+    "mode": "indoor_fixed",
+    "supported_phases": [],
+    "runtime_lighting_module": "modules/day-night/"
+  }
+}
