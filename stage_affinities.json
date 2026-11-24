@@ -10,5 +10,8 @@
   },
   {
     "source": "data/maps/nature-forest.json"
+  },
+  {
+    "source": "data/maps/earth-canyon.json"
   }
 ]

@@ -385,7 +385,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <button id="battle-menu-home">Main Menu</button>
  </nav>
 </main>
-<script src="modules/elements/environment.js?v=20261125-nature"></script>
+<script src="modules/elements/environment.js?v=20261125-earth"></script>
 <script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
 const backgroundImages=new Map(),towerImages={ally:new Image(),enemy:new Image()};
@@ -685,6 +685,12 @@ function renderStageInfo(){
   line('Burning Areas',zoneCount+' Zones · '+(Number(hazard.active_seconds)||4)+'s');
   line('Warning',String(Number(hazard.warning_seconds)||1)+'s');
   line('Burn Damage',pct(hazard.damage_max_hp_pct_per_second)+' Max HP / Second');
+ }else if(hazard.type==='earth_tremor'){
+  line('Earth Tremor',(hazard.zone_count||[1]).join('–')+' Zones');
+  line('Warning',hazard.warning_seconds+'s');
+  line('Stagger',hazard.stagger_duration_seconds+'s · Movement and attacks interrupted');
+  line('Knockback',hazard.knockback_distance+' Units');
+  line('Impact Damage',pct(hazard.damage_max_hp_pct)+' Max HP');
  }else if(hazard.type==='entangling_roots'){
   line('Entangling Roots',(hazard.zone_count||[1]).join('–')+' Zones · '+hazard.active_seconds+'s');
   line('Warning',hazard.warning_seconds+'s');

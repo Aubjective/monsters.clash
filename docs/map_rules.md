@@ -98,3 +98,8 @@ The **rules** are locked for future artwork and engines. The Water/Ice hazard/am
 - **Burning Areas** are localized hazards, distinct from Ice's global Chill/Freeze and Water's Heavy Rain. Every 15–22 seconds, one or two zones appear between the two towers. A clear orange **1-second warning** is displayed, then the zones burn for **4 seconds**. Eligible monsters standing in the burning area take **1% maximum HP per second**. Fire Monsters are immune. Both teams are affected. Castle bases are never damaged by these zones.
 - Glowing fissures painted in `assets/backgrounds/ember-wasteland.png` are purely decorative. Only dynamically rendered, warned Burning Areas apply damage.
 - Fire behavior is configured in `data/maps/fire-volcanic.json`, rendered and applied directly by the authoritative `modules/elements/environment.js`. No extra fire-effect module is introduced.
+
+## Stonefall Canyon — Earth environment (active)
+- Core element Earth; flat sandstone canyon with minimal foreground decorations and harmless drifting dust.
+- Earth Tremor: 1–2 warned zones, radius 75, warning 1 second, one impact per zone followed by a 1-second visual fade. Eligible monsters take 2% maximum HP damage, stagger for 0.8 seconds and move up to 20 logical units away from the impact within battlefield boundaries. Earth monsters are immune; both teams are affected, with 2-second spawn protection. Towers are unaffected.
+- Configuration: `data/maps/earth-canyon.json`; effects owned by `modules/elements/environment.js`. No separate engine.

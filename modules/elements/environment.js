@@ -44,11 +44,11 @@ function configure(map){
  hazardIn=hazard?Math.max(1,Number(hazard.first_trigger_seconds)||10):Infinity;
 }
 function status(u){
- if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null,fireVisual:0,shatterTime:0,rootTime:0,rootRelease:0};
+ if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null,fireVisual:0,shatterTime:0,rootTime:0,rootRelease:0,staggerTime:0};
  return u.environmentStatus;
 }
-function movementMultiplier(u){const s=u?.environmentStatus;return (s?.freezeTime>0||s?.rootTime>0)?0:(s?.slowTime>0?1-s.slowPct:1)}
-function canAct(u){return !(u?.environmentStatus?.freezeTime>0)}
+function movementMultiplier(u){const s=u?.environmentStatus;return (s?.freezeTime>0||s?.rootTime>0||s?.staggerTime>0)?0:(s?.slowTime>0?1-s.slowPct:1)}
+function canAct(u){return !(u?.environmentStatus?.freezeTime>0||u?.environmentStatus?.staggerTime>0)}
 function update(dt,units,applyDamage){
  if(!stage||!enabled)return;
  dt=Math.max(0,Math.min(.06,Number(dt)||0));if(!dt)return;
@@ -86,6 +86,7 @@ function update(dt,units,applyDamage){
    s.slowTime=Math.max(0,s.slowTime-dt);
    const wasFrozen=s.freezeTime>0;
    s.freezeTime=Math.max(0,s.freezeTime-dt);
+   s.staggerTime=Math.max(0,(s.staggerTime||0)-dt);
    const wasRooted=s.rootTime>0;
    s.rootTime=Math.max(0,(s.rootTime||0)-dt);
    s.rootRelease=Math.max(0,(s.rootRelease||0)-dt);
@@ -96,18 +97,30 @@ function update(dt,units,applyDamage){
    if(s.slowTime===0){s.slowPct=0;if(s.freezeTime===0)s.source=null;}
  }
  if(!hazardsEnabled||!hazard){hazardZones=[];return;}
- if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'){
+ if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'||hazard.type==='earth_tremor'){
    // Zones are spatial hazards. They warn before igniting and damage only occupants.
    for(const zone of hazardZones){
      if(zone.warning>0){
        zone.warning=Math.max(0,zone.warning-dt);
      }else if(zone.remaining>0){
        zone.remaining=Math.max(0,zone.remaining-dt);
+       // Tremor is a single impact, not a repeated damage field.
+       const impact=hazard.type==='earth_tremor'&&!zone.impacted;
+       if(impact)zone.impacted=true;
        for(const u of units){
          if(!u||u.hp<=0||matchesElement(u)||u.environmentAge<(Number(hazard.minimum_spawn_age_seconds)||0))continue;
          const dx=(u.x-zone.x)/zone.radius,dy=(u.y-zone.y)/(zone.radius*.48);
          if(dx*dx+dy*dy<=1){
-           if(hazard.type==='entangling_roots'){
+           if(hazard.type==='earth_tremor'){
+             if(!impact||zone.caught.has(u))continue;
+             zone.caught.add(u);const st=status(u);
+             st.staggerTime=Math.max(st.staggerTime||0,Number(hazard.stagger_duration_seconds)||.8);
+             u.charge=null;u.walking=false;if(u.anim)u.anim=null;
+             const vx=u.x-zone.x,vy=(u.y-zone.y)*1.45,len=Math.hypot(vx,vy),push=Math.max(0,Number(hazard.knockback_distance)||20);
+             u.x=Math.max(171,Math.min(789,u.x+(len>.001?vx/len:(u.side>0?-1:1))*push));
+             u.y=Math.max(343,Math.min(429,u.y+(len>.001?vy/len:0)*push/1.45));
+             if(typeof applyDamage==='function')applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct)||0));
+           }else if(hazard.type==='entangling_roots'){
              if(!zone.caught.has(u)){zone.caught.add(u);const st=status(u);st.rootTime=Math.max(st.rootTime||0,Number(hazard.root_duration_seconds)||1.8);st.rootRelease=0;}
            }else if(typeof applyDamage==='function'){status(u).fireVisual=.16;applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct_per_second)||0)*dt);}
          }
@@ -119,7 +132,7 @@ function update(dt,units,applyDamage){
  hazardIn-=dt;
  if(hazardIn>0)return;
  if(hazard.type==='heavy_rain')heavyRainTime=Math.max(0,Number(hazard.visual_duration_seconds)||3.8);
- if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'){
+ if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'||hazard.type==='earth_tremor'){
    const range=Array.isArray(hazard.zone_count)?hazard.zone_count:[1,2];
    const low=Math.max(1,Math.round(Number(range[0])||1)),high=Math.max(low,Math.round(Number(range[1])||low));
    const count=Math.min(2,Math.floor(rand(low,high+1)));
@@ -129,7 +142,7 @@ function update(dt,units,applyDamage){
      // Positions stay on the continuous battle floor, away from both towers.
      const x=count===1?rand(320,640):i===0?rand(270,440):rand(520,690);
      hazardZones.push({x,y:rand(362,408),radius,warning:Math.max(.3,Number(hazard.warning_seconds)||1),
-       remaining:Math.max(.5,Number(hazard.active_seconds)||4),phase:rand(0,6),caught:new Set()});
+       remaining:Math.max(.5,Number(hazard.active_seconds)||4),phase:rand(0,6),caught:new Set(),impacted:false});
    }
  }
  const limits=Array.isArray(hazard.interval_seconds)?hazard.interval_seconds:[15,22];
@@ -196,6 +209,20 @@ function render(ctx,layer='background'){
      ctx.beginPath();ctx.ellipse(x,y,(3+8*phase),1+2*phase,0,0,Math.PI*2);ctx.stroke();
      if(heavy&&phase<.35){ctx.globalAlpha=.36*(1-phase/.35);ctx.beginPath();ctx.moveTo(x-3,y-4);ctx.lineTo(x,y);ctx.lineTo(x+4,y-6);ctx.stroke();}
    }
+ }
+ // Earth tremor: cracked ground telegraph, one expanding impact, then falling debris.
+ if(hazardsEnabled&&hazard?.type==='earth_tremor')for(const zone of hazardZones){
+   const warning=zone.warning>0,wt=Math.max(.3,Number(hazard.warning_seconds)||1),dur=Math.max(.5,Number(hazard.active_seconds)||1);
+   const p=warning?Math.max(0,1-zone.warning/wt):Math.min(1,1-zone.remaining/dur),r=zone.radius;
+   ctx.save();ctx.translate(zone.x,zone.y);ctx.save();ctx.scale(1,.48);
+   const g=ctx.createRadialGradient(0,0,0,0,0,r);g.addColorStop(0,'rgba(238,187,102,.45)');g.addColorStop(1,'rgba(156,96,44,0)');ctx.fillStyle=g;ctx.globalAlpha=warning?.5+p*.5:1-p;ctx.fillRect(-r,-r,2*r,2*r);
+   ctx.strokeStyle=warning?'#ffe0a3':'#f8c17a';ctx.lineWidth=warning?2:4;ctx.setLineDash(warning?[9,5]:[]);ctx.beginPath();ctx.arc(0,0,warning?r:r*(.15+.85*p),0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+   for(let i=0;i<8;i++){const a=i*Math.PI/4+zone.phase,rr=r*(.65+.2*Math.sin(i*3));ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a+.2)*rr*.36,Math.sin(a+.2)*rr*.36);ctx.lineTo(Math.cos(a-.12)*rr*.7,Math.sin(a-.12)*rr*.7);ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);ctx.strokeStyle='#643b25';ctx.lineWidth=3;ctx.stroke();ctx.strokeStyle='#d79d62';ctx.lineWidth=1;ctx.stroke();}ctx.restore();
+   for(let i=0;i<16;i++){const a=i*2.399963+zone.phase,dist=r*(warning?.3+.5*(i%5)/5:.15+.75*p),x=Math.cos(a)*dist,y=Math.sin(a)*dist*.48;
+     const lift=warning?Math.abs(Math.sin(elapsed*28+i))*3:Math.sin(Math.PI*p)*(16+i%5*6);
+     ctx.globalAlpha=warning?.8:1-p;ctx.save();ctx.translate(x,y-lift);ctx.rotate(a+p*5);ctx.fillStyle=i%2?'#bc8250':'#e3b17d';ctx.strokeStyle='#71492e';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-4,2);ctx.lineTo(-2,-4);ctx.lineTo(4,-2);ctx.lineTo(5,3);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+     if(!warning){ctx.globalAlpha=(1-p)*.25;ctx.fillStyle='#e6bd83';ctx.beginPath();ctx.ellipse(x,y,8+p*11,4+p*5,0,0,Math.PI*2);ctx.fill();}
+   }ctx.restore();
  }
  // Nature warning and eruption: bounded ground growth, never an obstacle.
  if(hazardsEnabled&&hazard?.type==='entangling_roots')for(const zone of hazardZones){
@@ -320,6 +347,11 @@ function renderStatus(ctx,u){
    const p=1-s.shatterTime/.38;ctx.save();ctx.globalAlpha=1-p;ctx.fillStyle='#b6efff';ctx.strokeStyle='#f4ffff';ctx.lineWidth=1;
    for(let i=0;i<10;i++){const a=i*2.399963, x=u.x+Math.cos(a)*(20+p*32),y=u.y-35+Math.sin(a)*(22+p*28)+p*p*22;
      ctx.save();ctx.translate(x,y);ctx.rotate(a+p*3);ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(4,2);ctx.lineTo(-3,5);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+   ctx.restore();
+ }
+ if(s.staggerTime>0){
+   ctx.save();const f=Math.min(1,s.staggerTime/.2);ctx.globalAlpha=f;ctx.strokeStyle='#ffe0a4';ctx.fillStyle='#e6bd83';ctx.lineWidth=2;
+   for(let i=0;i<5;i++){const a=elapsed*4+i*Math.PI*2/5,x=u.x+Math.cos(a)*22,y=u.y-62+Math.sin(a)*6;ctx.beginPath();ctx.moveTo(x-4,y);ctx.lineTo(x+4,y);ctx.moveTo(x,y-4);ctx.lineTo(x,y+4);ctx.stroke();const q=(elapsed*1.8+i*.2)%1;ctx.globalAlpha=f*(1-q)*.6;ctx.beginPath();ctx.ellipse(u.x+(i-2)*10,u.y-q*9,5+q*5,2+q*2,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=f;}
    ctx.restore();
  }
  if(s.rootTime>0||s.rootRelease>0){

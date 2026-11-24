@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "id": "stonefall_canyon",
+  "name": "Stonefall Canyon",
+  "enabled": true,
+  "element": "earth",
+  "affinity": "earth",
+  "environment_theme": "rocky_canyon",
+  "background": "assets/backgrounds/stonefall-canyon.png",
+  "layout": "standard_landscape_v2",
+  "description": "A sandstone canyon where sudden tremors stagger and knock back non-Earth monsters.",
+  "modifier": {
+    "outgoing_damage_bonus_pct": 0.1,
+    "incoming_damage_reduction_pct": 0.05,
+    "max_hp_bonus_pct": 0
+  },
+  "ambient": {
+    "enabled": true,
+    "type": "dust",
+    "count": 46,
+    "speed": 12,
+    "drift": 19,
+    "opacity": 0.65,
+    "size": 3.2,
+    "layer": "background"
+  },
+  "hazard": {
+    "enabled": true,
+    "type": "earth_tremor",
+    "interval_seconds": [
+      15,
+      22
+    ],
+    "first_trigger_seconds": 10,
+    "target": "monsters_inside_zones",
+    "affects": "both_teams",
+    "matching_element_immune": true,
+    "zone_count": [
+      1,
+      2
+    ],
+    "zone_radius": 75,
+    "warning_seconds": 1,
+    "active_seconds": 1,
+    "stagger_duration_seconds": 0.8,
+    "knockback_distance": 20,
+    "damage_max_hp_pct": 0.02,
+    "minimum_spawn_age_seconds": 2
+  },
+  "visual_design": {
+    "base_art": "neutral_sky",
+    "celestial_objects_baked": false,
+    "baked_weather": false,
+    "time_of_day_independent": true,
+    "preferred_art_ratio": "16:9",
+    "reference": "docs/map_rules.md",
+    "approved_asset_status": "uploaded"
+  },
+  "time_of_day": {
+    "mode": "neutral_until_engine_ready",
+    "supported_phases": [
+      "day",
+      "night"
+    ],
+    "runtime_lighting_module": "modules/day-night/"
+  }
+}
