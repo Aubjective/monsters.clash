@@ -55,7 +55,7 @@
     "approved_asset_status": "uploaded"
   },
   "time_of_day": {
-    "mode": "neutral_until_engine_ready",
+    "mode": "outdoor_dynamic",
     "supported_phases": [
       "day",
       "night"

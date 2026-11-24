@@ -12,6 +12,7 @@ const palettes={
  rain:['#b7def1','#8cc6d9'],
  metal:['#d7e5f2','#9aaec4','#fff1b8']
 };
+let sentries=[],sentryShots=[],sentryTargets=[],sentryAim=0,sentryConfig=null;
 let stage=null,ambient=null,hazard=null,particles=[],hazardZones=[],elapsed=0,hazardIn=Infinity,gustClock=0,heavyRainTime=0,enabled=true,hazardsEnabled=true;
 function matchesElement(unitOrMonster){
  const m=unitOrMonster?.m||unitOrMonster;
@@ -46,6 +47,8 @@ function configure(map){
  }:null;
  hazard=stage?.hazard?.enabled?stage.hazard:null;
  elapsed=0;gustClock=0;heavyRainTime=0;particles=[];hazardZones=[];
+ sentryConfig=stage?.sentries?.enabled?stage.sentries:null;sentries=[];sentryShots=[];sentryTargets=[];sentryAim=0;
+ if(sentryConfig)for(let i=0;i<Math.min(3,Math.max(1,Number(sentryConfig.count)||2));i++)sentries.push({x:320+i*320,y:150+i*22,phase:i*Math.PI});
  if(ambient)for(let i=0;i<(ambient.type==='rain'?Math.max(ambient.count,ambient.heavy_count):ambient.count);i++)particles.push(seed(true));
  hazardIn=hazard?Math.max(1,Number(hazard.first_trigger_seconds)||10):Infinity;
 }
@@ -59,6 +62,10 @@ function update(dt,units,applyDamage){
  if(!stage||!enabled)return;
  dt=Math.max(0,Math.min(.06,Number(dt)||0));if(!dt)return;
  elapsed+=dt;gustClock+=dt;
+ for(const drone of sentries){const t=elapsed*(Number(sentryConfig.patrol_speed)||.35)+drone.phase;drone.x=480+Math.sin(t)*205;drone.y=153+Math.cos(t*.7+drone.phase)*16;}
+ for(const shot of sentryShots){shot.age+=dt;if(!shot.hit&&shot.age>=shot.duration){shot.hit=true;if(hazardsEnabled&&shot.target.hp>0&&typeof applyDamage==='function')applyDamage(shot.target,shot.target.maxhp*Math.max(0,Number(sentryConfig.damage_max_hp_pct)||0));}}
+ sentryShots=sentryShots.filter(shot=>shot.age<shot.duration+.16);
+ if(sentryAim>0){sentryAim=Math.max(0,sentryAim-dt);if(sentryAim===0){if(hazardsEnabled)for(const aim of sentryTargets){if(aim.target.hp>0)sentryShots.push({...aim,x:aim.drone.x,y:aim.drone.y+10,age:0,duration:.25,hit:false});}sentryTargets=[];}}
  heavyRainTime=Math.max(0,heavyRainTime-dt);
  if(ambient){
    const up=ambient.type==='embers'||ambient.type==='spores';
@@ -72,7 +79,7 @@ function update(dt,units,applyDamage){
    const visibleCount=ambient.type==='rain'&&heavyRainTime<=0?ambient.count:particles.length;
    for(let i=0;i<visibleCount;i++){
      const p=particles[i];
-     if(ambient.type==='dust'&&ambient.sand_wind?.enabled){
+     if(ambient?.type==='dust'&&ambient.sand_wind?.enabled){
        const sw=ambient.sand_wind,period=Math.max(3,Number(sw.gust_period_seconds)||9),strength=Math.max(0,Number(sw.gust_strength)||48);
        const pulse=Math.pow(Math.max(0,Math.sin(gustClock*Math.PI*2/period)),3);
        p.x+=(ambient.drift+p.speed+pulse*strength)*(p.near?1:.65)*dt;
@@ -116,7 +123,7 @@ function update(dt,units,applyDamage){
    if(wasFrozen&&s.freezeTime===0)s.shatterTime=.38;
    if(s.slowTime===0){s.slowPct=0;if(s.freezeTime===0)s.source=null;}
  }
- if(!hazardsEnabled||!hazard){hazardZones=[];return;}
+ if(!hazardsEnabled||!hazard){hazardZones=[];sentryTargets=[];sentryShots=[];sentryAim=0;return;}
  if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'||hazard.type==='earth_tremor'||hazard.type==='piercing_spikes'){
    // Zones are spatial hazards. They warn before igniting and damage only occupants.
    for(const zone of hazardZones){
@@ -157,6 +164,17 @@ function update(dt,units,applyDamage){
  }
  hazardIn-=dt;
  if(hazardIn>0)return;
+ if(sentries.length&&sentryConfig){
+   const eligible=units.filter(u=>u&&u.hp>0&&u.environmentAge>=(Number(hazard.minimum_spawn_age_seconds)||0)&&(!sentryConfig.matching_element_immune||!matchesElement(u)));
+   sentryTargets=[];const cap=Math.max(1,Math.min(4,Number(sentryConfig.targets_per_drone)||2));
+   // Alternate team priority each wave; no duplicate target per volley.
+   const teams=[eligible.filter(u=>u.side>0),eligible.filter(u=>u.side<0)];
+   const start=Math.floor(elapsed)%2;for(let i=0;i<sentries.length;i++)for(let n=0;n<cap;n++){
+     const preferred=teams[(start+i+n)%2],other=teams[1-(start+i+n)%2],list=preferred.length?preferred:other;
+     if(list.length){const idx=Math.floor(Math.random()*list.length);sentryTargets.push({drone:sentries[i],target:list.splice(idx,1)[0]});}
+   }
+   sentryAim=Math.max(.1,Number(sentryConfig.warning_seconds)||1);
+ }
  if(hazard.type==='heavy_rain')heavyRainTime=Math.max(0,Number(hazard.visual_duration_seconds)||3.8);
  if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'||hazard.type==='earth_tremor'||hazard.type==='piercing_spikes'){
    const range=Array.isArray(hazard.zone_count)?hazard.zone_count:[1,2];
@@ -189,13 +207,13 @@ function update(dt,units,applyDamage){
  }
 }
 function render(ctx,layer='background'){
- if(!stage||!enabled||!ambient||ambient.layer!==layer)return;
+ if(!stage||!enabled||layer!=='background')return;
  ctx.save();
- const heavy=ambient.type==='rain'&&heavyRainTime>0;
+ const heavy=ambient?.type==='rain'&&heavyRainTime>0;
  // Subtle overcast tint during heavy rain; never change permanent base-map artwork.
  if(heavy){ctx.fillStyle='rgba(13,38,65,0.14)';ctx.fillRect(0,0,W,H);}
- ctx.globalAlpha=ambient.opacity*(heavy?1.55:1);
- const visibleCount=ambient.type==='rain'&&!heavy?ambient.count:particles.length;
+ ctx.globalAlpha=(ambient?.opacity||0)*(heavy?1.55:1);
+ const visibleCount=ambient?.type==='rain'&&!heavy?ambient.count:particles.length;
  for(let i=0;i<visibleCount;i++){const p=particles[i];
    ctx.save();ctx.translate(p.x,p.y);ctx.fillStyle=p.color;ctx.strokeStyle=p.color;
    switch(ambient.type){
@@ -238,7 +256,7 @@ function render(ctx,layer='background'){
    ctx.restore();
  }
 
- if(ambient.type==='rain'&&ambient.ground_splashes){
+ if(ambient?.type==='rain'&&ambient.ground_splashes){
    // Tiny water ripples on the battle floor; deterministic across frames.
    ctx.strokeStyle='#d7f7ff';ctx.lineWidth=1;
    for(let i=0;i<(heavy?26:12);i++){
@@ -251,7 +269,7 @@ function render(ctx,layer='background'){
    }
  }
  // Low, translucent sand wisps stay behind all battle sprites.
- if(ambient.type==='dust'&&ambient.sand_wind?.enabled){
+ if(ambient?.type==='dust'&&ambient.sand_wind?.enabled){
    const sw=ambient.sand_wind,period=Math.max(3,Number(sw.gust_period_seconds)||9),pulse=Math.pow(Math.max(0,Math.sin(gustClock*Math.PI*2/period)),3);
    for(let i=0;i<5;i++){
      const x=((elapsed*(32+i*4)+i*223)%(W+240))-120,y=315+i*29+Math.sin(elapsed*.7+i)*5;
@@ -260,7 +278,7 @@ function render(ctx,layer='background'){
    }
  }
  // Small ambient dust devils: loose spiralling grit, no solid funnel or combat effect.
- if(ambient.type==='dust'&&ambient.sand_devils?.enabled){
+ if(ambient?.type==='dust'&&ambient.sand_devils?.enabled){
    const sd=ambient.sand_devils,sw=ambient.sand_wind||{},period=Math.max(3,Number(sw.gust_period_seconds)||9),pulse=Math.pow(Math.max(0,Math.sin(gustClock*Math.PI*2/period)),3);
    const count=Math.max(0,Math.min(3,Math.round(Number(sd.count)||2))),maxCount=Math.min(3,Math.max(count,Math.round(Number(sd.max_count)||count)));
    const r=Math.max(5,Math.min(16,Number(sd.radius)||12)),height=Math.max(15,Math.min(45,Number(sd.height)||34)),speed=Math.max(1,Math.min(30,Number(sd.speed)||10)),opacity=Math.max(0,Math.min(.5,Number(sd.opacity)||.28));
@@ -280,6 +298,18 @@ function render(ctx,layer='background'){
      ctx.restore();
    }
  }
+ // Sentry drones patrol above the combat silhouettes. Their aim lines are telegraphs only.
+ for(const drone of sentries){
+   const aiming=sentryTargets.some(a=>a.drone===drone),firing=sentryShots.some(a=>a.drone===drone&&!a.hit);
+   ctx.save();ctx.globalAlpha=1;ctx.translate(drone.x,drone.y);
+   const shell=ctx.createLinearGradient(0,-14,0,14);shell.addColorStop(0,'#dbe3e9');shell.addColorStop(.45,'#788898');shell.addColorStop(1,'#263441');
+   ctx.fillStyle='#263441';ctx.fillRect(-26,-3,52,7);for(const x of [-24,24]){ctx.fillStyle='#495b6b';ctx.beginPath();ctx.ellipse(x,0,9,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#a2dce8';ctx.globalAlpha=.55+.2*Math.sin(elapsed*14+x);ctx.fillRect(x-4,6,8,2);ctx.globalAlpha=1;}
+   ctx.fillStyle=shell;ctx.strokeStyle='#293540';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-17,-4);ctx.lineTo(-10,-13);ctx.lineTo(10,-13);ctx.lineTo(17,-4);ctx.lineTo(13,9);ctx.lineTo(-13,9);ctx.closePath();ctx.fill();ctx.stroke();
+   ctx.fillStyle='#18232b';ctx.fillRect(-9,-5,18,9);ctx.fillStyle=aiming||firing?'#ff7851':'#8ce9ed';ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=7;ctx.beginPath();ctx.arc(0,-1,4,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+   ctx.fillStyle='#556674';ctx.fillRect(-3,9,6,6);if(firing){ctx.fillStyle='#ffda91';ctx.beginPath();ctx.arc(0,15,5,0,Math.PI*2);ctx.fill();}ctx.restore();
+ }
+ for(const aim of sentryTargets){if(aim.target.hp<=0)continue;ctx.save();ctx.globalAlpha=.4;ctx.strokeStyle='#ff926c';ctx.lineWidth=1;ctx.setLineDash([4,6]);ctx.beginPath();ctx.moveTo(aim.drone.x,aim.drone.y+12);ctx.lineTo(aim.target.x,aim.target.y-30);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.ellipse(aim.target.x,aim.target.y,13,5,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
+ for(const shot of sentryShots){const p=Math.min(1,shot.age/shot.duration),x=shot.x+(shot.target.x-shot.x)*p,y=shot.y+(shot.target.y-30-shot.y)*p;ctx.save();ctx.globalAlpha=shot.hit?Math.max(0,1-(shot.age-shot.duration)/.16):1;ctx.strokeStyle='#ffd29a';ctx.fillStyle='#fff0c6';ctx.lineWidth=2;if(!shot.hit){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-(shot.target.x-shot.x)*.06,y-(shot.target.y-30-shot.y)*.06);ctx.stroke();}else{for(let i=0;i<5;i++){const a=i*1.256;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*8,y+Math.sin(a)*8);ctx.stroke();}}ctx.restore();}
  // Metal trap: floor warning, solid faceted steel cones, then retraction.
  if(hazardsEnabled&&hazard?.type==='piercing_spikes')for(const zone of hazardZones){
    const warning=zone.warning>0,wt=Math.max(.3,Number(hazard.warning_seconds)||1),dur=Math.max(.5,Number(hazard.active_seconds)||1.2);

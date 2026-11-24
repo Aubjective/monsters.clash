@@ -8,14 +8,14 @@
   "environment_theme": "indoor_fortress",
   "background": "assets/backgrounds/iron-citadel.png",
   "layout": "standard_landscape_v2",
-  "description": "A fortified metal hall where concealed floor spikes pierce non-Metal monsters and cause Bleeding.",
+  "description": "An indoor fortress defended by concealed piercing spikes and patrolling sentry drones.",
   "modifier": {
     "outgoing_damage_bonus_pct": 0.1,
     "incoming_damage_reduction_pct": 0.05,
     "max_hp_bonus_pct": 0
   },
   "ambient": {
-    "enabled": true,
+    "enabled": false,
     "type": "metal",
     "count": 34,
     "speed": 9,
@@ -58,7 +58,19 @@
   },
   "time_of_day": {
     "mode": "indoor_fixed",
-    "supported_phases": [],
+    "supported_phases": [
+      "day",
+      "night"
+    ],
     "runtime_lighting_module": "modules/day-night/"
+  },
+  "sentries": {
+    "enabled": true,
+    "count": 2,
+    "patrol_speed": 0.35,
+    "targets_per_drone": 2,
+    "warning_seconds": 1,
+    "damage_max_hp_pct": 0.01,
+    "matching_element_immune": true
   }
 }

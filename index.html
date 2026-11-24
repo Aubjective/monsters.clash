@@ -342,7 +342,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <main id="battle-screen" hidden>
  <div class="battle-top">
   <div class="battle-top-side battle-top-ally"><span class="battle-team-flag flag-blue" role="img" aria-label="Blue team">⚑</span><span class="battle-brand">⚔ Monsters Clash <small id="run-progress">Battle 1</small></span></div>
-  <div class="battle-top-side battle-top-enemy"><button type="button" id="stage-info-toggle" aria-label="View Battlefield Information" aria-expanded="false" aria-controls="stage-info-panel"><span class="battlefield-name" id="stage-label" aria-live="polite"></span><span class="map-info-symbol" aria-hidden="true">i</span></button><span class="battle-team-flag flag-red" role="img" aria-label="Red team">⚑</span></div>
+  <div class="battle-top-side battle-top-enemy"><button type="button" id="stage-info-toggle" aria-label="View Battlefield Information" aria-expanded="false" aria-controls="stage-info-panel"><span id="day-night-label" style="white-space:nowrap;font-size:11px;color:#d8dff0" aria-label="Battle time"></span><span class="battlefield-name" id="stage-label" aria-live="polite"></span><span class="map-info-symbol" aria-hidden="true">i</span></button><span class="battle-team-flag flag-red" role="img" aria-label="Red team">⚑</span></div>
  </div>
  <aside id="stage-info-panel" hidden aria-label="Battlefield information">
   <button type="button" id="stage-info-close" aria-label="Close Battlefield Information">×</button>
@@ -385,7 +385,8 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <button id="battle-menu-home">Main Menu</button>
  </nav>
 </main>
-<script src="modules/elements/environment.js?v=20261125-metal"></script>
+<script src="modules/elements/environment.js?v=20261125-sentries"></script>
+<script src="modules/day-night/engine.js?v=20261125-1"></script>
 <script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
 const backgroundImages=new Map(),towerImages={ally:new Image(),enemy:new Image()};
@@ -646,6 +647,8 @@ function chooseRandomStage(){
  currentStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;
  if(currentStage){run.lastStageId=currentStage.id;mapBackground(stageBackgroundPath(currentStage))};
  window.MonstersClashEnvironment?.configure(currentStage);
+ window.MonstersClashDayNight?.configure(currentStage);
+ window.MonstersClashDayNight?.updateLabel($('day-night-label'));
  const label=$('stage-label');if(label)label.textContent=currentStage?currentStage.name:'Battlefield';
  $('stage-info-panel').hidden=true;$('stage-info-toggle').setAttribute('aria-expanded','false');
  renderStageInfo();
@@ -690,6 +693,7 @@ function renderStageInfo(){
   line('Warning',hazard.warning_seconds+'s');
   line('Piercing Damage',pct(hazard.damage_max_hp_pct)+' Max HP');
   line('Bleeding',pct(hazard.bleed_max_hp_pct_per_second)+' Max HP / Second · '+hazard.bleed_duration_seconds+'s');
+  if(map.sentries?.enabled)line('Sentry Drones',map.sentries.count+' · '+pct(map.sentries.damage_max_hp_pct)+' Max HP / Shot');
  }else if(hazard.type==='earth_tremor'){
   line('Earth Tremor',(hazard.zone_count||[1]).join('–')+' Zones');
   line('Warning',hazard.warning_seconds+'s');
@@ -893,6 +897,8 @@ function stepTowerDefense(dt){
 function step(dt){
  if(state.ended)return;
  state.time+=dt;
+ window.MonstersClashDayNight?.update(dt);
+ window.MonstersClashDayNight?.updateLabel($('day-night-label'));
  window.MonstersClashEnvironment?.update(dt,state.units,dmg);
  for(const side of ['ally','enemy'])for(const k of Object.keys(cooldowns[side]))cooldowns[side][k]=Math.max(0,cooldowns[side][k]-dt);
  enemyTimer-=dt;
@@ -1081,6 +1087,7 @@ function draw(){
  const backdrop=mapBackground(stageBackgroundPath(s));
  if(readyImage(backdrop))drawCover(backdrop,-viewOffsetX,-viewOffsetY,cv.width,cv.height);
  else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(-viewOffsetX,-viewOffsetY,cv.width,cv.height);ctx.fillStyle=colors[2];ctx.fillRect(-viewOffsetX,ground,cv.width,Math.max(0,cv.height-ground));ctx.fillStyle='#446b48';ctx.fillRect(-viewOffsetX,ground,cv.width,5)}
+ window.MonstersClashDayNight?.render(ctx,-viewOffsetX,-viewOffsetY,cv.width,cv.height);
  window.MonstersClashEnvironment?.render(ctx,'background');
  drawTower('ally',80,state.allyBase);drawTower('enemy',880,state.enemyBase);
  drawTowerAttacks();
