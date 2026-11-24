@@ -44,7 +44,7 @@ function configure(map){
  hazardIn=hazard?Math.max(1,Number(hazard.first_trigger_seconds)||10):Infinity;
 }
 function status(u){
- if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null};
+ if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null,fireVisual:0,shatterTime:0};
  return u.environmentStatus;
 }
 function movementMultiplier(u){const s=u?.environmentStatus;return s?.freezeTime>0?0:(s?.slowTime>0?1-s.slowPct:1)}
@@ -84,7 +84,11 @@ function update(dt,units,applyDamage){
    u.environmentAge=(u.environmentAge||0)+dt;
    const s=status(u);
    s.slowTime=Math.max(0,s.slowTime-dt);
+   const wasFrozen=s.freezeTime>0;
    s.freezeTime=Math.max(0,s.freezeTime-dt);
+   s.fireVisual=Math.max(0,(s.fireVisual||0)-dt);
+   s.shatterTime=Math.max(0,(s.shatterTime||0)-dt);
+   if(wasFrozen&&s.freezeTime===0)s.shatterTime=.38;
    if(s.slowTime===0){s.slowPct=0;if(s.freezeTime===0)s.source=null;}
  }
  if(!hazardsEnabled||!hazard){fireZones=[];return;}
@@ -98,7 +102,7 @@ function update(dt,units,applyDamage){
        if(typeof applyDamage==='function')for(const u of units){
          if(!u||u.hp<=0||matchesElement(u)||u.environmentAge<(Number(hazard.minimum_spawn_age_seconds)||0))continue;
          const dx=(u.x-zone.x)/zone.radius,dy=(u.y-zone.y)/(zone.radius*.48);
-         if(dx*dx+dy*dy<=1)applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct_per_second)||0)*dt);
+         if(dx*dx+dy*dy<=1){status(u).fireVisual=.16;applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct_per_second)||0)*dt);}
        }
      }
    }
@@ -142,7 +146,7 @@ function render(ctx,layer='background'){
  ctx.save();
  const heavy=ambient.type==='rain'&&heavyRainTime>0;
  // Subtle overcast tint during heavy rain; never change permanent base-map artwork.
- if(heavy){ctx.fillStyle='rgba(13,38,65,0.085)';ctx.fillRect(0,0,W,H);}
+ if(heavy){ctx.fillStyle='rgba(13,38,65,0.14)';ctx.fillRect(0,0,W,H);}
  ctx.globalAlpha=ambient.opacity*(heavy?1.55:1);
  const visibleCount=ambient.type==='rain'&&!heavy?ambient.count:particles.length;
  for(let i=0;i<visibleCount;i++){const p=particles[i];
@@ -161,7 +165,7 @@ function render(ctx,layer='background'){
    case 'spores':ctx.shadowBlur=8;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(0,0,p.size*.6,0,Math.PI*2);ctx.fill();break;
    case 'dust':ctx.globalAlpha*=.45;ctx.beginPath();ctx.ellipse(0,0,p.size*1.6,p.size*.65,0,0,Math.PI*2);ctx.fill();break;
    case 'rain':{
-     const length=p.size*(heavy?6:4);
+     const length=p.size*(heavy?8:4);
      ctx.lineWidth=heavy?1.35:.9;
      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-length*.24,length);ctx.stroke();
      break;
@@ -180,6 +184,7 @@ function render(ctx,layer='background'){
      const x=((p.x+i*113)%W+W)%W,y=327+(i*37)%108;
      ctx.globalAlpha=(heavy?.24:.15)*(1-phase);
      ctx.beginPath();ctx.ellipse(x,y,(3+8*phase),1+2*phase,0,0,Math.PI*2);ctx.stroke();
+     if(heavy&&phase<.35){ctx.globalAlpha=.36*(1-phase/.35);ctx.beginPath();ctx.moveTo(x-3,y-4);ctx.lineTo(x,y);ctx.lineTo(x+4,y-6);ctx.stroke();}
    }
  }
  // Burning ground is a soft irregular heat patch, not a perfect target circle.
@@ -214,6 +219,17 @@ function render(ctx,layer='background'){
      ctx.globalAlpha=(.18+.31*warm)*(.95+.05*Math.sin(elapsed*8+zone.phase));
      ctx.strokeStyle='#ffba58';ctx.lineWidth=2;
      ctx.setLineDash([14,12]);ctx.stroke();ctx.setLineDash([]);
+   }
+   // Branching molten fissures communicate ignition without altering the hazard footprint.
+   ctx.lineCap='round';
+   for(let i=0;i<8;i++){
+     const a=i*Math.PI/4+zone.phase, r=zone.radius*(.55+.17*Math.sin(i*3+zone.phase));
+     ctx.beginPath();ctx.moveTo(Math.cos(a)*r*.12,Math.sin(a)*r*.12);
+     ctx.lineTo(Math.cos(a+.19)*r*.45,Math.sin(a+.19)*r*.45);
+     ctx.lineTo(Math.cos(a-.08)*r*.72,Math.sin(a-.08)*r*.72);
+     ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
+     ctx.globalAlpha=(warning?.35+.45*warm:.75*ignite*extinguish);ctx.strokeStyle='#ff591c';ctx.lineWidth=5;ctx.stroke();
+     ctx.strokeStyle='#ffe298';ctx.lineWidth=1.5;ctx.stroke();
    }
    ctx.restore();
    if(!warning){
@@ -260,7 +276,25 @@ function render(ctx,layer='background'){
 }
 function renderStatus(ctx,u){
  const s=u?.environmentStatus;
- if(!s||(s.slowTime<=0&&s.freezeTime<=0))return;
+ if(!enabled||!s)return;
+ if(s.fireVisual>0){
+   ctx.save();const strength=Math.min(1,s.fireVisual/.1);
+   for(let i=0;i<5;i++){
+     const t=elapsed*8+i*2.1, x=u.x+(i-2)*9, y=u.y+2-Math.abs(i-2)*2;
+     const h=13+7*Math.sin(t)**2, sway=5*Math.sin(t*.7);
+     ctx.globalAlpha=.8*strength;ctx.fillStyle='#ff7a21';ctx.beginPath();ctx.moveTo(x-5,y);
+     ctx.quadraticCurveTo(x-8,y-h*.5,x+sway,y-h);ctx.quadraticCurveTo(x+9,y-h*.4,x+5,y);ctx.closePath();ctx.fill();
+     ctx.fillStyle='#ffe4a0';ctx.beginPath();ctx.moveTo(x-2,y);ctx.quadraticCurveTo(x-3,y-h*.3,x+sway*.5,y-h*.65);ctx.quadraticCurveTo(x+4,y-h*.25,x+2,y);ctx.fill();
+     const p=(elapsed*1.5+i*.23)%1;ctx.globalAlpha=(1-p)*strength;ctx.beginPath();ctx.arc(x+sway*p,y-8-p*29,1.4,0,Math.PI*2);ctx.fill();
+   }ctx.restore();
+ }
+ if(s.shatterTime>0){
+   const p=1-s.shatterTime/.38;ctx.save();ctx.globalAlpha=1-p;ctx.fillStyle='#b6efff';ctx.strokeStyle='#f4ffff';ctx.lineWidth=1;
+   for(let i=0;i<10;i++){const a=i*2.399963, x=u.x+Math.cos(a)*(20+p*32),y=u.y-35+Math.sin(a)*(22+p*28)+p*p*22;
+     ctx.save();ctx.translate(x,y);ctx.rotate(a+p*3);ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(4,2);ctx.lineTo(-3,5);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+   ctx.restore();
+ }
+ if(s.slowTime<=0&&s.freezeTime<=0)return;
  const freeze=s.freezeTime>0,slow=s.slowTime>0;
  if(s.source==='rain'&&slow&&!freeze){
    // Heavy Rain debuff: wet ground ripples around feet, not frost or current lines.
@@ -270,21 +304,31 @@ function renderStatus(ctx,u){
      ctx.globalAlpha=.5*(1-phase);
      ctx.beginPath();ctx.ellipse(u.x,u.y+3,(9+phase*23),(2+phase*4),0,0,Math.PI*2);ctx.stroke();
    }
+   for(let i=0;i<7;i++){
+     const p=(elapsed*1.8+i*.143)%1,x=u.x+Math.sin(i*2.4)*23,y=u.y-25+p*29;
+     ctx.globalAlpha=.72*Math.sin(p*Math.PI);ctx.fillStyle='#8edfff';ctx.beginPath();ctx.ellipse(x,y,1.6,3.6,-.28,0,Math.PI*2);ctx.fill();
+     if(p>.78){ctx.strokeStyle='#e7fbff';ctx.beginPath();ctx.moveTo(x-4,y-3);ctx.lineTo(x,y);ctx.lineTo(x+4,y-4);ctx.stroke();}
+   }
    ctx.restore();return;
  }
  // Recognizable ice crystals rather than a blue status/debug circle.
  const x=u.x,y=u.y-45, age=elapsed+(u.uid||0)*.33;
  ctx.save();
+ ctx.save();ctx.translate(u.x,u.y-3);ctx.scale(1,.35);
+ const mist=ctx.createRadialGradient(0,0,2,0,0,34);
+ mist.addColorStop(0,'rgba(174,235,255,.37)');mist.addColorStop(1,'rgba(174,235,255,0)');ctx.fillStyle=mist;ctx.fillRect(-35,-35,70,70);ctx.restore();
  if(freeze){
    // Angular translucent crystalline casing: distinct from monster shields.
    ctx.globalAlpha=.44;
-   ctx.fillStyle='#85ddfa';ctx.strokeStyle='#e0fbff';ctx.lineWidth=2.4;
+   const ice=ctx.createLinearGradient(x-34,y-42,x+30,y+32);ice.addColorStop(0,'#e4fdff');ice.addColorStop(.45,'#89dff8');ice.addColorStop(1,'#347fb6');
+   ctx.fillStyle=ice;ctx.strokeStyle='#e0fbff';ctx.lineWidth=2.4;
    ctx.beginPath();ctx.moveTo(x-27,y-36);ctx.lineTo(x-6,y-53);ctx.lineTo(x+23,y-42);
    ctx.lineTo(x+36,y-11);ctx.lineTo(x+25,y+31);ctx.lineTo(x+3,y+44);
    ctx.lineTo(x-29,y+26);ctx.lineTo(x-35,y-10);ctx.closePath();ctx.fill();ctx.stroke();
    ctx.globalAlpha=.52;ctx.strokeStyle='#f3feff';ctx.lineWidth=1.5;
    ctx.beginPath();ctx.moveTo(x-6,y-53);ctx.lineTo(x+3,y+44);ctx.moveTo(x-35,y-10);
    ctx.lineTo(x+25,y+31);ctx.moveTo(x+23,y-42);ctx.lineTo(x-29,y+26);ctx.stroke();
+   ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(x-6,y-53);ctx.lineTo(x+2,y-25);ctx.lineTo(x-9,y-10);ctx.lineTo(x+7,y+7);ctx.lineTo(x+3,y+44);ctx.stroke();
  }
  if(slow||freeze){
    // A handful of tiny diamond-shaped ice chips orbit around the lower body.
