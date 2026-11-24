@@ -17,16 +17,25 @@
   "ambient": {
     "enabled": true,
     "type": "dust",
-    "count": 88,
-    "speed": 20,
-    "drift": 44,
-    "opacity": 0.78,
-    "size": 2.5,
+    "count": 70,
+    "speed": 16,
+    "drift": 34,
+    "opacity": 0.55,
+    "size": 1.4,
     "layer": "background",
     "sand_wind": {
       "enabled": true,
       "gust_period_seconds": 9,
-      "gust_strength": 56
+      "gust_strength": 40
+    },
+    "sand_devils": {
+      "enabled": true,
+      "count": 2,
+      "max_count": 3,
+      "speed": 10,
+      "radius": 12,
+      "height": 34,
+      "opacity": 0.28
     }
   },
   "hazard": {

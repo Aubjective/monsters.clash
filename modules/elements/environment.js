@@ -41,7 +41,8 @@ function configure(map){
    heavy_count:Math.max(0,Math.min(140,Math.round(Number(a.heavy_count)||Number(a.count)||0))),
    ground_splashes:!!a.ground_splashes,
    icy_wind:a.icy_wind||null,
-   sand_wind:a.sand_wind||null
+   sand_wind:a.sand_wind||null,
+   sand_devils:a.sand_devils||null
  }:null;
  hazard=stage?.hazard?.enabled?stage.hazard:null;
  elapsed=0;gustClock=0;heavyRainTime=0;particles=[];hazardZones=[];
@@ -204,8 +205,10 @@ function render(ctx,layer='background'){
        const sw=ambient.sand_wind,period=Math.max(3,Number(sw.gust_period_seconds)||9),pulse=Math.pow(Math.max(0,Math.sin(gustClock*Math.PI*2/period)),3);
        const flicker=.75+.25*Math.sin(elapsed*2+p.phase);
        ctx.globalAlpha*=(p.near?.58:.32)*flicker;
-       ctx.rotate(Math.sin(elapsed+p.phase)*.12-.06);
-       ctx.beginPath();ctx.ellipse(0,0,p.size*(1.5+pulse*1.6),Math.max(.5,p.size*.46),0,0,Math.PI*2);ctx.fill();
+       // Fine grit, never broad leaf-like silhouettes.
+       const grain=Math.max(.3,Math.min(.95,p.size*.52));
+       ctx.beginPath();ctx.arc(0,0,grain,0,Math.PI*2);ctx.fill();
+       if(pulse>.35&&p.near){ctx.lineWidth=.55;ctx.globalAlpha*=.65;ctx.beginPath();ctx.moveTo(-Math.min(3,grain*(1+pulse*2)),0);ctx.lineTo(0,0);ctx.stroke();}
      }else{ctx.globalAlpha*=.45;ctx.beginPath();ctx.ellipse(0,0,p.size*1.6,p.size*.65,0,0,Math.PI*2);ctx.fill();}break;
    }
    case 'rain':{
@@ -238,6 +241,27 @@ function render(ctx,layer='background'){
      const x=((elapsed*(32+i*4)+i*223)%(W+240))-120,y=315+i*29+Math.sin(elapsed*.7+i)*5;
      const rx=70+i*9+35*pulse;
      ctx.save();ctx.translate(x,y);ctx.scale(1,.11);const haze=ctx.createRadialGradient(0,0,0,0,0,rx);haze.addColorStop(0,'rgba(235,188,121,.32)');haze.addColorStop(.5,'rgba(224,174,106,.14)');haze.addColorStop(1,'rgba(224,174,106,0)');ctx.globalAlpha=.18+.35*pulse;ctx.fillStyle=haze;ctx.fillRect(-rx,-rx,rx*2,rx*2);ctx.restore();
+   }
+ }
+ // Small ambient dust devils: loose spiralling grit, no solid funnel or combat effect.
+ if(ambient.type==='dust'&&ambient.sand_devils?.enabled){
+   const sd=ambient.sand_devils,sw=ambient.sand_wind||{},period=Math.max(3,Number(sw.gust_period_seconds)||9),pulse=Math.pow(Math.max(0,Math.sin(gustClock*Math.PI*2/period)),3);
+   const count=Math.max(0,Math.min(3,Math.round(Number(sd.count)||2))),maxCount=Math.min(3,Math.max(count,Math.round(Number(sd.max_count)||count)));
+   const r=Math.max(5,Math.min(16,Number(sd.radius)||12)),height=Math.max(15,Math.min(45,Number(sd.height)||34)),speed=Math.max(1,Math.min(30,Number(sd.speed)||10)),opacity=Math.max(0,Math.min(.5,Number(sd.opacity)||.28));
+   for(let i=0;i<maxCount;i++){
+     const cycle=(elapsed/(12+i*2)+i*.37)%1,fade=Math.min(1,cycle*7,(1-cycle)*7)*(i<count?1:pulse*pulse);
+     const x=220+((elapsed*speed*(1+i*.16)+i*193)%520),y=365+i*24+Math.sin(elapsed*.45+i*2)*8;
+     ctx.save();ctx.translate(x,y);
+     const dust=ctx.createRadialGradient(0,0,0,0,0,r*1.5);dust.addColorStop(0,'rgba(213,164,98,.38)');dust.addColorStop(1,'rgba(213,164,98,0)');ctx.save();ctx.scale(1,.23);ctx.globalAlpha=fade*opacity;ctx.fillStyle=dust;ctx.fillRect(-r*1.5,-r*1.5,r*3,r*3);ctx.restore();
+     for(let n=0;n<48;n++){
+       const z=(elapsed*(.65+(n%4)*.09)+n*.137+i*.31)%1;
+       const a=elapsed*(8+(n%3)*.7)+n*2.399963+i*2;
+       const width=r*(.26+.68*Math.sin(z*Math.PI*.83)),lean=z*5+Math.sin(elapsed*1.4+z*4+i)*z*3;
+       const px=Math.cos(a)*width+lean,py=-z*height+Math.sin(a)*width*.18;
+       ctx.globalAlpha=opacity*fade*Math.sin(z*Math.PI)*(.55+.45*(1+Math.sin(a))/2);
+       ctx.fillStyle=n%3===0?'#a76e42':n%3===1?'#f1d1a0':'#d9b17a';ctx.beginPath();ctx.arc(px,py,.4+(n%4)*.15,0,Math.PI*2);ctx.fill();
+     }
+     ctx.restore();
    }
  }
  // Earth tremor: cracked ground telegraph, one expanding impact, then falling debris.
