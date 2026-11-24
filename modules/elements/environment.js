@@ -21,6 +21,10 @@ function matchesElement(unitOrMonster){
 }
 function seed(initial=false){
  const k=ambient.type,up=k==='embers'||k==='spores';
+ if(k==='dust'&&ambient.sand_wind?.enabled){
+   const near=Math.random()<.72;
+   return {x:initial?rand(-30,W+30):rand(-65,-8),y:near?rand(275,465):rand(110,290),size:rand(.45,1.1)*ambient.size,speed:rand(.55,1.45)*ambient.speed,phase:rand(0,7),rotation:rand(0,7),near,color:palettes.dust[Math.floor(rand(0,palettes.dust.length))]};
+ }
  return {x:rand(-30,W+30),y:initial?rand(-20,H+20):(up?H+25:-25),size:rand(.55,1.35)*ambient.size,
  speed:rand(.7,1.3)*ambient.speed,phase:rand(0,7),rotation:rand(0,7),
  color:palettes[k][Math.floor(rand(0,palettes[k].length))]};
@@ -36,7 +40,8 @@ function configure(map){
    layer:a.layer==='foreground'?'foreground':'background',
    heavy_count:Math.max(0,Math.min(140,Math.round(Number(a.heavy_count)||Number(a.count)||0))),
    ground_splashes:!!a.ground_splashes,
-   icy_wind:a.icy_wind||null
+   icy_wind:a.icy_wind||null,
+   sand_wind:a.sand_wind||null
  }:null;
  hazard=stage?.hazard?.enabled?stage.hazard:null;
  elapsed=0;gustClock=0;heavyRainTime=0;particles=[];hazardZones=[];
@@ -66,6 +71,14 @@ function update(dt,units,applyDamage){
    const visibleCount=ambient.type==='rain'&&heavyRainTime<=0?ambient.count:particles.length;
    for(let i=0;i<visibleCount;i++){
      const p=particles[i];
+     if(ambient.type==='dust'&&ambient.sand_wind?.enabled){
+       const sw=ambient.sand_wind,period=Math.max(3,Number(sw.gust_period_seconds)||9),strength=Math.max(0,Number(sw.gust_strength)||48);
+       const pulse=Math.pow(Math.max(0,Math.sin(gustClock*Math.PI*2/period)),3);
+       p.x+=(ambient.drift+p.speed+pulse*strength)*(p.near?1:.65)*dt;
+       p.y+=(Math.sin(elapsed*1.6+p.phase)*8+Math.sin(elapsed*.65+p.phase*2)*4-pulse*5)*dt;
+       if(p.x>W+65||p.y>H+25||p.y<90)particles[i]=seed(false);
+       continue;
+     }
      const flutter=Math.sin(elapsed*.85+p.phase)*4+Math.sin(elapsed*1.8+p.phase*.72)*2.4;
      const isEmber=ambient.type==='embers';
      // Rising ash follows its own soft air currents; each mote sways at a different pace.
@@ -186,7 +199,15 @@ function render(ctx,layer='background'){
      break;
    }
    case 'spores':ctx.shadowBlur=8;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(0,0,p.size*.6,0,Math.PI*2);ctx.fill();break;
-   case 'dust':ctx.globalAlpha*=.45;ctx.beginPath();ctx.ellipse(0,0,p.size*1.6,p.size*.65,0,0,Math.PI*2);ctx.fill();break;
+   case 'dust':{
+     if(ambient.sand_wind?.enabled){
+       const sw=ambient.sand_wind,period=Math.max(3,Number(sw.gust_period_seconds)||9),pulse=Math.pow(Math.max(0,Math.sin(gustClock*Math.PI*2/period)),3);
+       const flicker=.75+.25*Math.sin(elapsed*2+p.phase);
+       ctx.globalAlpha*=(p.near?.58:.32)*flicker;
+       ctx.rotate(Math.sin(elapsed+p.phase)*.12-.06);
+       ctx.beginPath();ctx.ellipse(0,0,p.size*(1.5+pulse*1.6),Math.max(.5,p.size*.46),0,0,Math.PI*2);ctx.fill();
+     }else{ctx.globalAlpha*=.45;ctx.beginPath();ctx.ellipse(0,0,p.size*1.6,p.size*.65,0,0,Math.PI*2);ctx.fill();}break;
+   }
    case 'rain':{
      const length=p.size*(heavy?8:4);
      ctx.lineWidth=heavy?1.35:.9;
@@ -208,6 +229,15 @@ function render(ctx,layer='background'){
      ctx.globalAlpha=(heavy?.24:.15)*(1-phase);
      ctx.beginPath();ctx.ellipse(x,y,(3+8*phase),1+2*phase,0,0,Math.PI*2);ctx.stroke();
      if(heavy&&phase<.35){ctx.globalAlpha=.36*(1-phase/.35);ctx.beginPath();ctx.moveTo(x-3,y-4);ctx.lineTo(x,y);ctx.lineTo(x+4,y-6);ctx.stroke();}
+   }
+ }
+ // Low, translucent sand wisps stay behind all battle sprites.
+ if(ambient.type==='dust'&&ambient.sand_wind?.enabled){
+   const sw=ambient.sand_wind,period=Math.max(3,Number(sw.gust_period_seconds)||9),pulse=Math.pow(Math.max(0,Math.sin(gustClock*Math.PI*2/period)),3);
+   for(let i=0;i<5;i++){
+     const x=((elapsed*(32+i*4)+i*223)%(W+240))-120,y=315+i*29+Math.sin(elapsed*.7+i)*5;
+     const rx=70+i*9+35*pulse;
+     ctx.save();ctx.translate(x,y);ctx.scale(1,.11);const haze=ctx.createRadialGradient(0,0,0,0,0,rx);haze.addColorStop(0,'rgba(235,188,121,.32)');haze.addColorStop(.5,'rgba(224,174,106,.14)');haze.addColorStop(1,'rgba(224,174,106,0)');ctx.globalAlpha=.18+.35*pulse;ctx.fillStyle=haze;ctx.fillRect(-rx,-rx,rx*2,rx*2);ctx.restore();
    }
  }
  // Earth tremor: cracked ground telegraph, one expanding impact, then falling debris.
