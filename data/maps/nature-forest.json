@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "id": "elderwood_grove",
+  "name": "Elderwood Grove",
+  "enabled": false,
+  "element": "nature",
+  "affinity": "nature",
+  "environment_theme": "ancient_forest",
+  "background": "assets/backgrounds/elderwood-grove.png",
+  "layout": "standard_landscape_v2",
+  "description": "An ancient forest clearing where marked ground sprouts entangling roots, immobilising non-Nature monsters without preventing attacks.",
+  "modifier": {
+    "outgoing_damage_bonus_pct": 0.1,
+    "incoming_damage_reduction_pct": 0.05,
+    "max_hp_bonus_pct": 0
+  },
+  "ambient": {
+    "enabled": true,
+    "type": "leaves",
+    "count": 44,
+    "speed": 17,
+    "drift": 13,
+    "opacity": 0.65,
+    "size": 3.2,
+    "layer": "background"
+  },
+  "hazard": {
+    "enabled": false,
+    "type": "entangling_roots",
+    "interval_seconds": [
+      15,
+      22
+    ],
+    "first_trigger_seconds": 10,
+    "target": "monsters_inside_zones",
+    "affects": "both_teams",
+    "matching_element_immune": true,
+    "zone_count": [
+      1,
+      2
+    ],
+    "zone_radius": 65,
+    "warning_seconds": 1,
+    "active_seconds": 3,
+    "root_duration_seconds": 1.8,
+    "minimum_spawn_age_seconds": 2
+  },
+  "visual_design": {
+    "base_art": "neutral_sky",
+    "celestial_objects_baked": false,
+    "baked_weather": false,
+    "time_of_day_independent": true,
+    "preferred_art_ratio": "16:9",
+    "reference": "docs/map_rules.md",
+    "approved_asset_status": "pending_upload"
+  },
+  "time_of_day": {
+    "mode": "neutral_until_engine_ready",
+    "supported_phases": [
+      "day",
+      "night"
+    ],
+    "runtime_lighting_module": "modules/day-night/"
+  }
+}
