@@ -12,7 +12,7 @@ const palettes={
  rain:['#b7def1','#8cc6d9'],
  metal:['#d7e5f2','#9aaec4','#fff1b8']
 };
-let stage=null,ambient=null,hazard=null,particles=[],fireZones=[],elapsed=0,hazardIn=Infinity,gustClock=0,heavyRainTime=0,enabled=true,hazardsEnabled=true;
+let stage=null,ambient=null,hazard=null,particles=[],hazardZones=[],elapsed=0,hazardIn=Infinity,gustClock=0,heavyRainTime=0,enabled=true,hazardsEnabled=true;
 function matchesElement(unitOrMonster){
  const m=unitOrMonster?.m||unitOrMonster;
  const element=String(m?.elemental?.primary||m?.element||'neutral').toLowerCase();
@@ -39,15 +39,15 @@ function configure(map){
    icy_wind:a.icy_wind||null
  }:null;
  hazard=stage?.hazard?.enabled?stage.hazard:null;
- elapsed=0;gustClock=0;heavyRainTime=0;particles=[];fireZones=[];
+ elapsed=0;gustClock=0;heavyRainTime=0;particles=[];hazardZones=[];
  if(ambient)for(let i=0;i<(ambient.type==='rain'?Math.max(ambient.count,ambient.heavy_count):ambient.count);i++)particles.push(seed(true));
  hazardIn=hazard?Math.max(1,Number(hazard.first_trigger_seconds)||10):Infinity;
 }
 function status(u){
- if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null,fireVisual:0,shatterTime:0};
+ if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null,fireVisual:0,shatterTime:0,rootTime:0,rootRelease:0};
  return u.environmentStatus;
 }
-function movementMultiplier(u){const s=u?.environmentStatus;return s?.freezeTime>0?0:(s?.slowTime>0?1-s.slowPct:1)}
+function movementMultiplier(u){const s=u?.environmentStatus;return (s?.freezeTime>0||s?.rootTime>0)?0:(s?.slowTime>0?1-s.slowPct:1)}
 function canAct(u){return !(u?.environmentStatus?.freezeTime>0)}
 function update(dt,units,applyDamage){
  if(!stage||!enabled)return;
@@ -86,42 +86,50 @@ function update(dt,units,applyDamage){
    s.slowTime=Math.max(0,s.slowTime-dt);
    const wasFrozen=s.freezeTime>0;
    s.freezeTime=Math.max(0,s.freezeTime-dt);
+   const wasRooted=s.rootTime>0;
+   s.rootTime=Math.max(0,(s.rootTime||0)-dt);
+   s.rootRelease=Math.max(0,(s.rootRelease||0)-dt);
+   if(wasRooted&&s.rootTime===0)s.rootRelease=.35;
    s.fireVisual=Math.max(0,(s.fireVisual||0)-dt);
    s.shatterTime=Math.max(0,(s.shatterTime||0)-dt);
    if(wasFrozen&&s.freezeTime===0)s.shatterTime=.38;
    if(s.slowTime===0){s.slowPct=0;if(s.freezeTime===0)s.source=null;}
  }
- if(!hazardsEnabled||!hazard){fireZones=[];return;}
- if(hazard.type==='burning_areas'){
+ if(!hazardsEnabled||!hazard){hazardZones=[];return;}
+ if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'){
    // Zones are spatial hazards. They warn before igniting and damage only occupants.
-   for(const zone of fireZones){
+   for(const zone of hazardZones){
      if(zone.warning>0){
        zone.warning=Math.max(0,zone.warning-dt);
      }else if(zone.remaining>0){
        zone.remaining=Math.max(0,zone.remaining-dt);
-       if(typeof applyDamage==='function')for(const u of units){
+       for(const u of units){
          if(!u||u.hp<=0||matchesElement(u)||u.environmentAge<(Number(hazard.minimum_spawn_age_seconds)||0))continue;
          const dx=(u.x-zone.x)/zone.radius,dy=(u.y-zone.y)/(zone.radius*.48);
-         if(dx*dx+dy*dy<=1){status(u).fireVisual=.16;applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct_per_second)||0)*dt);}
+         if(dx*dx+dy*dy<=1){
+           if(hazard.type==='entangling_roots'){
+             if(!zone.caught.has(u)){zone.caught.add(u);const st=status(u);st.rootTime=Math.max(st.rootTime||0,Number(hazard.root_duration_seconds)||1.8);st.rootRelease=0;}
+           }else if(typeof applyDamage==='function'){status(u).fireVisual=.16;applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct_per_second)||0)*dt);}
+         }
        }
      }
    }
-   fireZones=fireZones.filter(zone=>zone.warning>0||zone.remaining>0);
+   hazardZones=hazardZones.filter(zone=>zone.warning>0||zone.remaining>0);
  }
  hazardIn-=dt;
  if(hazardIn>0)return;
  if(hazard.type==='heavy_rain')heavyRainTime=Math.max(0,Number(hazard.visual_duration_seconds)||3.8);
- if(hazard.type==='burning_areas'){
+ if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'){
    const range=Array.isArray(hazard.zone_count)?hazard.zone_count:[1,2];
    const low=Math.max(1,Math.round(Number(range[0])||1)),high=Math.max(low,Math.round(Number(range[1])||low));
    const count=Math.min(2,Math.floor(rand(low,high+1)));
-   fireZones=[];
+   hazardZones=[];
    for(let i=0;i<count;i++){
      const radius=Math.max(25,Math.min(95,Number(hazard.zone_radius)||73));
      // Positions stay on the continuous battle floor, away from both towers.
      const x=count===1?rand(320,640):i===0?rand(270,440):rand(520,690);
-     fireZones.push({x,y:rand(362,408),radius,warning:Math.max(.3,Number(hazard.warning_seconds)||1),
-       remaining:Math.max(.5,Number(hazard.active_seconds)||4),phase:rand(0,6)});
+     hazardZones.push({x,y:rand(362,408),radius,warning:Math.max(.3,Number(hazard.warning_seconds)||1),
+       remaining:Math.max(.5,Number(hazard.active_seconds)||4),phase:rand(0,6),caught:new Set()});
    }
  }
  const limits=Array.isArray(hazard.interval_seconds)?hazard.interval_seconds:[15,22];
@@ -152,7 +160,9 @@ function render(ctx,layer='background'){
  for(let i=0;i<visibleCount;i++){const p=particles[i];
    ctx.save();ctx.translate(p.x,p.y);ctx.fillStyle=p.color;ctx.strokeStyle=p.color;
    switch(ambient.type){
-   case 'leaves':ctx.rotate(p.rotation);ctx.beginPath();ctx.ellipse(0,0,p.size*1.7,p.size*.65,0,0,Math.PI*2);ctx.fill();break;
+   case 'leaves':{
+     ctx.rotate(p.rotation+Math.sin(elapsed+p.phase)*.6);const z=p.size;ctx.beginPath();ctx.moveTo(-z*1.6,0);ctx.quadraticCurveTo(0,-z*1.6,z*1.7,0);ctx.quadraticCurveTo(0,z*1.35,-z*1.6,0);ctx.fill();ctx.strokeStyle='#e4efab';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(-z,0);ctx.lineTo(z,0);ctx.stroke();break;
+   }
    case 'snow':ctx.beginPath();ctx.arc(0,0,p.size*.65,0,Math.PI*2);ctx.fill();break;
    case 'embers':{
      // Irregular glow and fade keep the particles from resembling synchronized dots.
@@ -187,8 +197,26 @@ function render(ctx,layer='background'){
      if(heavy&&phase<.35){ctx.globalAlpha=.36*(1-phase/.35);ctx.beginPath();ctx.moveTo(x-3,y-4);ctx.lineTo(x,y);ctx.lineTo(x+4,y-6);ctx.stroke();}
    }
  }
+ // Nature warning and eruption: bounded ground growth, never an obstacle.
+ if(hazardsEnabled&&hazard?.type==='entangling_roots')for(const zone of hazardZones){
+   const warning=zone.warning>0, wt=Math.max(.3,Number(hazard.warning_seconds)||1), duration=Math.max(.5,Number(hazard.active_seconds)||3);
+   const age=warning?wt-zone.warning:duration-zone.remaining;
+   const grow=warning?.12+.2*Math.max(0,age/wt):Math.min(1,.2+age*4);
+   const fade=warning?1:Math.min(1,zone.remaining/.45);
+   ctx.save();ctx.translate(zone.x,zone.y);
+   const r=zone.radius;ctx.save();ctx.scale(1,.48);
+   const glow=ctx.createRadialGradient(0,0,2,0,0,r);glow.addColorStop(0,'rgba(155,211,65,.38)');glow.addColorStop(1,'rgba(92,132,37,0)');ctx.fillStyle=glow;ctx.globalAlpha=fade;ctx.fillRect(-r,-r,2*r,2*r);
+   ctx.strokeStyle='#b4dd64';ctx.lineWidth=2;ctx.globalAlpha=(warning?.55+.35*Math.sin(age*7)**2:.4)*fade;ctx.setLineDash(warning?[8,5]:[]);ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.stroke();ctx.restore();
+   for(let i=0;i<12;i++){
+     const a=i*2.399963+zone.phase,d=r*Math.sqrt((i+.5)/12)*.85,x=Math.cos(a)*d,y=Math.sin(a)*d*.45;
+     const height=(12+i%4*5)*grow, sway=Math.sin(elapsed*3+i)*4;
+     ctx.globalAlpha=fade;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x-8,y+3);ctx.quadraticCurveTo(x+8,y-3,x,y-height*.55);ctx.quadraticCurveTo(x-8,y-height,x+sway,y-height);ctx.strokeStyle='#354824';ctx.lineWidth=warning?3:6;ctx.stroke();ctx.strokeStyle='#8db64b';ctx.lineWidth=warning?1.5:3;ctx.stroke();
+     ctx.fillStyle='#b5db65';ctx.save();ctx.translate(x+sway,y-height);ctx.rotate(a);ctx.beginPath();ctx.ellipse(3,0,5*grow+1,2.6*grow+1,0,0,Math.PI*2);ctx.fill();ctx.restore();
+     const p=(elapsed*1.4+i*.17)%1;ctx.globalAlpha=fade*(1-p)*.7;ctx.fillStyle=warning?'#d6e6a1':'#a48350';ctx.beginPath();ctx.arc(x+sway*p,y-p*17,1.5,0,Math.PI*2);ctx.fill();
+   }ctx.restore();
+ }
  // Burning ground is a soft irregular heat patch, not a perfect target circle.
- if(hazardsEnabled&&hazard?.type==='burning_areas')for(const zone of fireZones){
+ if(hazardsEnabled&&hazard?.type==='burning_areas')for(const zone of hazardZones){
    const warning=zone.warning>0,warningTotal=Math.max(.3,Number(hazard.warning_seconds)||1);
    const duration=Math.max(.5,Number(hazard.active_seconds)||4);
    const age=warning?Math.max(0,warningTotal-zone.warning):Math.max(0,duration-zone.remaining);
@@ -292,6 +320,14 @@ function renderStatus(ctx,u){
    const p=1-s.shatterTime/.38;ctx.save();ctx.globalAlpha=1-p;ctx.fillStyle='#b6efff';ctx.strokeStyle='#f4ffff';ctx.lineWidth=1;
    for(let i=0;i<10;i++){const a=i*2.399963, x=u.x+Math.cos(a)*(20+p*32),y=u.y-35+Math.sin(a)*(22+p*28)+p*p*22;
      ctx.save();ctx.translate(x,y);ctx.rotate(a+p*3);ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(4,2);ctx.lineTo(-3,5);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+   ctx.restore();
+ }
+ if(s.rootTime>0||s.rootRelease>0){
+   const release=s.rootTime<=0, p=release?1-s.rootRelease/.35:0;
+   ctx.save();ctx.globalAlpha=1-p;ctx.translate(u.x,u.y);
+   if(!release){
+     for(let i=0;i<5;i++){const x=(i-2)*10,h=12+(i%3)*5,sw=Math.sin(elapsed*3+i)*2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x-9,4);ctx.quadraticCurveTo(x+10,-2,x-4,-h*.6);ctx.quadraticCurveTo(x-8,-h,x+sw,-h);ctx.strokeStyle='#354824';ctx.lineWidth=6;ctx.stroke();ctx.strokeStyle='#9aca54';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#c2e37a';ctx.beginPath();ctx.ellipse(x+sw+3,-h,5,2.5,-.5,0,Math.PI*2);ctx.fill();}
+   }else for(let i=0;i<8;i++){const a=i*2.4;ctx.fillStyle=i%2?'#b9df68':'#789e42';ctx.beginPath();ctx.ellipse(Math.cos(a)*(12+p*25),-10+Math.sin(a)*p*20+p*9,4,2,a+p*3,0,Math.PI*2);ctx.fill();}
    ctx.restore();
  }
  if(s.slowTime<=0&&s.freezeTime<=0)return;

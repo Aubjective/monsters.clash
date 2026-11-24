@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "id": "elderwood_grove",
   "name": "Elderwood Grove",
-  "enabled": false,
+  "enabled": true,
   "element": "nature",
   "affinity": "nature",
   "environment_theme": "ancient_forest",
@@ -25,7 +25,7 @@
     "layer": "background"
   },
   "hazard": {
-    "enabled": false,
+    "enabled": true,
     "type": "entangling_roots",
     "interval_seconds": [
       15,
@@ -52,7 +52,7 @@
     "time_of_day_independent": true,
     "preferred_art_ratio": "16:9",
     "reference": "docs/map_rules.md",
-    "approved_asset_status": "pending_upload"
+    "approved_asset_status": "uploaded"
   },
   "time_of_day": {
     "mode": "neutral_until_engine_ready",

@@ -385,7 +385,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <button id="battle-menu-home">Main Menu</button>
  </nav>
 </main>
-<script src="modules/elements/environment.js"></script>
+<script src="modules/elements/environment.js?v=20261125-nature"></script>
 <script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
 const backgroundImages=new Map(),towerImages={ally:new Image(),enemy:new Image()};
@@ -685,6 +685,10 @@ function renderStageInfo(){
   line('Burning Areas',zoneCount+' Zones · '+(Number(hazard.active_seconds)||4)+'s');
   line('Warning',String(Number(hazard.warning_seconds)||1)+'s');
   line('Burn Damage',pct(hazard.damage_max_hp_pct_per_second)+' Max HP / Second');
+ }else if(hazard.type==='entangling_roots'){
+  line('Entangling Roots',(hazard.zone_count||[1]).join('–')+' Zones · '+hazard.active_seconds+'s');
+  line('Warning',hazard.warning_seconds+'s');
+  line('Rooted',hazard.root_duration_seconds+'s · Movement blocked, attacks allowed');
  }else if(hazard.type==='instant_damage'){
   line('Impact Damage',String(hazard.damage||0));
  }else line('Effect',String(hazard.type||'Environmental effect').replaceAll('_',' '));
@@ -841,9 +845,11 @@ function separateGroundUnits(){
       let nx,ny;
       if(dist<.001){nx=a.side===b.side?1:(a.side>0?1:-1);ny=(i+j)%2?1:-1}
       else{nx=dx/dist;ny=dy/dist}
-      const push=(minimum-Math.max(dist,.001))*.5;
-      a.x-=nx*push;b.x+=nx*push;
-      a.y-=ny*push/1.45;b.y+=ny*push/1.45;
+      const ar=a.environmentStatus?.rootTime>0,br=b.environmentStatus?.rootTime>0;
+      if(ar&&br)continue;
+      const push=minimum-Math.max(dist,.001),ap=ar?0:br?push:push*.5,bp=br?0:ar?push:push*.5;
+      a.x-=nx*ap;b.x+=nx*bp;
+      a.y-=ny*ap/1.45;b.y+=ny*bp/1.45;
       for(const u of [a,b]){u.x=Math.max(72,Math.min(888,u.x));u.y=Math.max(343,Math.min(429,u.y))}
     }
   }
@@ -896,6 +902,8 @@ function step(dt){
   if(u.shieldTime>0){u.shieldTime=Math.max(0,u.shieldTime-dt);if(u.shieldTime===0)u.shield=0}
   u.atk-=dt;u.skill-=dt;
   if(window.MonstersClashEnvironment&&!window.MonstersClashEnvironment.canAct(u)){u.walking=false;continue;}
+  const rooted=u.environmentStatus?.rootTime>0;
+  if(rooted&&u.charge){u.charge=null;if(u.anim?.type==='skill')u.anim=null;}
   if(u.charge&&performCharge(u,dt))continue;
   if(u.skill<=0&&u.m.skill?.effect?.type==='shield_self'){
     activateShield(u);continue;
@@ -912,12 +920,12 @@ function step(dt){
   const attackRange=target?(u.m.attack.range||32)+u.radius+target.radius:
     (slot.rank===0?9:10);
   const atTarget=distance<=attackRange;
-  const canCharge=u.m.skill?.effect?.type==='dash_hit'&&u.skill<=0;
+  const canCharge=!rooted&&u.m.skill?.effect?.type==='dash_hit'&&u.skill<=0;
   const chargeReach=(Number(u.m.skill?.effect?.distance)||0)+(target?u.radius+target.radius+15:17);
   if(canCharge&&(target||slot.rank===0)&&distance<=chargeReach&&distance>20){
     beginCharge(u,target,point);continue;
   }
-  u.walking=!atTarget;
+  u.walking=!atTarget&&!rooted;
   if(!atTarget){
    const agility=Number(u.m.stats.agi)||12;
    const bonus=Math.max(-.08,Math.min(.24,(agility-12)*.008));
