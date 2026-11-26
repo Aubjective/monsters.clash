@@ -46,5 +46,37 @@
       "sheet_rows": 1,
       "unlock_cost": 500
     }
+  ],
+  "default_shield": "s001",
+  "default_drone": "d001",
+  "shields": [
+    {
+      "id": "s001",
+      "name": "Mirror Barrier",
+      "description": "Orbiting crystal plates absorb damage to the tower.",
+      "type": "mirror",
+      "unlock_cost": 0,
+      "upgrade_cost": 60,
+      "hp_per_level": 160,
+      "plate_min": 5,
+      "plate_max": 8,
+      "orbit_speed": 0.85
+    }
+  ],
+  "drones": [
+    {
+      "id": "d001",
+      "name": "Sentry Drone",
+      "description": "Hovering support unit that fires at approaching enemies.",
+      "type": "projectile",
+      "unlock_cost": 0,
+      "deploy_cost": 80,
+      "max_active": 3,
+      "damage": 12,
+      "interval_seconds": 1.8,
+      "range": 320,
+      "sheet": "assets/drones/d001/sentry-drone-sheet.png",
+      "sheet_columns": 4
+    }
   ]
 }

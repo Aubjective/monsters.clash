@@ -1,6 +1,16 @@
 /* Authoritative tower upgrade rules, shield lifecycle and shield rendering. */
 (function(global){
 'use strict';
+function selectEquipment(registry,profile,base){
+ const pick=(group,key,def)=>{const list=registry[group];const entry=list.find(x=>x.id===profile[key]&&profile[group].includes(x.id))||list.find(x=>x.id===def);if(!entry)throw Error('No default '+key);profile[key]=entry.id;return entry;};
+ const tower=pick('towers','tower',registry.default_towers.ally),shield=pick('shields','shield',registry.default_shield),drone=pick('drones','drone',registry.default_drone);
+ return {tower,shield,drone,config:{...base,shield_cost:shield.upgrade_cost,shield_hp:shield.hp_per_level,shield_plate_min:shield.plate_min,shield_plate_max:shield.plate_max,shield_orbit_speed:shield.orbit_speed,drone_cost:drone.deploy_cost,drone_max:drone.max_active,drone_damage:drone.damage,drone_interval:drone.interval_seconds,drone_range:drone.range,drone_sheet_columns:drone.sheet_columns}};
+}
+function equip(registry,profile,group,id){
+ if(!['towers','shields','drones'].includes(group))return false;const key=group.slice(0,-1),item=registry[group].find(x=>x.id===id);if(!item)return false;
+ if(!profile[group].includes(id)){const price=Number(item.unlock_cost);if(!Number.isFinite(price)||price<0||profile.coins<price)return false;profile.coins-=price;profile[group].push(id);}
+ profile[key]=id;return true;
+}
 function quote(run,cfg,kind){
  if(!['attack','shield','drone'].includes(kind))return null;
  const key=kind==='drone'?'drones':kind==='shield'?'shieldLevel':'attackLevel';
@@ -42,5 +52,5 @@ function renderShield(ctx,s,level,cfg,x,y,front){
  }
  if(front&&s.broken>0){const q=1-s.broken/.65;ctx.save();ctx.globalAlpha=1-q;ctx.fillStyle='#a9eaff';for(let i=0;i<22;i++){const a=i*2.399963+s.hitAngle;const px=x+Math.cos(a)*(rx+45*q),py=y+Math.sin(a)*(ry*.7+45*q);ctx.save();ctx.translate(px,py);ctx.rotate(a+q*5);ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(5,1);ctx.lineTo(-3,5);ctx.closePath();ctx.fill();ctx.restore();}ctx.restore();}
 }
-global.MonstersClashTowerUpgrades=Object.freeze({quote,createShield,purchase,attackStats,update,absorb,renderShield});
+global.MonstersClashTowerUpgrades=Object.freeze({selectEquipment,equip,quote,createShield,purchase,attackStats,update,absorb,renderShield});
 })(window);

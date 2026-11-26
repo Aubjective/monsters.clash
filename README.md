@@ -7,3 +7,5 @@ Support drone artwork path: `assets/drones/d001/sentry-drone-sheet.png` (four ho
 Tower upgrades are owned by `modules/towers/upgrades.js`. The shared shield uses orbiting reflective plates and protects the tower only. Zero tower HP ends the run as breached, retaining the critical tower sprite. Elite/boss self-effect visuals use the same scale as their monster sprites.
 
 The top battle HUD shows Battle Coins, permanent Gold and Gold earned this run. Kill rewards float above defeated enemies. Rank palettes reuse existing sprite sheets; allied HP bars are blue, enemy HP bars red, elites have gold frames and bosses purple frames.
+
+Main Menu → Upgrades provides Towers, Shields and Drones, with Gold unlocks and a persisted equipped loadout. `towers.json` owns equipment definitions; `progression.json` owns round and economy rules. My Team contains monster collection and carrying slots only.

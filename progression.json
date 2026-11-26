@@ -33,23 +33,12 @@
     "boss_growth": 1.1111111111111112,
     "boss_every": 5,
     "round_break_seconds": 4,
-    "drone_max": 3,
-    "drone_cost": 80,
-    "drone_damage": 12,
-    "drone_interval": 1.8,
-    "shield_cost": 60,
-    "shield_hp": 160,
     "attack_cost": 75,
     "max_upgrade": 10,
     "monster_unlock_cost": 250,
     "elite_attack": 1.5,
     "elite_sprite_scale": 2,
     "tower_range_cap": 425,
-    "drone_sheet": "assets/drones/d001/sentry-drone-sheet.png",
-    "drone_sheet_columns": 4,
-    "boss_sprite_scale": 2.15,
-    "shield_plate_min": 5,
-    "shield_plate_max": 8,
-    "shield_orbit_speed": 0.85
+    "boss_sprite_scale": 2.15
   }
 }
