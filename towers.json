@@ -6,7 +6,7 @@
   "towers": [
     {
       "id": "t001",
-      "name": "Archer Tower",
+      "name": "Royal Tower",
       "sheet": "assets/towers/t001/archer-tower-sheet.png",
       "max_hp": 1900,
       "damage_thresholds_pct": [
@@ -23,11 +23,14 @@
       },
       "sheet_columns": 4,
       "sheet_rows": 1,
-      "unlock_cost": 0
+      "unlock_cost": 0,
+      "series": "Royal",
+      "description": "Royal fortress with Arrow Volley attacks.",
+      "ability": "Arrow Volley"
     },
     {
       "id": "t002",
-      "name": "Wave Tower",
+      "name": "Arcane Tower",
       "sheet": "assets/towers/t002/electric-tower-sheet.png",
       "max_hp": 2400,
       "damage_thresholds_pct": [
@@ -44,7 +47,10 @@
       },
       "sheet_columns": 4,
       "sheet_rows": 1,
-      "unlock_cost": 500
+      "unlock_cost": 500,
+      "series": "Arcane",
+      "description": "Arcane fortress with expanding energy wave attacks.",
+      "ability": "Energy Wave"
     }
   ],
   "default_shield": "s001",
@@ -52,7 +58,7 @@
   "shields": [
     {
       "id": "s001",
-      "name": "Mirror Barrier",
+      "name": "Royal Shield",
       "description": "Orbiting crystal plates absorb damage to the tower.",
       "type": "mirror",
       "unlock_cost": 0,
@@ -60,13 +66,16 @@
       "hp_per_level": 160,
       "plate_min": 5,
       "plate_max": 8,
-      "orbit_speed": 0.85
+      "orbit_speed": 0.85,
+      "series": "Royal",
+      "ability": "Mirror Barrier",
+      "sprite": "assets/shields/s001/royal-shield.png"
     }
   ],
   "drones": [
     {
       "id": "d001",
-      "name": "Sentry Drone",
+      "name": "Royal Drone",
       "description": "Hovering support unit that fires at approaching enemies.",
       "type": "projectile",
       "unlock_cost": 0,
@@ -76,7 +85,9 @@
       "interval_seconds": 1.8,
       "range": 320,
       "sheet": "assets/drones/d001/sentry-drone-sheet.png",
-      "sheet_columns": 4
+      "sheet_columns": 4,
+      "series": "Royal",
+      "ability": "Sentry Fire"
     }
   ]
 }

@@ -11,3 +11,5 @@ The top battle HUD shows Battle Coins, permanent Gold and Gold earned this run. 
 Main Menu → Upgrades provides Towers, Shields and Drones, with Gold unlocks and a persisted equipped loadout. `towers.json` owns equipment definitions; `progression.json` owns round and economy rules. My Team contains monster collection and carrying slots only.
 
 Bestiary has independent Monsters, Elites and Bosses tabs and saved rank discovery records. `roster.json` includes `special_boss_ids` for future standalone boss definitions under `monsters/`; these appear in the Boss tab, not the player team. Special boss battle spawning is not enabled yet. Existing ordinary discoveries are preserved; ranked discoveries begin independently.
+
+Royal Series: Royal Tower (T001), Royal Shield (S001), Royal Drone (D001). Arcane Tower (T002) belongs to Arcane Series. Royal Shield uses `assets/shields/s001/royal-shield.png`; orbiting copies glow with upgrades and impacts. Equipment information includes live calculated progression. Collection pages share responsive three-column desktop, two-column intermediate and single-column phone layouts.

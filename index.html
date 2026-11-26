@@ -26,7 +26,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .primary:hover:not(:disabled){background:linear-gradient(130deg,#f7ca7e,#d89c54)}
 .menu-actions,.app-nav{display:flex;gap:11px;flex-wrap:wrap;margin:16px 0}
 .menu-actions button{min-width:150px}
-.menu-features,.app-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:14px}
+.menu-features,.app-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px;align-items:stretch}
 .feature{padding:16px;border:1px solid #385873;border-radius:16px;background:#192f47aa}
 .feature strong{display:block;font-size:16px}.feature span{color:var(--soft);font-size:13px}
 .page-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
@@ -82,7 +82,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  .hero{min-height:0;gap:12px}.hero-art{flex-basis:25%;min-width:90px}
  .menu-features{grid-template-columns:repeat(2,minmax(0,1fr))}
  .app-card{min-height:75px;padding:7px}.app-card img{width:50px;height:50px}
- .app-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .app-grid{grid-template-columns:minmax(0,1fr)}
  .battle-top{height:35px;min-height:35px;padding-left:8px;padding-right:52px}
  .battle-top select{max-width:130px;font-size:11px}
  .battle-bottom{min-height:58px;max-height:62px;padding:4px 7px}
@@ -201,7 +201,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .profile-stat{border:1px solid #41607d;border-radius:12px;padding:11px;text-align:center;background:#20364c}
 .profile-stat strong{display:block;font-size:21px;color:#f5e9ca}
 .profile-stat small{display:block;font-size:11px;color:#adc5d6}
-@media(max-width:650px){.monster-profile-layout{grid-template-columns:minmax(130px,35%) minmax(0,1fr)}.monster-profile-art{min-height:145px}.monster-profile-info{padding:12px}.profile-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.profile-stat{padding:6px}.profile-stat strong{font-size:16px}}
+@media(max-width:650px){.monster-profile-layout{grid-template-columns:minmax(0,1fr)}.monster-profile-art{min-height:145px}.monster-profile-info{padding:12px}.profile-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.profile-stat{padding:6px}.profile-stat strong{font-size:16px}}
 
 .team-entry{position:relative;min-width:0}
 .team-entry>.app-card{padding-bottom:38px}
@@ -245,7 +245,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  .hero{flex-wrap:wrap}
  .hero-art{max-width:130px}
  .menu-features{grid-template-columns:repeat(2,minmax(0,1fr))}
- .app-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .app-grid{grid-template-columns:minmax(0,1fr)}
  .page-head{align-items:flex-start;flex-wrap:wrap}
  .team-footer{align-items:stretch}
  .team-footer select{max-width:100%;width:100%}
@@ -307,6 +307,19 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .rank-boss{animation:rank-boss-palette 7s linear infinite}
 @keyframes rank-boss-palette{0%{filter:sepia(0) hue-rotate(0deg) saturate(1) brightness(1)}25%{filter:sepia(0.85) hue-rotate(-140deg) saturate(2.2) brightness(1.06)}50%{filter:sepia(1) hue-rotate(-125deg) saturate(3) brightness(0.87)}75%{filter:sepia(1) hue-rotate(-115deg) saturate(1.6) brightness(0.54)}100%{filter:sepia(0) hue-rotate(0deg) saturate(1) brightness(1)}}
 @media(prefers-reduced-motion:reduce){.rank-elite,.rank-boss{animation:none}.rank-elite{filter:sepia(1) hue-rotate(-45deg) saturate(3.1) brightness(0.95)}.rank-boss{filter:sepia(1) hue-rotate(-125deg) saturate(3) brightness(0.87)}}
+
+/* Shared collection layout across Bestiary, My Team and equipment. */
+.app-screen:not(#home-screen) .page-inner{width:min(1080px,100%);box-sizing:border-box}
+.app-grid>*,.monster-profile-layout>*{min-width:0}
+.app-grid .app-card,.equipment-card{min-height:112px;box-sizing:border-box}
+.equipment-card{display:grid;grid-template-columns:76px minmax(0,1fr);align-content:start}
+.equipment-card button{grid-column:1/-1}
+.equipment-copy small{overflow-wrap:anywhere}
+.equipment-stats-table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.equipment-stats-table td,.equipment-stats-table th{padding:7px 4px;border-bottom:1px solid #3a5871;text-align:left}
+#equipment-info{margin-top:14px}
+@media(min-width:651px) and (max-width:1000px){.app-grid,.menu-features{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px),(orientation:portrait) and (max-width:699px){.app-grid,.menu-features,.monster-profile-layout,.team-slot-grid{grid-template-columns:minmax(0,1fr)}.app-grid .app-card,.equipment-card{min-height:86px}.monster-profile-art{min-height:180px}.monster-profile-art .sheet-preview{width:min(200px,75%)}.equipment-card{grid-template-columns:64px minmax(0,1fr)}.equipment-art{width:64px;height:64px}.team-slot-grid .app-slot{min-height:38px}.profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -369,7 +382,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   </nav>
   <div id="equipment-loadout" class="equipment-loadout"></div>
   <div id="equipment-list" class="app-grid"></div>
-  <p id="equipment-message" class="muted" aria-live="polite"></p>
+  <section id="equipment-info" class="monster-profile-info" hidden></section><p id="equipment-message" class="muted" aria-live="polite"></p>
   <div class="team-footer"><button id="upgrades-back" type="button">Main Menu</button><button id="upgrades-play" class="primary" type="button">Start Battle</button></div>
  </div>
 </section>
@@ -431,7 +444,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script src="modules/elements/environment.js?v=20261126-metal-traps"></script>
 <script src="modules/day-night/engine.js?v=20261127-30s"></script>
-<script src="modules/towers/upgrades.js?v=20261127-fortress-hp"></script>
+<script src="modules/towers/upgrades.js?v=20261127-royal"></script>
 <script>
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
@@ -501,7 +514,7 @@ let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentC
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json?v=20261127-equipment',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
+  fetch('towers.json?v=20261127-royal',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('progression.json?v=20261127-equipment',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
@@ -664,7 +677,7 @@ function selectEquipment(){
  storeProfile();
 }
 function renderEquipment(){
- refreshCoinDisplays();
+ $('equipment-info').hidden=true;refreshCoinDisplays();
  for(const button of document.querySelectorAll('[data-equipment]'))button.setAttribute('aria-pressed',String(button.dataset.equipment===equipmentTab));
  const names=[['towers','tower'],['shields','shield'],['drones','drone']].map(([group,key])=>{const item=towerRegistry[group].find(x=>x.id===profile[key]);const el=document.createElement('span');el.textContent=({tower:'Tower',shield:'Shield',drone:'Drone'}[key])+': '+(item?.name||'Not selected');return el;});
  $('equipment-loadout').replaceChildren(...names);
@@ -673,14 +686,14 @@ function renderEquipment(){
  const owned=profile[group].includes(item.id),equipped=profile[key]===item.id;
  const card=document.createElement('article');card.className='equipment-card'+(equipped?' equipped':'');
  const art=document.createElement('span');art.className='equipment-art';art.setAttribute('aria-hidden','true');
- if(item.sheet)art.style.backgroundImage='url("'+item.sheet+'")';else art.textContent='◇';
+ if(item.sprite){art.style.backgroundImage='url("'+item.sprite+'")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}else if(item.sheet)art.style.backgroundImage='url("'+item.sheet+'")';else art.textContent='◇';
  const copy=document.createElement('div');copy.className='equipment-copy';const name=document.createElement('strong'),detail=document.createElement('small'),description=document.createElement('small');
- name.textContent=item.name;description.textContent=item.description||'';
+ name.textContent=item.name;description.textContent=[item.series?item.series+' Series':null,item.ability,item.description].filter(Boolean).join(' · ');
  detail.textContent=group==='towers'?item.max_hp+' HP · '+item.basic_attack.damage+' damage · Range '+item.basic_attack.range+' · '+item.basic_attack.cooldown_seconds+'s interval':group==='shields'?item.hp_per_level+' shield HP / level · '+item.upgrade_cost+' BC starting upgrade':item.damage+' damage · '+item.interval_seconds+'s interval · '+item.deploy_cost+' BC starting deployment · Max '+item.max_active;
  copy.append(name,detail,description);
  const button=document.createElement('button');button.type='button';button.textContent=equipped?'Equipped':owned?'Equip':'Unlock · '+item.unlock_cost+' Gold';button.disabled=equipped||(!owned&&profile.coins<item.unlock_cost);
  button.onclick=()=>{if(view!=='upgrades'||!TowerUpgrades.equip(towerRegistry,profile,group,item.id))return;selectEquipment();renderEquipment();$('equipment-message').textContent=item.name+' equipped.';};
- card.append(art,copy,button);return card;
+ const info=document.createElement('button');info.type='button';info.textContent='View Info';info.onclick=()=>{const panel=$('equipment-info');panel.replaceChildren();const title=document.createElement('h3');title.textContent=item.name+' · '+item.id.toUpperCase();const summary=document.createElement('p');summary.textContent=[item.series+' Series',item.ability,item.description,detail.textContent,'Unlock: '+item.unlock_cost+' Gold'].filter(Boolean).join(' · ');panel.append(title,summary);if(group==='towers'){const table=document.createElement('table');table.className='equipment-stats-table';const header=table.insertRow();for(const label of ['Level','Damage','Range','Interval','Attack']){const th=document.createElement('th');th.textContent=label;header.append(th);}for(let level=0;level<=progression.defence.max_upgrade;level++){const a=TowerUpgrades.attackStats(item,{attackLevel:level},equipmentConfig),row=table.insertRow();for(const value of [level,a.damage.toFixed(1),Math.round(a.range),a.interval.toFixed(2)+'s',a.type==='arrow'?a.arrows+' arrows':a.stun.toFixed(2)+'s stun'])row.insertCell().textContent=value;}panel.append(table);}else if(group==='shields'||group==='drones'){const table=document.createElement('table');table.className='equipment-stats-table';const head=table.insertRow();for(const label of group==='shields'?['Level','Shield HP','Upgrade cost (BC)']:['Count','Combined damage / volley','Deployment cost (BC)']){const th=document.createElement('th');th.textContent=label;head.append(th);}const config={...equipmentConfig,...(group==='shields'?{shield_cost:item.upgrade_cost,shield_hp:item.hp_per_level}:{drone_cost:item.deploy_cost,drone_max:item.max_active})};const max=group==='shields'?config.max_upgrade:config.drone_max;for(let level=1;level<=max;level++){const quote=TowerUpgrades.quote({shieldLevel:level-1,drones:level-1},config,group==='shields'?'shield':'drone'),row=table.insertRow();for(const value of [level,level*(group==='shields'?item.hp_per_level:item.damage),quote.cost])row.insertCell().textContent=value;}panel.append(table);}panel.hidden=false;panel.scrollIntoView({block:'nearest'});};card.append(art,copy,button,info);return card;
  }));
  $('upgrades-play').disabled=team.length===0;
 }
