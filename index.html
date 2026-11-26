@@ -890,8 +890,8 @@ function activateShield(u){
 }
 function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
 // Tower collision is separate from the visual center of the castle.
-const TOWER_APPROACH={ally:309};
-const towerLayout={x:230,ground:402,height:160,width:136,hpY:213,shieldY:331,generatorX:65,generatorHeight:130,droneX:344,droneSpacing:64,droneY:190};
+const TOWER_APPROACH={ally:235};
+const towerLayout={x:156,ground:402,height:160,width:136,hpY:213,shieldY:331,generatorX:78,generatorY:110,generatorHeight:130,droneX:270,droneSpacing:64,droneY:190};
 const TOWER_LANES=[350,373,396,419,441];
 function towerSlotFor(u){
  const same=state.units.filter(a=>a.hp>0&&a.side===u.side&&a.assaultTower).sort((a,b)=>a.uid-b.uid);
@@ -1010,7 +1010,7 @@ function stepTowerDefense(dt){
 }
 function step(dt){
  if(state.ended){if(state.victory){state.breakLeft=Math.max(0,state.breakLeft-dt);if(state.breakLeft<=0)nextBattle();}return;}
- state.time+=dt;state.generatorPulse=Math.max(0,state.generatorPulse-dt);if(run.generatorLevel>0&&state.allyBase>0){run.generatorElapsed+=dt;while(run.generatorElapsed>=equipmentConfig.generator_interval){run.generatorElapsed-=equipmentConfig.generator_interval;state.generatorPulse=.85;const coins=run.generatorLevel*equipmentConfig.generator_income;run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.earnings.push({x:towerLayout.generatorX,y:towerLayout.ground-towerLayout.generatorHeight-5,value:coins,life:1.35});refreshCoinDisplays();}}state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig);
+ state.time+=dt;state.generatorPulse=Math.max(0,state.generatorPulse-dt);if(run.generatorLevel>0&&state.allyBase>0){run.generatorElapsed+=dt;while(run.generatorElapsed>=equipmentConfig.generator_interval){run.generatorElapsed-=equipmentConfig.generator_interval;state.generatorPulse=.85;const coins=run.generatorLevel*equipmentConfig.generator_income;run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.earnings.push({x:towerLayout.generatorX,y:towerLayout.generatorY-towerLayout.generatorHeight/2-5,value:coins,life:1.35});refreshCoinDisplays();}}state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig);
  window.MonstersClashDayNight?.update(dt);
  window.MonstersClashDayNight?.updateLabel($('day-night-label'));
  window.MonstersClashEnvironment?.update(dt,state.units,dmg);
@@ -1202,7 +1202,18 @@ function draw(){
  window.MonstersClashDayNight?.render(ctx,-viewOffsetX,-viewOffsetY,cv.width,cv.height);
  window.MonstersClashEnvironment?.render(ctx,'background');
  TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,false);
- if(run.generatorLevel>0&&readyImage(generatorImage)){const hh=towerLayout.generatorHeight,ww=hh*generatorImage.naturalWidth/generatorImage.naturalHeight;const pulse=state.generatorPulse/.85;ctx.save();ctx.shadowColor=pulse>0?'#ffd979':'#55ceff';ctx.shadowBlur=4+run.generatorLevel*1.1+Math.sin(state.time*3)*2+16*pulse;ctx.drawImage(generatorImage,towerLayout.generatorX-ww/2,towerLayout.ground-hh,ww,hh);if(pulse>0){ctx.shadowColor='#ffe09a';ctx.shadowBlur=7;ctx.fillStyle='#ffe4a1';ctx.globalAlpha=pulse;for(let i=0;i<5;i++){const a=i*2.39996,q=1-pulse;ctx.beginPath();ctx.arc(towerLayout.generatorX+Math.cos(a)*(8+q*24),towerLayout.ground-hh*.75-q*30+Math.sin(a)*7,1.5,0,Math.PI*2);ctx.fill();}}ctx.restore();}
+ if(run.generatorLevel>0&&readyImage(generatorImage)){
+ const hh=towerLayout.generatorHeight,ww=hh*generatorImage.naturalWidth/generatorImage.naturalHeight;
+ const gx=towerLayout.generatorX,gy=towerLayout.generatorY+Math.sin(state.time*1.8)*5;
+ const pulse=state.generatorPulse/.85,baseY=gy+hh/2;
+ ctx.save();
+ // Levitation rings sit underneath the floating structure, independent of its coin pulse.
+ for(let i=0;i<3;i++){const phase=(state.time*.65+i/3)%1;ctx.globalAlpha=(1-phase)*(.24+run.generatorLevel*.025);ctx.strokeStyle='#65ddff';ctx.shadowColor='#38bfff';ctx.shadowBlur=7;ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(gx,baseY+4+phase*13,Math.max(12,ww*.27)*(1+phase*.45),3+phase*3,0,0,Math.PI*2);ctx.stroke();}
+ ctx.globalAlpha=1;ctx.shadowColor=pulse>0?'#ffd979':'#55ceff';ctx.shadowBlur=4+run.generatorLevel*1.1+Math.sin(state.time*3)*2+16*pulse;
+ ctx.drawImage(generatorImage,gx-ww/2,gy-hh/2,ww,hh);
+ if(pulse>0){ctx.shadowColor='#ffe09a';ctx.shadowBlur=7;ctx.fillStyle='#ffe4a1';ctx.globalAlpha=pulse;for(let i=0;i<5;i++){const a=i*2.39996,q=1-pulse;ctx.beginPath();ctx.arc(gx+Math.cos(a)*(8+q*24),gy-hh*.25-q*30+Math.sin(a)*7,1.5,0,Math.PI*2);ctx.fill();}}
+ ctx.restore();
+ }
  drawTower('ally',towerLayout.x,state.allyBase);
  TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,true);
  for(let i=0;i<run.drones;i++){const x=towerLayout.droneX+i*towerLayout.droneSpacing+Math.sin(state.time*1.6+i)*7,y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*7;ctx.save();ctx.translate(x,y);if(readyImage(droneImage)){spriteFrame(droneImage,0,-30,-30,60,60,equipmentConfig.drone_sheet_columns,1);ctx.restore();continue;}ctx.fillStyle='#627e91';ctx.fillRect(-22,-3,44,7);ctx.fillStyle='#a8bdca';ctx.beginPath();ctx.ellipse(0,0,15,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ce9ff';ctx.fillRect(-4,-3,8,6);ctx.restore();}
