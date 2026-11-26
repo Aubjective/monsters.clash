@@ -11,21 +11,32 @@
     ]
   },
   "coins": {
-    "win_base": 100,
-    "speed_bonus": [
-      {
-        "max_seconds": 90,
-        "coins": 100
-      },
-      {
-        "max_seconds": 180,
-        "coins": 60
-      },
-      {
-        "max_seconds": 300,
-        "coins": 30
-      }
-    ],
-    "loss": 0
+    "kill_base": 10,
+    "elite_multiplier": 3,
+    "boss_multiplier": 6
+  },
+  "defence": {
+    "first_count": 5,
+    "count_per_round": 2,
+    "max_count": 45,
+    "initial_spawn_seconds": 5,
+    "min_spawn_seconds": 0.8,
+    "spawn_acceleration": 0.25,
+    "enemy_growth": 0.18,
+    "ally_growth": 0.12,
+    "elite_hp": 2.5,
+    "boss_hp": 4,
+    "boss_growth": 1,
+    "boss_every": 5,
+    "round_break_seconds": 4,
+    "drone_max": 3,
+    "drone_cost": 80,
+    "drone_damage": 12,
+    "drone_interval": 1.8,
+    "shield_cost": 60,
+    "shield_hp": 160,
+    "attack_cost": 75,
+    "max_upgrade": 10,
+    "monster_unlock_cost": 250
   }
 }

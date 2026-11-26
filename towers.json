@@ -1,8 +1,7 @@
 {
   "schema_version": "1.0.0",
   "default_towers": {
-    "ally": "t001",
-    "enemy": "t002"
+    "ally": "t001"
   },
   "towers": [
     {
@@ -23,11 +22,12 @@
         "cooldown_seconds": 2.6
       },
       "sheet_columns": 4,
-      "sheet_rows": 1
+      "sheet_rows": 1,
+      "unlock_cost": 0
     },
     {
       "id": "t002",
-      "name": "Electric Tower",
+      "name": "Wave Tower",
       "sheet": "assets/towers/t002/electric-tower-sheet.png",
       "max_hp": 1900,
       "damage_thresholds_pct": [
@@ -43,7 +43,8 @@
         "cooldown_seconds": 4.2
       },
       "sheet_columns": 4,
-      "sheet_rows": 1
+      "sheet_rows": 1,
+      "unlock_cost": 500
     }
   ]
 }

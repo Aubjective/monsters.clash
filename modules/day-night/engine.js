@@ -1,7 +1,7 @@
 /* Monsters Clash — authoritative battle time and lighting. */
 (function(global){
 'use strict';
-const DURATION=60,TRANSITION=5;
+const DURATION=30,TRANSITION=5;
 let phase='day',remaining=DURATION,indoor=false,light=0,from=0,to=0,transition=TRANSITION;
 function configure(map,initialPhase){
  indoor=map?.time_of_day?.mode==='indoor_fixed';
