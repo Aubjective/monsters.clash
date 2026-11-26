@@ -385,7 +385,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <button id="battle-menu-home">Main Menu</button>
  </nav>
 </main>
-<script src="modules/elements/environment.js?v=20261126-hazard-feedback"></script>
+<script src="modules/elements/environment.js?v=20261126-metal-traps"></script>
 <script src="modules/day-night/engine.js?v=20261125-1"></script>
 <script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
@@ -693,7 +693,6 @@ function renderStageInfo(){
   line('Warning',hazard.warning_seconds+'s');
   line('Piercing Damage',pct(hazard.damage_max_hp_pct)+' Max HP');
   line('Bleeding',pct(hazard.bleed_max_hp_pct_per_second)+' Max HP / Second · '+hazard.bleed_duration_seconds+'s');
-  if(map.sentries?.enabled)line('Sentry Drones',map.sentries.count+' · '+pct(map.sentries.damage_max_hp_pct)+' Max HP / Shot');
  }else if(hazard.type==='earth_tremor'){
   line('Earth Tremor',(hazard.zone_count||[1]).join('–')+' Zones');
   line('Warning',hazard.warning_seconds+'s');

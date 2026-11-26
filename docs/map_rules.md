@@ -106,9 +106,9 @@ The **rules** are locked for future artwork and engines. The Water/Ice hazard/am
 
 ## Iron Citadel — Metal environment (active)
 - Indoor metallic fortress, flat steel floor, no celestial objects; indoor lighting independent of future outdoor day/night phases.
-- Piercing Spikes: 1–2 zones, 65-unit radius, 1-second warning, 1.2-second animation. One impact per zone deals 3% maximum HP plus Bleeding at 1% maximum HP per second for 4 seconds. Bleeding refreshes duration rather than stacking rate. Both teams affected; Metal monsters immune, 2-second spawn protection, towers unaffected.
+- Piercing Spikes: 1–2 zones, 110-unit radius, 1-second warning, 1.2-second animation. One impact per zone deals 3% maximum HP plus Bleeding at 1% maximum HP per second for 4 seconds. Bleeding refreshes duration rather than stacking rate. Both teams affected; Metal monsters immune, 2-second spawn protection, towers unaffected.
 - Configuration: `data/maps/metal-citadel.json`; existing `modules/elements/environment.js` owns the effects. Background `assets/backgrounds/iron-citadel.png` is uploaded and the map is enabled.
 
-## Day/Night and Iron Citadel sentries (implemented)
+## Day/Night and Iron Citadel (implemented)
 - `modules/day-night/engine.js` owns the independent 60-second Day/Night cycle, 5-second lighting transitions and future Light/Dark affinity query. Starts randomly each battle; pauses with battle simulation. Outdoor backgrounds receive lighting; indoor maps retain fixed lighting while time continues. No numerical Light/Dark bonuses yet.
-- Iron Citadel disables metal motes and uses two neutral sentries with up to two unique targets each per spike warning, alternating team priority. Metal immunity and two-second spawn protection apply; shots deal 1% maximum HP before defenses, with no extra Bleeding. Existing spike hazards unchanged.
+- Iron Citadel has no ambient particles or neutral sentries. Piercing Spikes and Bleeding define its environmental hazard. Drones are reserved as a potential future deployable monster, not a map hazard.
