@@ -314,9 +314,9 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
     <div class="lobby-monster lobby-moss" role="img" aria-label="Mossguard, nature guardian"></div>
     <div class="lobby-monster lobby-cinder" role="img" aria-label="Cinderhorn, fire bruiser"></div>
   </div>
-  <div class="lobby-controls">
-   <button id="home-start" class="lobby-play"><span class="play-mark">▶</span><span>PLAY</span><small>START BATTLE</small></button>
-   <nav class="lobby-options" aria-label="Main game menu"><button id="menu-team-home" class="lobby-option"><span class="lobby-option-icon">⚔</span><span>MY TEAM</span></button><button id="menu-upgrades-home" class="lobby-option"><span class="lobby-option-icon">⬆</span><span>UPGRADES</span></button></nav>
+  <div class="lobby-controls"><div id="startup-message" role="status" style="color:#fff1bb;text-align:center;font-weight:700">Loading game…</div>
+   <button id="home-start" class="lobby-play" disabled><span class="play-mark">▶</span><span>PLAY</span><small>START BATTLE</small></button>
+   <nav class="lobby-options" aria-label="Main game menu"><button id="menu-team-home" class="lobby-option" disabled><span class="lobby-option-icon">⚔</span><span>MY TEAM</span></button><button id="menu-upgrades-home" class="lobby-option" disabled><span class="lobby-option-icon">⬆</span><span>UPGRADES</span></button></nav>
   </div>
  </div>
 </section>
@@ -496,14 +496,15 @@ let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentC
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json').then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json').then(r=>{if(!r.ok)throw Error('towers.json missing');return r.json()}).catch(()=>null),
+  fetch('towers.json?v=20261127-equipment',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch('progression.json').then(r=>r.ok?r.json():null).catch(()=>null)
+  fetch('progression.json?v=20261127-equipment',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
  ]);
  if(progress?.team&&progress?.coins&&progress?.defence)progression=progress;
  towerRegistry=towers;
- if(!towerRegistry?.towers?.length||!towerRegistry?.shields?.length||!towerRegistry?.drones?.length)throw Error('Equipment catalog missing or incomplete');
+ if(!TowerUpgrades?.selectEquipment)throw Error('Tower upgrade engine is outdated. Reload the page.');
+ if(!towerRegistry?.towers?.length||!towerRegistry?.shields?.length||!towerRegistry?.drones?.length)throw Error('Equipment catalog missing or incomplete. Reload the page.');
  if(rules?.summoning)battleRules=rules;
  if(audio?.bgm)audioConfig=audio;
  loadAudioPreferences();audioLabels();refreshSettings();
@@ -717,7 +718,7 @@ function setAudioLevel(kind,value){
 }
 
 let roster=[],catalog=[],team=[],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;
-async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json',{cache:'no-store'})).json();if(!Array.isArray(stages))stages=stages.stages||[];stages=(await Promise.all(stages.map(async entry=>entry.source?fetch(entry.source,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Missing map '+entry.source);return r.json()}):entry))).filter(entry=>entry&&entry.enabled!==false);for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();if(allowBestiaryHash&&location.hash.startsWith('#/bestiary'))readBestiaryRoute();window.addEventListener('popstate',readBestiaryRoute);window.addEventListener('hashchange',readBestiaryRoute);requestAnimationFrame(frame)}
+async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json',{cache:'no-store'})).json();if(!Array.isArray(stages))stages=stages.stages||[];stages=(await Promise.all(stages.map(async entry=>entry.source?fetch(entry.source,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Missing map '+entry.source);return r.json()}):entry))).filter(entry=>entry&&entry.enabled!==false);for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();if(allowBestiaryHash&&location.hash.startsWith('#/bestiary'))readBestiaryRoute();window.addEventListener('popstate',readBestiaryRoute);window.addEventListener('hashchange',readBestiaryRoute);$('startup-message').hidden=true;for(const id of ['home-start','menu-team-home','menu-upgrades-home'])$(id).disabled=false;requestAnimationFrame(frame)}
 let currentStage=null;
 function stageBackgroundPath(s){
  // The JSON is authoritative. Existing older manifests may omit background;
@@ -1467,5 +1468,5 @@ function bindMenu(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view==='battle'){if(!$('stage-info-panel').hidden){toggleStageInfo(false);return;}if(!document.fullscreenElement)toggleBattleMenu()}});
 }
 
-function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){if(!battleMenuOpen)step(dt);draw()}requestAnimationFrame(frame)}init().catch(e=>{$('status').textContent='Loading failed: '+e.message});
+function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){if(!battleMenuOpen)step(dt);draw()}requestAnimationFrame(frame)}init().catch(e=>{console.error('Monsters Clash startup failed',e);$('status').textContent='Loading failed: '+e.message;const msg=$('startup-message');msg.hidden=false;msg.textContent='Loading failed: '+e.message+' ';const retry=document.createElement('button');retry.textContent='Reload Game';retry.onclick=()=>location.reload();msg.append(retry);});
 </script></body></html>
