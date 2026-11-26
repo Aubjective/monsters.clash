@@ -46,6 +46,10 @@
     "elite_sprite_scale": 2,
     "tower_range_cap": 425,
     "drone_sheet": "assets/towers/support-drone-sheet.png",
-    "drone_sheet_columns": 4
+    "drone_sheet_columns": 4,
+    "boss_sprite_scale": 2.15,
+    "shield_plate_min": 5,
+    "shield_plate_max": 8,
+    "shield_orbit_speed": 0.85
   }
 }

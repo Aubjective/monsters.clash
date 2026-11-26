@@ -1,0 +1,46 @@
+/* Authoritative tower upgrade rules, shield lifecycle and shield rendering. */
+(function(global){
+'use strict';
+function quote(run,cfg,kind){
+ if(!['attack','shield','drone'].includes(kind))return null;
+ const key=kind==='drone'?'drones':kind==='shield'?'shieldLevel':'attackLevel';
+ const level=Number(run[key])||0,max=kind==='drone'?cfg.drone_max:cfg.max_upgrade;
+ const base=kind==='drone'?cfg.drone_cost:kind==='shield'?cfg.shield_cost:cfg.attack_cost;
+ return {kind,key,level,max,cost:Math.round(base*(1+level*.5))};
+}
+function createShield(run,cfg){const hp=run.shieldLevel*cfg.shield_hp;return {hp,max:hp,phase:0,flash:0,broken:0,hitAngle:0};}
+function purchase(run,shield,cfg,kind){
+ const q=quote(run,cfg,kind);if(!q||q.level>=q.max||run.wallet<q.cost)return false;
+ run.wallet-=q.cost;run[q.key]++;
+ if(kind==='shield'){shield.max+=cfg.shield_hp;shield.hp=Math.min(shield.max,shield.hp+cfg.shield_hp);shield.flash=.35;shield.broken=0;}
+ return true;
+}
+function attackStats(tower,run,cfg){
+ const a=tower?.basic_attack;if(!a)return null;const lv=run.attackLevel;
+ return {type:a.type,range:Math.min(cfg.tower_range_cap,(Number(a.range)||190)*(1+lv*.12)),damage:(Number(a.damage)||15)*(1+lv*.14),interval:Math.max(.35,a.cooldown_seconds/(1+lv*.15)),arrows:1+Math.floor(lv/2),stun:lv>=2?Math.min(1.2,.2+lv*.08):0,waveWidth:5+lv*1.4,droneDamage:cfg.drone_damage*(1+lv*.08)};
+}
+function update(shield,dt,cfg){shield.phase=(shield.phase+dt*(cfg.shield_orbit_speed||.85))%(Math.PI*2);shield.flash=Math.max(0,shield.flash-dt);shield.broken=Math.max(0,shield.broken-dt);}
+function absorb(shield,damage){const used=Math.min(shield.hp,Math.max(0,damage));shield.hp-=used;if(used){shield.flash=.35;shield.hitAngle=shield.phase;if(shield.hp===0)shield.broken=.65;}return Math.max(0,damage-used);}
+function renderShield(ctx,s,level,cfg,x,y,front){
+ if(!s)return;
+ const rx=80+Math.min(24,level*2.4),ry=98+Math.min(20,level*2),flash=s.flash/.35;
+ if(s.hp>0){
+ const ratio=s.hp/Math.max(1,s.max),max=Math.min(cfg.shield_plate_max||8,(cfg.shield_plate_min||5)+Math.floor(level/3)),count=Math.max(3,Math.ceil(max*(.55+.45*ratio)));
+ for(let i=0;i<count;i++){
+ const a=s.phase+i*Math.PI*2/count,depth=Math.sin(a);if((depth>=0)!==front)continue;
+ const px=x+Math.cos(a)*rx,py=y+depth*ry*.67;
+ const width=(23+level*.75)*(.35+.65*Math.abs(Math.cos(a))),height=(41+level*1.2);
+ const glow=Math.max(0,flash*Math.cos(a-s.hitAngle));
+ ctx.save();ctx.translate(px,py);ctx.rotate(Math.cos(a)*.16);
+ ctx.globalAlpha=(front?.86:.44)*(.7+.3*ratio);ctx.shadowColor='#72dfff';ctx.shadowBlur=5+glow*15;
+ const g=ctx.createLinearGradient(-width,-height,width,height);g.addColorStop(0,'rgba(219,250,255,.82)');g.addColorStop(.35,'rgba(77,160,218,.35)');g.addColorStop(.55,'rgba(186,239,255,.54)');g.addColorStop(1,'rgba(39,93,152,.68)');
+ ctx.beginPath();ctx.moveTo(0,-height);ctx.lineTo(width,-height*.52);ctx.lineTo(width*.8,height*.47);ctx.lineTo(0,height);ctx.lineTo(-width*.8,height*.47);ctx.lineTo(-width,-height*.52);ctx.closePath();ctx.fillStyle=g;ctx.fill();ctx.strokeStyle=glow>.2?'#efffff':'#8adcf6';ctx.lineWidth=2.1+glow*2;ctx.stroke();ctx.shadowBlur=0;
+ ctx.strokeStyle='rgba(236,253,255,.8)';ctx.lineWidth=1.7;ctx.beginPath();ctx.moveTo(-width*.7,-height*.44);ctx.lineTo(0,-height*.8);ctx.lineTo(width*.6,-height*.48);ctx.stroke();
+ ctx.strokeStyle='rgba(142,221,255,.45)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-height*.8);ctx.lineTo(0,height*.76);ctx.moveTo(-width*.7,height*.35);ctx.lineTo(width*.65,-height*.42);ctx.stroke();
+ ctx.restore();
+ }
+ }
+ if(front&&s.broken>0){const q=1-s.broken/.65;ctx.save();ctx.globalAlpha=1-q;ctx.fillStyle='#a9eaff';for(let i=0;i<22;i++){const a=i*2.399963+s.hitAngle;const px=x+Math.cos(a)*(rx+45*q),py=y+Math.sin(a)*(ry*.7+45*q);ctx.save();ctx.translate(px,py);ctx.rotate(a+q*5);ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(5,1);ctx.lineTo(-3,5);ctx.closePath();ctx.fill();ctx.restore();}ctx.restore();}
+}
+global.MonstersClashTowerUpgrades=Object.freeze({quote,createShield,purchase,attackStats,update,absorb,renderShield});
+})(window);

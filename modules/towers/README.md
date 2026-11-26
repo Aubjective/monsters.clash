@@ -1,7 +1,3 @@
-# Towers module
+# Tower upgrades module
 
-**Status:** Reserved; no engine implemented or imported here yet.
-
-**Ownership:** Tower selection, stats, attacks, unlocks and upgrades.
-
-This directory will own the feature implementation when migrated from the existing game. Edit behavior in this module, never by stacking override/helper scripts. Optional modules must be disableable without deleting profile progress. Interfaces with other modules must be explicit. Do not duplicate gameplay logic.
+`upgrades.js` is the authoritative shared in-run upgrade engine: prices, purchase validation, attack stat scaling, shield capacity, damage absorption, orbit timing, hit flash and break effects. The main battle engine calls its public interface; no parallel shield implementation. The shield protects the tower only. The tower remains standing in its critical sprite at zero HP and the run ends as breached. Permanent tower selection and unlocks remain in the existing game UI.
