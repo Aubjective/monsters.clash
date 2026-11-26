@@ -52,5 +52,29 @@ function renderShield(ctx,s,level,cfg,x,y,front){
  }
  if(front&&s.broken>0){const q=1-s.broken/.65;ctx.save();ctx.globalAlpha=1-q;ctx.fillStyle='#a9eaff';for(let i=0;i<22;i++){const a=i*2.399963+s.hitAngle;const px=x+Math.cos(a)*(rx+45*q),py=y+Math.sin(a)*(ry*.7+45*q);ctx.save();ctx.translate(px,py);ctx.rotate(a+q*5);ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(5,1);ctx.lineTo(-3,5);ctx.closePath();ctx.fill();ctx.restore();}ctx.restore();}
 }
-global.MonstersClashTowerUpgrades=Object.freeze({selectEquipment,equip,quote,createShield,purchase,attackStats,update,absorb,renderShield});
+function renderHealth(ctx,x,y,hp,maxHp,shield){
+ const ratio=Math.max(0,Math.min(1,hp/Math.max(1,maxHp))),breached=hp<=0;
+ const sr=shield?.max>0?Math.max(0,Math.min(1,shield.hp/shield.max)):0;
+ const metal=ctx.createLinearGradient(0,y-16,0,y+26);metal.addColorStop(0,'#f6d99a');metal.addColorStop(.32,'#ac8548');metal.addColorStop(.65,'#78582f');metal.addColorStop(1,'#d0a75d');
+ ctx.save();ctx.translate(x,y);ctx.shadowColor='#07111b';ctx.shadowBlur=5;
+ // Symmetrical battlement crest, bevelled gold frame, tapered fortress ends.
+ ctx.beginPath();ctx.moveTo(-65,-10);ctx.lineTo(-59,-16);ctx.lineTo(-49,-16);ctx.lineTo(-49,-11);ctx.lineTo(-39,-11);ctx.lineTo(-39,-16);ctx.lineTo(39,-16);ctx.lineTo(39,-11);ctx.lineTo(49,-11);ctx.lineTo(49,-16);ctx.lineTo(59,-16);ctx.lineTo(65,-10);ctx.lineTo(65,14);ctx.lineTo(56,22);ctx.lineTo(-56,22);ctx.lineTo(-65,14);ctx.closePath();ctx.fillStyle=metal;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#382c24';ctx.lineWidth=2;ctx.stroke();
+ ctx.fillStyle='#15283b';ctx.fillRect(-59,-8,118,23);
+ ctx.strokeStyle='#d1aa62';ctx.lineWidth=.8;ctx.strokeRect(-59,-8,118,23);
+ const grad=ctx.createLinearGradient(0,-6,0,8);
+ grad.addColorStop(0,ratio<=.3?'#ffac72':ratio<=.7?'#ffe098':'#a0eaff');grad.addColorStop(1,ratio<=.3?'#b83136':ratio<=.7?'#bb7728':'#216ab3');
+ ctx.fillStyle='#081421';ctx.fillRect(-55,-5,110,13);ctx.fillStyle=grad;ctx.fillRect(-55,-5,110*ratio,13);
+ for(let i=1;i<5;i++){ctx.fillStyle='rgba(6,20,33,.48)';ctx.fillRect(-55+i*22,-5,1,13);}
+ ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=2.6;ctx.strokeStyle='#10202f';ctx.fillStyle='#fff6dd';
+ const label=breached?'BREACHED':Math.ceil(hp)+' / '+Math.ceil(maxHp);ctx.strokeText(label,0,1.5);ctx.fillText(label,0,1.5);
+ ctx.fillStyle='#0a1927';ctx.fillRect(-55,11,110,4);if(sr>0){ctx.fillStyle='#78e4fc';ctx.fillRect(-55,11,110*sr,4);}
+ // Tiny blue crystal crest and metal rivets.
+ ctx.fillStyle='#e8c681';for(const px of [-61,61]){ctx.beginPath();ctx.arc(px,3,1.6,0,Math.PI*2);ctx.fill();}
+ ctx.beginPath();ctx.moveTo(0,-25);ctx.lineTo(8,-16);ctx.lineTo(0,-8);ctx.lineTo(-8,-16);ctx.closePath();ctx.fillStyle=metal;ctx.fill();ctx.strokeStyle='#4d3924';ctx.stroke();
+ ctx.beginPath();ctx.moveTo(0,-22);ctx.lineTo(5,-16);ctx.lineTo(0,-11);ctx.lineTo(-5,-16);ctx.closePath();ctx.fillStyle=breached?'#a74742':'#5dc8ff';ctx.fill();
+ ctx.font='bold 9px sans-serif';ctx.fillStyle=breached?'#ff9b82':ratio<=.3?'#ffc095':'#e8c984';ctx.textBaseline='bottom';ctx.strokeStyle='#10202f';ctx.lineWidth=2;const title=breached?'TOWER BREACHED':ratio<=.3?'CRITICAL':'TOWER';ctx.strokeText(title,0,-27);ctx.fillText(title,0,-27);
+ if(shield?.max>0){ctx.font='bold 9px sans-serif';ctx.textBaseline='top';ctx.fillStyle='#b0ebff';ctx.strokeText('Shield '+Math.ceil(shield.hp)+' / '+Math.ceil(shield.max),0,24);ctx.fillText('Shield '+Math.ceil(shield.hp)+' / '+Math.ceil(shield.max),0,24);}
+ ctx.restore();
+}
+global.MonstersClashTowerUpgrades=Object.freeze({selectEquipment,equip,quote,createShield,purchase,attackStats,update,absorb,renderShield,renderHealth});
 })(window);
