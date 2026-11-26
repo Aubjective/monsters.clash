@@ -385,7 +385,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <button id="battle-menu-home">Main Menu</button>
  </nav>
 </main>
-<script src="modules/elements/environment.js?v=20261125-sentries"></script>
+<script src="modules/elements/environment.js?v=20261126-hazard-feedback"></script>
 <script src="modules/day-night/engine.js?v=20261125-1"></script>
 <script>
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
@@ -1124,6 +1124,7 @@ function draw(){
    drawNatureShield(u,true);
    window.MonstersClashEnvironment?.renderStatus(ctx,u);
    const barY=u.y-size*.82-12-hover;
+   window.MonstersClashEnvironment?.renderIndicators(ctx,u,barY);
    ctx.fillStyle='#1f2e40';ctx.fillRect(u.x-31,barY,62,6);
    ctx.fillStyle=u.side>0?'#6dde8a':'#fa7777';ctx.fillRect(u.x-31,barY,62*Math.max(0,u.hp/u.maxhp),6);
  }

@@ -53,7 +53,7 @@
       1,
       2
     ],
-    "zone_radius": 75,
+    "zone_radius": 110,
     "warning_seconds": 1,
     "active_seconds": 1,
     "stagger_duration_seconds": 0.8,

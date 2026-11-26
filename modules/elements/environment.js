@@ -53,7 +53,7 @@ function configure(map){
  hazardIn=hazard?Math.max(1,Number(hazard.first_trigger_seconds)||10):Infinity;
 }
 function status(u){
- if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null,fireVisual:0,shatterTime:0,rootTime:0,rootRelease:0,staggerTime:0,bleedTime:0,bleedRate:0,bleedTick:0};
+ if(!u.environmentStatus)u.environmentStatus={slowTime:0,slowPct:0,freezeTime:0,lastTick:-1,source:null,fireVisual:0,shatterTime:0,rootTime:0,rootRelease:0,staggerTime:0,bleedTime:0,bleedRate:0,bleedTick:0,feedback:{}};
  return u.environmentStatus;
 }
 function movementMultiplier(u){const s=u?.environmentStatus;return (s?.freezeTime>0||s?.rootTime>0||s?.staggerTime>0)?0:(s?.slowTime>0?1-s.slowPct:1)}
@@ -104,6 +104,14 @@ function update(dt,units,applyDamage){
    if(!u||u.hp<=0)continue;
    u.environmentAge=(u.environmentAge||0)+dt;
    const s=status(u);
+   const feedback=s.feedback||(s.feedback={});
+   for(const key of Object.keys(feedback)){feedback[key]=Math.max(0,feedback[key]-dt);if(!feedback[key])delete feedback[key];}
+   if(s.fireVisual>0)feedback.burning=3;
+   if(s.bleedTime>0)feedback.bleeding=3;
+   if(s.rootTime>0)feedback.rooted=3;
+   if(s.staggerTime>0)feedback.staggered=3;
+   if(s.freezeTime>0)feedback.frozen=3;
+   if(s.slowTime>0)feedback[s.source==='rain'?'drenched':'chilled']=3;
    s.slowTime=Math.max(0,s.slowTime-dt);
    const wasFrozen=s.freezeTime>0;
    s.freezeTime=Math.max(0,s.freezeTime-dt);
@@ -182,9 +190,9 @@ function update(dt,units,applyDamage){
    const count=Math.min(2,Math.floor(rand(low,high+1)));
    hazardZones=[];
    for(let i=0;i<count;i++){
-     const radius=Math.max(25,Math.min(95,Number(hazard.zone_radius)||73));
+     const radius=Math.max(25,Math.min(120,Number(hazard.zone_radius)||73));
      // Positions stay on the continuous battle floor, away from both towers.
-     const x=count===1?rand(320,640):i===0?rand(270,440):rand(520,690);
+     const x=count===1?rand(320,640):i===0?rand(300,365):rand(595,660);
      hazardZones.push({x,y:rand(362,408),radius,warning:Math.max(.3,Number(hazard.warning_seconds)||1),
        remaining:Math.max(.5,Number(hazard.active_seconds)||4),phase:rand(0,6),caught:new Set(),impacted:false});
    }
@@ -316,9 +324,10 @@ function render(ctx,layer='background'){
    const age=warning?wt-zone.warning:dur-zone.remaining,p=Math.max(0,Math.min(1,age/(warning?wt:dur))),r=zone.radius;
    const rise=warning?.04+.07*p:Math.min(1,age/.12,zone.remaining/.32);
    ctx.save();ctx.translate(zone.x,zone.y);ctx.save();ctx.scale(1,.48);
-   ctx.globalAlpha=warning?.4+.3*Math.sin(p*9)**2:.38*(1-p);ctx.fillStyle='#c6a05c';ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffe1a0';ctx.lineWidth=2;ctx.setLineDash(warning?[9,6]:[]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
-   for(let row=0;row<3;row++)for(let col=0;col<4;col++){
-     const i=row*4+col,x=(col-1.5)*r*.43+Math.sin(i*2+zone.phase)*4,y=(row-1)*r*.28;
+   const glow=ctx.createRadialGradient(0,0,0,0,0,r);glow.addColorStop(0,'rgba(214,159,67,.37)');glow.addColorStop(.65,'rgba(161,114,49,.23)');glow.addColorStop(1,'rgba(161,114,49,0)');ctx.globalAlpha=warning?.65+.35*Math.sin(p*9)**2:.7*(1-p);ctx.fillStyle=glow;ctx.fillRect(-r,-r,2*r,2*r);
+   for(let row=-2;row<=2;row++){const yy=row*r*.34,span=Math.sqrt(Math.max(0,r*r-yy*yy))*.9;ctx.strokeStyle='#36404a';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-span,yy);ctx.lineTo(span,yy);ctx.stroke();ctx.strokeStyle=warning?'#ffd48a':'#bd8950';ctx.lineWidth=1.6;ctx.setLineDash([12,5]);ctx.stroke();ctx.setLineDash([]);}ctx.restore();
+   for(let row=0;row<3;row++)for(let col=0;col<6;col++){
+     const i=row*6+col,x=(col-2.5)*r*.28+Math.sin(i*2+zone.phase)*4,y=(row-1)*r*.28;
      const w=(6+i%3*1.5),height=(25+i%4*8)*rise;
      ctx.globalAlpha=warning?.75:Math.min(1,zone.remaining/.18);ctx.fillStyle='#303844';ctx.beginPath();ctx.ellipse(x,y,w*1.2,w*.42,0,0,Math.PI*2);ctx.fill();
      const steel=ctx.createLinearGradient(x-w,y,x+w,y);steel.addColorStop(0,'#48515f');steel.addColorStop(.46,'#c8d3db');steel.addColorStop(.5,'#f3f8fc');steel.addColorStop(.72,'#8797a7');steel.addColorStop(1,'#414a56');
@@ -332,7 +341,10 @@ function render(ctx,layer='background'){
    const p=warning?Math.max(0,1-zone.warning/wt):Math.min(1,1-zone.remaining/dur),r=zone.radius;
    ctx.save();ctx.translate(zone.x,zone.y);ctx.save();ctx.scale(1,.48);
    const g=ctx.createRadialGradient(0,0,0,0,0,r);g.addColorStop(0,'rgba(238,187,102,.45)');g.addColorStop(1,'rgba(156,96,44,0)');ctx.fillStyle=g;ctx.globalAlpha=warning?.5+p*.5:1-p;ctx.fillRect(-r,-r,2*r,2*r);
-   ctx.strokeStyle=warning?'#ffe0a3':'#f8c17a';ctx.lineWidth=warning?2:4;ctx.setLineDash(warning?[9,5]:[]);ctx.beginPath();ctx.arc(0,0,warning?r:r*(.15+.85*p),0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+   // Broken sandstone plates and fissures communicate the affected ground without a target ring.
+   for(let k=0;k<18;k++){const a=k*2.399963+zone.phase,dist=r*Math.sqrt((k+.5)/18)*.87,xx=Math.cos(a)*dist,yy=Math.sin(a)*dist;
+     ctx.globalAlpha=(warning?.65:.8*(1-p));ctx.fillStyle=k%2?'#966342':'#c49363';ctx.beginPath();ctx.moveTo(xx-8,yy+3);ctx.lineTo(xx-4,yy-5);ctx.lineTo(xx+7,yy-3);ctx.lineTo(xx+10,yy+5);ctx.closePath();ctx.fill();}
+   ctx.globalAlpha=warning?1:Math.max(.15,1-p);
    for(let i=0;i<8;i++){const a=i*Math.PI/4+zone.phase,rr=r*(.65+.2*Math.sin(i*3));ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a+.2)*rr*.36,Math.sin(a+.2)*rr*.36);ctx.lineTo(Math.cos(a-.12)*rr*.7,Math.sin(a-.12)*rr*.7);ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);ctx.strokeStyle='#643b25';ctx.lineWidth=3;ctx.stroke();ctx.strokeStyle='#d79d62';ctx.lineWidth=1;ctx.stroke();}ctx.restore();
    for(let i=0;i<16;i++){const a=i*2.399963+zone.phase,dist=r*(warning?.3+.5*(i%5)/5:.15+.75*p),x=Math.cos(a)*dist,y=Math.sin(a)*dist*.48;
      const lift=warning?Math.abs(Math.sin(elapsed*28+i))*3:Math.sin(Math.PI*p)*(16+i%5*6);
@@ -349,9 +361,9 @@ function render(ctx,layer='background'){
    ctx.save();ctx.translate(zone.x,zone.y);
    const r=zone.radius;ctx.save();ctx.scale(1,.48);
    const glow=ctx.createRadialGradient(0,0,2,0,0,r);glow.addColorStop(0,'rgba(155,211,65,.38)');glow.addColorStop(1,'rgba(92,132,37,0)');ctx.fillStyle=glow;ctx.globalAlpha=fade;ctx.fillRect(-r,-r,2*r,2*r);
-   ctx.strokeStyle='#b4dd64';ctx.lineWidth=2;ctx.globalAlpha=(warning?.55+.35*Math.sin(age*7)**2:.4)*fade;ctx.setLineDash(warning?[8,5]:[]);ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.stroke();ctx.restore();
-   for(let i=0;i<12;i++){
-     const a=i*2.399963+zone.phase,d=r*Math.sqrt((i+.5)/12)*.85,x=Math.cos(a)*d,y=Math.sin(a)*d*.45;
+   for(let i=0;i<14;i++){const a=i*2.399963+zone.phase,rr=r*(.6+.28*Math.sin(i*3)**2);ctx.globalAlpha=(warning?.75:.9)*fade;ctx.strokeStyle='#3e4926';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(Math.cos(a)*r*.08,Math.sin(a)*r*.08);ctx.quadraticCurveTo(Math.cos(a+.36)*rr*.62,Math.sin(a+.36)*rr*.62,Math.cos(a)*rr,Math.sin(a)*rr);ctx.stroke();ctx.strokeStyle='#8da94c';ctx.lineWidth=2;ctx.stroke();}ctx.restore();
+   for(let i=0;i<20;i++){
+     const a=i*2.399963+zone.phase,d=r*Math.sqrt((i+.5)/20)*.91,x=Math.cos(a)*d,y=Math.sin(a)*d*.45;
      const height=(12+i%4*5)*grow, sway=Math.sin(elapsed*3+i)*4;
      ctx.globalAlpha=fade;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x-8,y+3);ctx.quadraticCurveTo(x+8,y-3,x,y-height*.55);ctx.quadraticCurveTo(x-8,y-height,x+sway,y-height);ctx.strokeStyle='#354824';ctx.lineWidth=warning?3:6;ctx.stroke();ctx.strokeStyle='#8db64b';ctx.lineWidth=warning?1.5:3;ctx.stroke();
      ctx.fillStyle='#b5db65';ctx.save();ctx.translate(x+sway,y-height);ctx.rotate(a);ctx.beginPath();ctx.ellipse(3,0,5*grow+1,2.6*grow+1,0,0,Math.PI*2);ctx.fill();ctx.restore();
@@ -386,11 +398,7 @@ function render(ctx,layer='background'){
    heat.addColorStop(1,'rgba(218,46,7,0)');
    ctx.globalAlpha=intensity*.76;ctx.fillStyle=heat;ctx.fill();
    // During warning, keep a thin broken edge. During ignition, dissolve it into the flames.
-   if(warning){
-     ctx.globalAlpha=(.18+.31*warm)*(.95+.05*Math.sin(elapsed*8+zone.phase));
-     ctx.strokeStyle='#ffba58';ctx.lineWidth=2;
-     ctx.setLineDash([14,12]);ctx.stroke();ctx.setLineDash([]);
-   }
+   // Warning is expressed by molten cracks and a fading heat patch, not a perimeter ring.
    // Branching molten fissures communicate ignition without altering the hazard footprint.
    ctx.lineCap='round';
    for(let i=0;i<8;i++){
@@ -406,9 +414,9 @@ function render(ctx,layer='background'){
    if(!warning){
      // Short overlapping ribbons of flame, independently swaying rather than repeated triangles.
      ctx.save();
-     for(let i=0;i<19;i++){
+     for(let i=0;i<29;i++){
        const angle=i*2.399963+zone.phase;
-       const distance=Math.sqrt((i+.5)/19)*zone.radius*.83;
+       const distance=Math.sqrt((i+.5)/29)*zone.radius*.9;
        const fx=zone.x+Math.cos(angle)*distance;
        const fy=zone.y+Math.sin(angle)*distance*.43;
        const phase=elapsed*(3.7+(i%5)*.43)+i*1.91+zone.phase;
@@ -467,7 +475,7 @@ function renderStatus(ctx,u){
  }
  if(s.bleedTime>0){
    ctx.save();ctx.translate(u.x,u.y);
-   for(let i=0;i<5;i++){const p=(elapsed*1.25+i*.2)%1,x=Math.sin(i*2.4)*17,y=-22+p*27;ctx.globalAlpha=(1-p)*.78;ctx.fillStyle='#b93642';ctx.beginPath();ctx.arc(x,y,1.3+(i%2)*.6,0,Math.PI*2);ctx.fill();}
+   for(let i=0;i<8;i++){const p=(elapsed*1.25+i*.137)%1,x=Math.sin(i*2.4)*26,y=-48+p*52;ctx.globalAlpha=(1-p)*.95;ctx.fillStyle='#e34850';ctx.beginPath();ctx.moveTo(x,y-5);ctx.quadraticCurveTo(x-5,y+2,x,y+4);ctx.quadraticCurveTo(x+5,y+2,x,y-5);ctx.fill();ctx.strokeStyle='#681e2d';ctx.lineWidth=.7;ctx.stroke();}
    ctx.restore();
  }
  if(s.staggerTime>0){
@@ -542,7 +550,24 @@ function renderStatus(ctx,u){
  }
  ctx.restore();
 }
+// Draw status badges separately from body effects so HP bars remain legible.
+function renderIndicators(ctx,u,barY){
+ const s=u?.environmentStatus;if(!enabled||!hazardsEnabled||!s||!s.feedback)return;
+ const active={burning:s.fireVisual>0,bleeding:s.bleedTime>0,rooted:s.rootTime>0,staggered:s.staggerTime>0,frozen:s.freezeTime>0,chilled:s.slowTime>0&&s.source==='ice'&&s.freezeTime<=0,drenched:s.slowTime>0&&s.source==='rain'};
+ const colors={burning:'#ff9948',bleeding:'#fa5965',rooted:'#a8d86c',staggered:'#f5d27a',frozen:'#9ceaff',chilled:'#9ceaff',drenched:'#65c9ff'};
+ const keys=Object.keys(colors).filter(k=>active[k]||s.feedback[k]>0).filter(k=>k!=='chilled'||!active.frozen);
+ for(let i=0;i<keys.length;i++){
+   const k=keys[i],x=u.x+(i-(keys.length-1)/2)*18,y=barY-10,c=colors[k];
+   ctx.save();ctx.translate(x,y);ctx.globalAlpha=active[k]?1:.55;ctx.fillStyle='#172431';ctx.strokeStyle=c;ctx.lineWidth=1.3;ctx.beginPath();ctx.roundRect(-8,-8,16,16,4);ctx.fill();ctx.stroke();ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineWidth=1.6;ctx.lineCap='round';ctx.lineJoin='round';
+   if(k==='burning'){ctx.beginPath();ctx.moveTo(0,-6);ctx.quadraticCurveTo(7,1,3,5);ctx.quadraticCurveTo(-7,7,-5,0);ctx.lineTo(-2,-3);ctx.quadraticCurveTo(-2,2,0,-6);ctx.fill();}
+   else if(k==='bleeding'||k==='drenched'){ctx.beginPath();ctx.moveTo(0,-6);ctx.bezierCurveTo(-8,3,-4,6,0,6);ctx.bezierCurveTo(4,6,8,3,0,-6);ctx.fill();}
+   else if(k==='rooted'){ctx.beginPath();ctx.moveTo(0,6);ctx.lineTo(0,-4);ctx.moveTo(0,0);ctx.lineTo(-5,-4);ctx.moveTo(0,2);ctx.lineTo(5,-2);ctx.moveTo(0,4);ctx.lineTo(-4,6);ctx.moveTo(0,4);ctx.lineTo(4,6);ctx.stroke();}
+   else if(k==='staggered'){ctx.beginPath();ctx.moveTo(1,-6);ctx.lineTo(-4,1);ctx.lineTo(0,1);ctx.lineTo(-1,6);ctx.lineTo(5,-2);ctx.lineTo(1,-2);ctx.closePath();ctx.fill();}
+   else {for(let j=0;j<3;j++){const a=j*Math.PI/3;ctx.beginPath();ctx.moveTo(-Math.cos(a)*5,-Math.sin(a)*5);ctx.lineTo(Math.cos(a)*5,Math.sin(a)*5);ctx.stroke();}}
+   ctx.restore();
+ }
+}
 function setEnabled(v){enabled=!!v}
 function setHazardsEnabled(v){hazardsEnabled=!!v}
-global.MonstersClashEnvironment=Object.freeze({configure,update,render,renderStatus,matchesElement,movementMultiplier,canAct,setEnabled,setHazardsEnabled});
+global.MonstersClashEnvironment=Object.freeze({configure,update,render,renderStatus,renderIndicators,matchesElement,movementMultiplier,canAct,setEnabled,setHazardsEnabled});
 })(window);

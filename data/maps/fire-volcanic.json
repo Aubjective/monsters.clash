@@ -39,7 +39,7 @@
       1,
       2
     ],
-    "zone_radius": 73,
+    "zone_radius": 110,
     "warning_seconds": 1,
     "active_seconds": 4,
     "damage_max_hp_pct_per_second": 0.01,
