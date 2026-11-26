@@ -302,6 +302,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .equipment-card{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#172d43;border:1px solid #3a5871;border-radius:12px;padding:12px;min-width:0}
 .equipment-card.equipped{border-color:#d7b66d}.equipment-art{width:76px;height:76px;flex:none;background-repeat:no-repeat;background-position:left center;background-size:400% 100%;border-radius:6px;display:grid;place-items:center;font-size:38px}.equipment-copy{flex:1;min-width:90px}.equipment-copy strong,.equipment-copy small{display:block}.equipment-copy small{color:#b1c8de;margin-top:5px}.equipment-card button{width:100%;font-size:12px}
 @media(max-height:500px){.equipment-card{padding:7px}.equipment-art{width:55px;height:55px}.equipment-tabs{margin:6px 0}}
+.rank-elite{filter:sepia(.45) saturate(1.65) hue-rotate(345deg) brightness(1.12)}.rank-boss{filter:grayscale(.72) sepia(.65) hue-rotate(215deg) saturate(2.5) brightness(.92)}
 </style>
 </head>
 <body>
@@ -323,7 +324,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <section class="app-screen" id="bestiary-screen" hidden>
  <div class="page-inner">
   <div class="page-head"><div><div class="eyebrow">Monster Collection</div><h2>Bestiary</h2></div></div>
-  <p class="page-sub" id="bestiary-progress"></p>
+  <nav class="equipment-tabs" aria-label="Bestiary categories"><button type="button" data-bestiary="normal" aria-pressed="true">Monsters</button><button type="button" data-bestiary="elite" aria-pressed="false">Elites</button><button type="button" data-bestiary="boss" aria-pressed="false">Bosses</button></nav><p class="page-sub" id="bestiary-progress"></p>
   <div class="app-grid" id="bestiary-grid"></div>
  </div>
 </section>
@@ -495,7 +496,7 @@ document.addEventListener('visibilitychange',()=>syncMusic());
 let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentConfig=null;
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
-  fetch('roster.json').then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
+  fetch('roster.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
   fetch('towers.json?v=20261127-equipment',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null),
@@ -510,6 +511,7 @@ async function loadGameCatalog(){
  loadAudioPreferences();audioLabels();refreshSettings();
  const ids=Array.isArray(index.ids)?index.ids:[];
  catalog=(await Promise.all(ids.map(id=>fetch('monsters/'+encodeURIComponent(id)+'.json').then(r=>r.ok?r.json():null).catch(()=>null)))).filter(Boolean);
+ specialBosses=(await Promise.all((index.special_boss_ids||[]).map(id=>fetch('monsters/'+encodeURIComponent(id)+'.json',{cache:'no-store'}).then(r=>r.ok?r.json():null)))).filter(Boolean);
  roster=catalog.filter(m=>m.art?.status==='ready'&&m.art?.sheet);
  loadProfile((index.default_deck||[]).filter(id=>roster.some(m=>m.id===id)));
  team=profile.team.filter(id=>owns(id)&&roster.some(m=>m.id===id)).slice(0,profile.teamSlots);
@@ -607,6 +609,7 @@ function loadProfile(defaults){
  profile={
   owned:[...new Set([...defaults,...(Array.isArray(saved?.owned)?saved.owned:[])])],
   encountered:[...new Set([...defaults,...(Array.isArray(saved?.encountered)?saved.encountered:[])])],
+  eliteEncountered:Array.isArray(saved?.eliteEncountered)?[...new Set(saved.eliteEncountered)]:[],bossEncountered:Array.isArray(saved?.bossEncountered)?[...new Set(saved.bossEncountered)]:[],
   coins:Math.max(0,Math.floor(Number(saved?.coins)||0)),
   teamSlots:Math.min(progression.team.max_slots,Math.max(progression.team.starting_slots,Math.floor(Number(saved?.teamSlots)||progression.team.starting_slots))),
   team:Array.isArray(saved?.team)?[...new Set(saved.team)]:defaults.slice(),
@@ -686,8 +689,8 @@ function renderUpgrades(){
  const shield='Shield '+Math.ceil(state.towerShield.hp);
  if($('tower-shield-label').textContent!==shield)$('tower-shield-label').textContent=shield;
 }
-function encountered(id){return profile.encountered.includes(id)}
-function markEncounter(id){if(!id||encountered(id))return;profile.encountered.push(id);storeProfile();renderBestiary()}
+function encountered(id,rank='normal'){const key=rank==='elite'?'eliteEncountered':rank==='boss'?'bossEncountered':'encountered';return profile[key].includes(id)}
+function markEncounter(id,rank='normal'){if(!id||encountered(id,rank))return;const key=rank==='elite'?'eliteEncountered':rank==='boss'?'bossEncountered':'encountered';profile[key].push(id);storeProfile();if(view==='bestiary')renderBestiary();}
 function loadAudioPreferences(){
  let v=null;try{v=JSON.parse(localStorage.getItem(AUDIO_KEY)||'null')}catch(e){}
  if(!v||!audioConfig)return;
@@ -829,7 +832,7 @@ function canSummon(m,side){
 function deployCooldown(m,side){cooldowns[side>0?'ally':'enemy'][m.id]=Math.max(0,Number(m.deployment?.cooldown_seconds)||0)}
 
 function stage(){return currentStage||stages[0]}function mods(m){const s=stage();return s&&window.MonstersClashEnvironment?.matchesElement(m)?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
-function spawn(m,side,rank='normal'){if(!m||!canSummon(m,side))return false;if(side<0)markEncounter(m.id);if(side===1&&!team.includes(m.id))return false;deployCooldown(m,side);if(side===1)soundEffect('summon');
+function spawn(m,side,rank='normal'){if(!m||!canSummon(m,side))return false;if(side<0)markEncounter(m.id,rank);if(side===1&&!team.includes(m.id))return false;deployCooldown(m,side);if(side===1)soundEffect('summon');
 const cfg=progression.defence,b=mods(m),scale=side>0?allyScale():rank==='boss'?cfg.boss_hp*(1+(run.battle-1)*cfg.boss_growth):rank==='elite'?enemyScale()*cfg.elite_hp:enemyScale(),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*scale,spawnX=side>0?198:925;
 // Deploy just beyond the visible tower art (not behind or inside the castle).
 // Prefer a clear depth lane and shift *toward the battlefield* when occupied.
@@ -1287,9 +1290,9 @@ function cardFor(m,selectable){
 const allowBestiaryHash=(()=>{
  try{return window.top===window.self&&!window.Telegram?.WebApp&&!location.hash.includes('tgWebApp')}catch(e){return false}
 })();
-let selectedMonsterId=null,profileReturnView='bestiary';
-function profileLink(id){return '#/bestiary/'+encodeURIComponent(id)}
-function routePath(name){return name==='bestiary'?'#/bestiary':location.pathname+location.search}
+let selectedMonsterId=null,profileReturnView='bestiary',bestiaryRank='normal',specialBosses=[];
+function profileLink(id,rank='normal'){return '#/bestiary/'+(rank==='normal'?'':rank+'/')+encodeURIComponent(id)}
+function routePath(name){return name==='bestiary'?'#/bestiary'+(bestiaryRank==='normal'?'':'/'+bestiaryRank):location.pathname+location.search}
 function updateRoute(name,replace=false){
  if(!allowBestiaryHash)return;
  const next=routePath(name);
@@ -1297,26 +1300,27 @@ function updateRoute(name,replace=false){
  try{history[replace?'replaceState':'pushState']({monsterClash:true},'',next)}
  catch(e){/* Embedded host may disallow navigation; in-game screens still work. */}
 }
-function showMonsterProfile(id,fromRoute=false){
- const monster=catalog.find(m=>m.id===id);
+function showMonsterProfile(id,fromRoute=false,rank='normal'){
+ const monster=(rank==='boss'?[...catalog,...specialBosses]:catalog).find(m=>m.id===id);
  if(!monster)return openView('bestiary',fromRoute);
  selectedMonsterId=id;
  // A profile opened from My Team must return to team preparation, not the Bestiary.
  // Deep links default to Bestiary unless the player came directly from My Team.
  profileReturnView=view==='team'?'team':'bestiary';
  $('profile-back').textContent=profileReturnView==='team'?'← My Team':'← Bestiary';
- const known=encountered(id);
- $('profile-name').textContent=known?monster.name:'??? · Undiscovered';
+ const known=encountered(id,rank),special=rank==='boss'&&specialBosses.includes(monster);
+ if(view!=='team')bestiaryRank=rank;
+ $('profile-name').textContent=known?(rank==='normal'||special?monster.name:(rank==='elite'?'Elite ':'Boss ')+monster.name):'??? · Undiscovered';
  const artwork=$('profile-art'),details=$('profile-info');
  artwork.replaceChildren();details.replaceChildren();
- if(known&&monster.art?.sheet)artwork.append(sheetPreview(id));
+ if(known&&monster.art?.sheet){const art=document.createElement('span');art.className='sheet-preview rank-'+(special?'normal':rank);art.style.backgroundImage='url("'+monster.art.sheet+'")';artwork.append(art);}
  else{const unknown=document.createElement('span');unknown.className='unknown-icon';unknown.textContent='?';artwork.append(unknown)}
  if(!known){
   const description=document.createElement('p');description.textContent='This monster has not been encountered yet. Meet it in battle to reveal its profile.';
   details.append(description);
  }else{
   const tags=document.createElement('div');tags.className='profile-tags';
-  for(const entry of [monster.element,monster.role,monster.rarity,owns(id)?'Owned':'Encountered']){
+  for(const entry of [monster.element,monster.role,monster.rarity,rank==='normal'?(owns(id)?'Owned':'Encountered'):special?'Special Boss':rank==='elite'?'Elite':'Boss']){
    const span=document.createElement('span');span.textContent=entry;tags.append(span);
   }
   details.append(tags);
@@ -1329,6 +1333,7 @@ function showMonsterProfile(id,fromRoute=false){
    const name=document.createElement('small');name.textContent=label;stat.append(number,name);stats.append(stat);
   }
   details.append(stats);
+  if(rank!=='normal'){const note=document.createElement('p');note.textContent=rank==='elite'?'Elite: '+Math.round(progression.defence.elite_hp*100)+'% normal round HP, '+Math.round(progression.defence.elite_attack*100)+'% normal round attack. Listed stats are the base monster stats.':special?'Special boss: listed stats are base values.':'Boss: HP and attack scale with round progression. Listed stats are the base monster stats.';details.append(note);}
   const attack=document.createElement('p');attack.textContent='Attack: '+(monster.attack?.type||'Unknown')+' · '+(monster.attack?.base_damage??'—')+' base damage';
   const skill=document.createElement('p');skill.textContent='Skill: '+String(monster.skill?.id||'Unknown').replaceAll('_',' ')+' · '+(monster.skill?.cooldown_seconds??'—')+'s cooldown';
   details.append(attack,skill);
@@ -1336,39 +1341,34 @@ function showMonsterProfile(id,fromRoute=false){
  // The in-game screen is authoritative. URL linking must never block navigation.
  openView('monster-profile',true);
  if(!fromRoute&&allowBestiaryHash){
-  try{history.pushState({monsterClash:true},'',profileLink(id))}
+  try{history.pushState({monsterClash:true},'',profileLink(id,rank))}
   catch(e){/* Safe fallback: profile remains open without changing URL. */}
  }
 }
 function readBestiaryRoute(){
  if(!allowBestiaryHash)return;
- const match=location.hash.match(/^#\/bestiary\/([a-zA-Z0-9_-]+)$/);
- if(match){const id=decodeURIComponent(match[1]);if(catalog.some(m=>m.id===id))return showMonsterProfile(id,true)}
- if(location.hash==='#/bestiary')openView('bestiary',true);
+ const hash=location.hash;
+ const match=hash.match(/^#\/bestiary\/(?:(elite|boss)\/)?([a-zA-Z0-9_-]+)$/);
+ if(match&&!['elite','boss'].includes(match[2])){const rank=match[1]||'normal',id=decodeURIComponent(match[2]);if((rank==='boss'?[...catalog,...specialBosses]:catalog).some(m=>m.id===id))return showMonsterProfile(id,true,rank);}
+ if(/^#\/bestiary(?:\/(elite|boss))?$/.test(hash)){bestiaryRank=hash.endsWith('/elite')?'elite':hash.endsWith('/boss')?'boss':'normal';openView('bestiary',true);}
  else if(view==='monster-profile'&&profileReturnView==='team'){renderTeam();openView('team',true)}
  else if(view==='monster-profile'||view==='bestiary')openView('home',true);
 }
 function renderBestiary(){
- const count=catalog.filter(m=>encountered(m.id)).length;
- $('bestiary-progress').textContent=count+'/'+catalog.length+' Monsters Discovered · Encounter more monsters in battle.';
- const entries=catalog.map(m=>{
-  const known=encountered(m.id),node=document.createElement('button');
-  node.type='button';node.className='app-card journal-entry '+(known?'journal-known':'journal-unknown');
-  node.title=known?'Open '+m.name+' profile':'Open unknown monster profile';
-  node.setAttribute('aria-label',known?'View '+m.name+' profile':'View undiscovered monster profile');
-  node.addEventListener('click',()=>showMonsterProfile(m.id));
-  const icon=known&&m.art?.sheet?sheetPreview(m.id):document.createElement('span');
-  if(!known||!m.art?.sheet){icon.className='unknown-icon';icon.textContent='?'}
-  const desc=document.createElement('span');
-  const title=document.createElement('strong'),detail=document.createElement('small'),status=document.createElement('em');
-  title.textContent=known?m.name:'???';
-  detail.textContent=known?m.element+' · '+m.role:'Not Yet Discovered';
-  status.className='app-pending';
-  status.textContent=known?(owns(m.id)?'Owned':'Encountered'):'Undiscovered';
-  desc.append(title,document.createElement('br'),detail,document.createElement('br'),status);
-  node.append(icon,desc);return node;
- });
- $('bestiary-grid').replaceChildren(...entries);
+ const rank=bestiaryRank,list=rank==='boss'?[...catalog,...specialBosses]:catalog,category=rank==='normal'?'Monsters':rank==='elite'?'Elites':'Bosses';
+ for(const b of document.querySelectorAll('[data-bestiary]'))b.setAttribute('aria-pressed',String(b.dataset.bestiary===rank));
+ const count=list.filter(m=>encountered(m.id,rank)).length;
+ $('bestiary-progress').textContent=count+'/'+list.length+' '+category+' Discovered · Encounter this rank in battle.';
+ $('bestiary-grid').replaceChildren(...list.map(m=>{
+ const known=encountered(m.id,rank),special=rank==='boss'&&specialBosses.includes(m),node=document.createElement('button');
+ const name=rank==='normal'||special?m.name:(rank==='elite'?'Elite ':'Boss ')+m.name;
+ node.type='button';node.className='app-card journal-entry '+(known?'journal-known':'journal-unknown');node.title=known?'Open '+name+' profile':'Undiscovered';node.setAttribute('aria-label',node.title);
+ node.onclick=()=>showMonsterProfile(m.id,false,rank);
+ const icon=document.createElement('span');if(known&&m.art?.sheet){icon.className='sheet-preview rank-'+(special?'normal':rank);icon.style.backgroundImage='url("'+m.art.sheet+'")';}else{icon.className='unknown-icon';icon.textContent='?';}
+ const desc=document.createElement('span'),title=document.createElement('strong'),detail=document.createElement('small'),status=document.createElement('em');
+ title.textContent=known?name:'???';detail.textContent=known?m.element+' · '+m.role:'Not Yet Discovered';status.className='app-pending';status.textContent=known?(rank==='normal'&&owns(m.id)?'Owned':special?'Special Boss · Encountered':'Encountered'):'Undiscovered';
+ desc.append(title,document.createElement('br'),detail,document.createElement('br'),status);node.append(icon,desc);return node;
+ }));
 }
 function renderTeam(){
  $('team-options').replaceChildren(...catalog.map(m=>{
@@ -1435,6 +1435,7 @@ function toggleQuickNav(force){
  $('nav-toggle').setAttribute('aria-expanded',String(navOpen));
 }
 function bindMenu(){
+ for(const b of document.querySelectorAll('[data-bestiary]'))b.onclick=()=>{bestiaryRank=b.dataset.bestiary;renderBestiary();updateRoute('bestiary',true);};
  $('menu-upgrades-home').onclick=()=>openView('upgrades');$('nav-upgrades').onclick=()=>openView('upgrades');$('upgrades-back').onclick=()=>openView('home');$('upgrades-play').onclick=startRun;
  for(const button of document.querySelectorAll('[data-equipment]'))button.onclick=()=>{equipmentTab=button.dataset.equipment;$('equipment-message').textContent='';renderEquipment();};
  for(const kind of ['attack','shield','drone'])$('upgrade-'+kind).onclick=()=>buyUpgrade(kind);

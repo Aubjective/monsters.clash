@@ -16,5 +16,6 @@
     "m001",
     "m002"
   ],
-  "max_deck_size": 12
+  "max_deck_size": 12,
+  "special_boss_ids": []
 }

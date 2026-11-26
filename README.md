@@ -9,3 +9,5 @@ Tower upgrades are owned by `modules/towers/upgrades.js`. The shared shield uses
 The top battle HUD shows Battle Coins, permanent Gold and Gold earned this run. Kill rewards float above defeated enemies. Rank palettes reuse existing sprite sheets; allied HP bars are blue, enemy HP bars red, elites have gold frames and bosses purple frames.
 
 Main Menu → Upgrades provides Towers, Shields and Drones, with Gold unlocks and a persisted equipped loadout. `towers.json` owns equipment definitions; `progression.json` owns round and economy rules. My Team contains monster collection and carrying slots only.
+
+Bestiary has independent Monsters, Elites and Bosses tabs and saved rank discovery records. `roster.json` includes `special_boss_ids` for future standalone boss definitions under `monsters/`; these appear in the Boss tab, not the player team. Special boss battle spawning is not enabled yet. Existing ordinary discoveries are preserved; ranked discoveries begin independently.
