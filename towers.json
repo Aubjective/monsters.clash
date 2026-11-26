@@ -17,7 +17,7 @@
       "abilities": [],
       "basic_attack": {
         "type": "arrow",
-        "range": 205,
+        "range": 280,
         "damage": 22,
         "cooldown_seconds": 2.6
       },
@@ -38,7 +38,7 @@
       "abilities": [],
       "basic_attack": {
         "type": "electric_pulse",
-        "range": 180,
+        "range": 260,
         "damage": 14,
         "cooldown_seconds": 4.2
       },

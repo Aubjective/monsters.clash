@@ -13,7 +13,11 @@
   "coins": {
     "kill_base": 10,
     "elite_multiplier": 3,
-    "boss_multiplier": 6
+    "boss_multiplier": 6,
+    "round_clear_battle_base": 40,
+    "round_clear_battle_growth": 5,
+    "round_clear_menu_base": 25,
+    "round_clear_menu_growth": 5
   },
   "defence": {
     "first_count": 5,
@@ -24,7 +28,7 @@
     "spawn_acceleration": 0.25,
     "enemy_growth": 0.18,
     "ally_growth": 0.12,
-    "elite_hp": 2.5,
+    "elite_hp": 1.5,
     "boss_hp": 1,
     "boss_growth": 1.1111111111111112,
     "boss_every": 5,
@@ -37,6 +41,11 @@
     "shield_hp": 160,
     "attack_cost": 75,
     "max_upgrade": 10,
-    "monster_unlock_cost": 250
+    "monster_unlock_cost": 250,
+    "elite_attack": 1.5,
+    "elite_sprite_scale": 2,
+    "tower_range_cap": 425,
+    "drone_sheet": "assets/towers/support-drone-sheet.png",
+    "drone_sheet_columns": 4
   }
 }
