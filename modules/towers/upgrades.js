@@ -35,17 +35,17 @@ function absorb(shield,damage){const used=Math.min(shield.hp,Math.max(0,damage))
 const shieldImages=new Map();
 function renderShield(ctx,s,level,cfg,x,y,front){
  if(!s)return;
- const rx=80+Math.min(24,level*2.4),ry=98+Math.min(20,level*2),flash=s.flash/.35;
+ const rx=55,ry=75,flash=s.flash/.35;
  if(s.hp>0){
- const ratio=s.hp/Math.max(1,s.max),max=Math.min(cfg.shield_plate_max||8,(cfg.shield_plate_min||5)+Math.floor(level/3)),count=Math.max(3,Math.ceil(max*(.55+.45*ratio)));
+ const ratio=s.hp/Math.max(1,s.max),max=Math.min(cfg.shield_plate_max||6,(cfg.shield_plate_min||3)+Math.floor(Math.max(0,level-1)/3)),count=Math.max(1,Math.ceil(max*(.55+.45*ratio)));
  for(let i=0;i<count;i++){
  const a=s.phase+i*Math.PI*2/count,depth=Math.sin(a);if((depth>=0)!==front)continue;
  const px=x+Math.cos(a)*rx,py=y+depth*ry*.67;
- const width=(23+level*.75)*(.35+.65*Math.abs(Math.cos(a))),height=(41+level*1.2);
+ const width=19*(.65+.35*Math.abs(Math.cos(a))),height=23;
  const glow=Math.max(0,flash*Math.cos(a-s.hitAngle));
  ctx.save();ctx.translate(px,py);ctx.rotate(Math.cos(a)*.16);
  ctx.globalAlpha=(front?.86:.44)*(.7+.3*ratio);ctx.shadowColor='#72dfff';ctx.shadowBlur=5+level*.8+glow*15;
- if(cfg.shield_sprite){let img=shieldImages.get(cfg.shield_sprite);if(!img){img=new Image();img.src=cfg.shield_sprite;shieldImages.set(cfg.shield_sprite,img);}if(img.complete&&img.naturalWidth>0){const hh=height*2,ww=hh*img.naturalWidth/img.naturalHeight*(.35+.65*Math.abs(Math.cos(a)));ctx.drawImage(img,-ww/2,-hh/2,ww,hh);ctx.restore();continue;}}
+ if(cfg.shield_sprite){let img=shieldImages.get(cfg.shield_sprite);if(!img){img=new Image();img.src=cfg.shield_sprite;shieldImages.set(cfg.shield_sprite,img);}if(img.complete&&img.naturalWidth>0){const hh=height*2,ww=hh*img.naturalWidth/img.naturalHeight*(.65+.35*Math.abs(Math.cos(a)));ctx.drawImage(img,-ww/2,-hh/2,ww,hh);ctx.restore();continue;}}
  const g=ctx.createLinearGradient(-width,-height,width,height);g.addColorStop(0,'rgba(219,250,255,.82)');g.addColorStop(.35,'rgba(77,160,218,.35)');g.addColorStop(.55,'rgba(186,239,255,.54)');g.addColorStop(1,'rgba(39,93,152,.68)');
  ctx.beginPath();ctx.moveTo(0,-height);ctx.lineTo(width,-height*.52);ctx.lineTo(width*.8,height*.47);ctx.lineTo(0,height);ctx.lineTo(-width*.8,height*.47);ctx.lineTo(-width,-height*.52);ctx.closePath();ctx.fillStyle=g;ctx.fill();ctx.strokeStyle=glow>.2?'#efffff':'#8adcf6';ctx.lineWidth=2.1+glow*2;ctx.stroke();ctx.shadowBlur=0;
  ctx.strokeStyle='rgba(236,253,255,.8)';ctx.lineWidth=1.7;ctx.beginPath();ctx.moveTo(-width*.7,-height*.44);ctx.lineTo(0,-height*.8);ctx.lineTo(width*.6,-height*.48);ctx.stroke();

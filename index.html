@@ -444,7 +444,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script src="modules/elements/environment.js?v=20261126-metal-traps"></script>
 <script src="modules/day-night/engine.js?v=20261127-30s"></script>
-<script src="modules/towers/upgrades.js?v=20261127-sentinel"></script>
+<script src="modules/towers/upgrades.js?v=20261127-formation"></script>
 <script>
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
@@ -514,7 +514,7 @@ let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentC
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json?v=20261127-sentinel',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
+  fetch('towers.json?v=20261127-formation',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('progression.json?v=20261127-equipment',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
@@ -862,7 +862,7 @@ function deployCooldown(m,side){cooldowns[side>0?'ally':'enemy'][m.id]=Math.max(
 
 function stage(){return currentStage||stages[0]}function mods(m){const s=stage();return s&&window.MonstersClashEnvironment?.matchesElement(m)?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
 function spawn(m,side,rank='normal'){if(!m||!canSummon(m,side))return false;if(side<0)markEncounter(m.id,rank);if(side===1&&!team.includes(m.id))return false;deployCooldown(m,side);if(side===1)soundEffect('summon');
-const cfg=progression.defence,b=mods(m),scale=side>0?allyScale():rank==='boss'?cfg.boss_hp*(1+(run.battle-1)*cfg.boss_growth):rank==='elite'?enemyScale()*cfg.elite_hp:enemyScale(),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*scale,spawnX=side>0?198:925;
+const cfg=progression.defence,b=mods(m),scale=side>0?allyScale():rank==='boss'?cfg.boss_hp*(1+(run.battle-1)*cfg.boss_growth):rank==='elite'?enemyScale()*cfg.elite_hp:enemyScale(),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*scale,spawnX=side>0?263:925;
 // Deploy just beyond the visible tower art (not behind or inside the castle).
 // Prefer a clear depth lane and shift *toward the battlefield* when occupied.
 const groundRows=[343,363,385,407,429];
@@ -890,7 +890,8 @@ function activateShield(u){
 }
 function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
 // Tower collision is separate from the visual center of the castle.
-const TOWER_APPROACH={ally:170};
+const TOWER_APPROACH={ally:235};
+const towerLayout={x:145,ground:402,hpY:180,shieldY:310,generatorX:44,generatorHeight:108,droneX:250,droneSpacing:58,droneY:190};
 const TOWER_LANES=[350,373,396,419,441];
 function towerSlotFor(u){
  const same=state.units.filter(a=>a.hp>0&&a.side===u.side&&a.assaultTower).sort((a,b)=>a.uid-b.uid);
@@ -927,7 +928,7 @@ function performCharge(u,dt){
   if(delta>0&&distance>0){
    u.x+=dx/distance*delta;
    u.y+=dy/distance*delta;
-   u.x=Math.max(171,Math.min(925,u.x));u.y=Math.max(343,Math.min(429,u.y));
+   u.x=Math.max(TOWER_APPROACH.ally+1,Math.min(925,u.x));u.y=Math.max(343,Math.min(429,u.y));
    c.travel+=delta;
   }
   chargeEffects.push({x:u.x-u.facing*24*u.visualScale,y:u.y-20*u.visualScale,scale:u.visualScale,life:.24,maxLife:.24,side:u.side});
@@ -980,7 +981,7 @@ function separateGroundUnits(){
       const push=minimum-Math.max(dist,.001),ap=ar?0:br?push:push*.5,bp=br?0:ar?push:push*.5;
       a.x-=nx*ap;b.x+=nx*bp;
       a.y-=ny*ap/1.45;b.y+=ny*bp/1.45;
-      for(const u of [a,b]){u.x=Math.max(171,Math.min(925,u.x));u.y=Math.max(343,Math.min(429,u.y))}
+      for(const u of [a,b]){u.x=Math.max(TOWER_APPROACH.ally+1,Math.min(925,u.x));u.y=Math.max(343,Math.min(429,u.y))}
     }
   }
 }
@@ -989,27 +990,27 @@ function stepTowerDefense(dt){
  if(!attack||state.allyBase<=0)return;
  towerCooldowns.ally=Math.max(0,towerCooldowns.ally-dt);
  const {range,damage}=attack;
- const foes=state.units.filter(u=>u.hp>0&&u.side<0&&Math.hypot(u.x-51,(u.y-335)*.6)<=range).sort((a,b)=>a.x-b.x);
+ const foes=state.units.filter(u=>u.hp>0&&u.side<0&&Math.hypot(u.x-(towerLayout.x-29),(u.y-335)*.6)<=range).sort((a,b)=>a.x-b.x);
  if(foes.length&&towerCooldowns.ally<=0){
  if(attack.type==='electric_pulse'){
   for(const u of foes){dmg(u,damage);if(attack.stun>0){u.environmentStatus=u.environmentStatus||{slowTime:0,slowPct:0,freezeTime:0};u.environmentStatus.staggerTime=Math.max(u.environmentStatus.staggerTime||0,attack.stun);}}
-  towerProjectiles.push({type:'electric_pulse',x:77,y:268,age:0,duration:.6,range,width:attack.waveWidth});
+  towerProjectiles.push({type:'electric_pulse',x:towerLayout.x-3,y:268,age:0,duration:.6,range,width:attack.waveWidth});
  }else{
- const count=attack.arrows;for(let i=0;i<Math.min(count,foes.length);i++){const target=foes[i];dmg(target,damage);towerProjectiles.push({type:'arrow',x:79,y:255,tx:target.x,ty:target.y-34,age:0,duration:.45});}
+ const count=attack.arrows;for(let i=0;i<Math.min(count,foes.length);i++){const target=foes[i];dmg(target,damage);towerProjectiles.push({type:'arrow',x:towerLayout.x-1,y:255,tx:target.x,ty:target.y-34,age:0,duration:.45});}
  }
  towerCooldowns.ally=attack.interval;
  }
  const dc=equipmentConfig;
  for(let i=0;i<run.drones;i++){
  state.droneTimers[i]=Math.max(0,(state.droneTimers[i]||0)-dt);
- const x=120+i*50+Math.sin(state.time*1.6+i)*12,y=180+Math.sin(state.time*2+i)*9;
+ const x=towerLayout.droneX+i*towerLayout.droneSpacing+Math.sin(state.time*1.6+i)*7,y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*7;
  const target=state.units.filter(u=>u.hp>0&&u.side<0&&Math.abs(u.x-x)<=dc.drone_range).sort((a,b)=>a.x-b.x)[0];
  if(target&&state.droneTimers[i]<=0){dmg(target,attack.droneDamage);towerProjectiles.push({type:'arrow',drone:true,x,y,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=dc.drone_interval;}
  }
 }
 function step(dt){
  if(state.ended){if(state.victory){state.breakLeft=Math.max(0,state.breakLeft-dt);if(state.breakLeft<=0)nextBattle();}return;}
- state.time+=dt;if(run.generatorLevel>0&&state.allyBase>0){run.generatorElapsed+=dt;while(run.generatorElapsed>=equipmentConfig.generator_interval){run.generatorElapsed-=equipmentConfig.generator_interval;const coins=run.generatorLevel*equipmentConfig.generator_income;run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.earnings.push({x:35,y:350,value:coins,life:1.35});refreshCoinDisplays();}}state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig);
+ state.time+=dt;if(run.generatorLevel>0&&state.allyBase>0){run.generatorElapsed+=dt;while(run.generatorElapsed>=equipmentConfig.generator_interval){run.generatorElapsed-=equipmentConfig.generator_interval;const coins=run.generatorLevel*equipmentConfig.generator_income;run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.earnings.push({x:towerLayout.generatorX,y:towerLayout.ground-towerLayout.generatorHeight-5,value:coins,life:1.35});refreshCoinDisplays();}}state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig);
  window.MonstersClashDayNight?.update(dt);
  window.MonstersClashDayNight?.updateLabel($('day-night-label'));
  window.MonstersClashEnvironment?.update(dt,state.units,dmg);
@@ -1067,7 +1068,7 @@ function step(dt){
      u.y+=dy*1.45/distance*travel/1.45;
    }
    // The towers occupy protected zones, never enter their physical footprints.
-   u.x=Math.max(171,Math.min(925,u.x));
+   u.x=Math.max(TOWER_APPROACH.ally+1,Math.min(925,u.x));
    u.y=Math.max(343,Math.min(429,u.y));
   }else if(u.atk<=0&&(target||slot.rank===0)){
    const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?(u.rank==='elite'?enemyScale()*progression.defence.elite_attack:Math.min(u.scale,enemyScale()*1.8)):allyScale());
@@ -1096,7 +1097,7 @@ function step(dt){
 }
 function drawTower(side,x,hp){
  const img=towerImages[side],maxHp=towerConfigs.ally?.max_hp||1900,frame=towerDamageFrame(hp,maxHp);
- const y=side==='ally'?236:236;
+ const y=towerLayout.ground-182+16;
  if(readyImage(img)){
    const width=154,height=182;
    // Sprite art occupies a consistent cell; leave room for banners and rubble.
@@ -1200,11 +1201,11 @@ function draw(){
  else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(-viewOffsetX,-viewOffsetY,cv.width,cv.height);ctx.fillStyle=colors[2];ctx.fillRect(-viewOffsetX,ground,cv.width,Math.max(0,cv.height-ground));ctx.fillStyle='#446b48';ctx.fillRect(-viewOffsetX,ground,cv.width,5)}
  window.MonstersClashDayNight?.render(ctx,-viewOffsetX,-viewOffsetY,cv.width,cv.height);
  window.MonstersClashEnvironment?.render(ctx,'background');
- TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,80,310,false);
- drawTower('ally',80,state.allyBase);
- if(run.generatorLevel>0&&readyImage(generatorImage)){const hh=72,ww=hh*generatorImage.naturalWidth/generatorImage.naturalHeight;ctx.save();ctx.shadowColor='#55ceff';ctx.shadowBlur=3+run.generatorLevel*1.1+Math.sin(state.time*3)*2;ctx.drawImage(generatorImage,35-ww/2,445-hh,ww,hh);ctx.restore();}
- TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,80,310,true);
- for(let i=0;i<run.drones;i++){const x=120+i*50+Math.sin(state.time*1.6+i)*12,y=180+Math.sin(state.time*2+i)*9;ctx.save();ctx.translate(x,y);if(readyImage(droneImage)){spriteFrame(droneImage,0,-36,-36,72,72,equipmentConfig.drone_sheet_columns,1);ctx.restore();continue;}ctx.fillStyle='#627e91';ctx.fillRect(-22,-3,44,7);ctx.fillStyle='#a8bdca';ctx.beginPath();ctx.ellipse(0,0,15,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ce9ff';ctx.fillRect(-4,-3,8,6);ctx.restore();}
+ TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,false);
+ if(run.generatorLevel>0&&readyImage(generatorImage)){const hh=towerLayout.generatorHeight,ww=Math.min(88,hh*generatorImage.naturalWidth/generatorImage.naturalHeight);ctx.save();ctx.shadowColor='#55ceff';ctx.shadowBlur=3+run.generatorLevel*1.1+Math.sin(state.time*3)*2;ctx.drawImage(generatorImage,towerLayout.generatorX-ww/2,towerLayout.ground-hh,ww,hh);ctx.restore();}
+ drawTower('ally',towerLayout.x,state.allyBase);
+ TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,true);
+ for(let i=0;i<run.drones;i++){const x=towerLayout.droneX+i*towerLayout.droneSpacing+Math.sin(state.time*1.6+i)*7,y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*7;ctx.save();ctx.translate(x,y);if(readyImage(droneImage)){spriteFrame(droneImage,0,-30,-30,60,60,equipmentConfig.drone_sheet_columns,1);ctx.restore();continue;}ctx.fillStyle='#627e91';ctx.fillRect(-22,-3,44,7);ctx.fillStyle='#a8bdca';ctx.beginPath();ctx.ellipse(0,0,15,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ce9ff';ctx.fillRect(-4,-3,8,6);ctx.restore();}
  drawTowerAttacks();
  for(const fx of chargeEffects){
   const fade=Math.max(0,fx.life/fx.maxLife);
@@ -1254,7 +1255,7 @@ function draw(){
    if(ranked){ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#101722';ctx.strokeText(u.rank.toUpperCase(),u.x,barY-25);ctx.fillStyle=edge;ctx.fillText(u.rank.toUpperCase(),u.x,barY-25);}
    ctx.restore();window.MonstersClashEnvironment?.renderIndicators(ctx,u,barY);
  }
- TowerUpgrades.renderHealth(ctx,80,190,state.allyBase,towerConfigs.ally?.max_hp||1900,state.towerShield,hpBarImage);
+ TowerUpgrades.renderHealth(ctx,towerLayout.x,towerLayout.hpY,state.allyBase,towerConfigs.ally?.max_hp||1900,state.towerShield,hpBarImage);
  for(const f of state.earnings){ctx.save();ctx.globalAlpha=Math.min(1,f.life/.35);ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#132131';const y=f.y-(1.35-f.life)*24;ctx.strokeText('+'+f.value+' BC',f.x,y);ctx.fillStyle='#a5e4ff';ctx.fillText('+'+f.value+' BC',f.x,y);ctx.restore();}
 
  if(state.ended){ctx.fillStyle='#06152578';ctx.fillRect(0,0,W,H)}
