@@ -51,8 +51,10 @@
       "sheet_rows": 1,
       "unlock_cost": 500,
       "series": "Arcane",
-      "description": "Arcane fortress with expanding energy wave attacks.",
-      "ability": "Energy Wave"
+      "description": "Area energy pulses and crowd control.",
+      "ability": "Energy Wave",
+      "available": false,
+      "planned_skill": "Arcane Storm — three energy waves with brief stun; proposed attack level 3, 30s cooldown."
     }
   ],
   "default_shield": "s001",
@@ -72,6 +74,22 @@
       "series": "Sentinel",
       "ability": "Mirror Barrier",
       "sprite": "assets/shields/s001/sentinel-shield.png"
+    },
+    {
+      "id": "s002",
+      "name": "Arcane Shield",
+      "series": "Arcane",
+      "available": false,
+      "type": "energy",
+      "description": "Orbiting magical energy plates protect the tower.",
+      "ability": "Energy Absorption",
+      "planned_skill": "Energy Burst — proposed area damage on total shield depletion.",
+      "unlock_cost": null,
+      "upgrade_cost": 75,
+      "hp_per_level": 140,
+      "plate_min": 3,
+      "plate_max": 6,
+      "orbit_speed": 0.85
     }
   ],
   "drones": [
@@ -91,6 +109,23 @@
       "series": "Sentinel",
       "ability": "Sentry Fire",
       "projectile_sprite": "assets/weapons/w001/sentinel-arrow.png"
+    },
+    {
+      "id": "d002",
+      "name": "Arcane Drone",
+      "series": "Arcane",
+      "available": false,
+      "type": "chain_lightning",
+      "description": "Floating magical support unit with proposed multi-target attacks.",
+      "ability": "Chain Lightning",
+      "planned_skill": "Chains to two additional nearby enemies with reduced damage per bounce.",
+      "unlock_cost": null,
+      "deploy_cost": 100,
+      "max_active": 3,
+      "damage": 10,
+      "interval_seconds": 2.4,
+      "range": 300,
+      "sheet_columns": 4
     }
   ],
   "default_generator": "g001",
@@ -106,6 +141,19 @@
       "upgrade_cost": 100,
       "income_per_level": 5,
       "interval_seconds": 10,
+      "max_level": 10
+    },
+    {
+      "id": "g002",
+      "name": "Arcane Generator",
+      "series": "Arcane",
+      "available": false,
+      "description": "Produces larger batches of Battle Coins at longer intervals.",
+      "ability": "Coin Production",
+      "unlock_cost": null,
+      "upgrade_cost": 120,
+      "income_per_level": 8,
+      "interval_seconds": 15,
       "max_level": 10
     }
   ]
