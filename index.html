@@ -517,9 +517,9 @@ async function loadGameCatalog(){
   fetch('towers.json?v=20261127-arcane-preview',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch('progression.json?v=20261127-equipment',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
+  fetch('progression.json?v=20261127-rank-pct',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
  ]);
- if(progress?.team&&progress?.coins&&progress?.defence)progression=progress;
+ if(!progress?.team||!progress?.coins||!progress?.defence||!progress?.rank_bonus_pct||!progress?.round_growth_pct)throw Error('Progression configuration incomplete. Reload the page.');progression=progress;
  towerRegistry=towers;
  if(!TowerUpgrades?.selectEquipment)throw Error('Tower upgrade engine is outdated. Reload the page.');
  if(!towerRegistry?.towers?.length||!towerRegistry?.shields?.length||!towerRegistry?.drones?.length||!towerRegistry?.generators?.length)throw Error('Equipment catalog missing or incomplete. Reload the page.');
@@ -611,8 +611,8 @@ function restartRun(){
 function endRun(){
  run.active=false;openView('home');
 }
-function enemyScale(){return 1+Math.max(0,run.battle-1)*(progression.defence.enemy_growth||.18)}
-function allyScale(){return 1+Math.max(0,run.battle-1)*(progression.defence.ally_growth||.12)}
+function enemyScale(){return 1+Math.max(0,run.battle-1)*progression.round_growth_pct.enemy/100}
+function allyScale(){return 1+Math.max(0,run.battle-1)*progression.round_growth_pct.ally/100}
 function showResult(){
  const victory=state.victory;
  $('run-results').hidden=false;
@@ -628,7 +628,7 @@ function showResult(){
  $('next-battle').hidden=!victory;
  $('restart-run-result').hidden=victory;
 }
-let progression={defence:{"first_count":5,"count_per_round":2,"max_count":45,"initial_spawn_seconds":5,"min_spawn_seconds":0.8,"spawn_acceleration":0.25,"enemy_growth":0.18,"ally_growth":0.12,"elite_hp":1.5,"boss_hp":1,"boss_growth":1.1111111111111112,"boss_every":5,"round_break_seconds":4,"attack_cost":75,"max_upgrade":10,"monster_unlock_cost":250,"elite_attack":1.5,"elite_sprite_scale":2,"tower_range_cap":425,"boss_sprite_scale":2.15},team:{starting_slots:8,max_slots:12,slot_unlock_costs:[250,500,900,1400]},coins:{"kill_base":10,"elite_multiplier":3,"boss_multiplier":6,"round_clear_battle_base":40,"round_clear_battle_growth":5,"round_clear_menu_base":25,"round_clear_menu_growth":5}};
+let progression={"schema_version":"1.0.0","team":{"starting_slots":8,"max_slots":12,"slot_unlock_costs":[250,500,900,1400]},"coins":{"kill_base":10,"elite_multiplier":3,"boss_multiplier":6,"round_clear_battle_base":40,"round_clear_battle_growth":5,"round_clear_menu_base":25,"round_clear_menu_growth":5},"defence":{"first_count":5,"count_per_round":2,"max_count":45,"initial_spawn_seconds":5,"min_spawn_seconds":0.8,"spawn_acceleration":0.25,"boss_every":5,"round_break_seconds":4,"attack_cost":75,"max_upgrade":10,"monster_unlock_cost":250,"elite_sprite_scale":2,"tower_range_cap":425,"boss_sprite_scale":2.15},"rank_bonus_pct":{"normal":{"hp":0,"damage":0,"skill_power":0},"elite":{"hp":50,"damage":50,"skill_power":50},"boss":{"hp":200,"damage":100,"skill_power":100}},"round_growth_pct":{"ally":12,"enemy":18}};
 function storeProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile))}catch(e){}}
 function loadProfile(defaults){
  let saved=null;
@@ -862,14 +862,14 @@ function deployCooldown(m,side){cooldowns[side>0?'ally':'enemy'][m.id]=Math.max(
 
 function stage(){return currentStage||stages[0]}function mods(m){const s=stage();return s&&window.MonstersClashEnvironment?.matchesElement(m)?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
 function spawn(m,side,rank='normal'){if(!m||!canSummon(m,side))return false;if(side<0)markEncounter(m.id,rank);if(side===1&&!team.includes(m.id))return false;deployCooldown(m,side);if(side===1)soundEffect('summon');
-const cfg=progression.defence,b=mods(m),scale=side>0?allyScale():rank==='boss'?cfg.boss_hp*(1+(run.battle-1)*cfg.boss_growth):rank==='elite'?enemyScale()*cfg.elite_hp:enemyScale(),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*scale,spawnX=side>0?263:925;
+const cfg=progression.defence,b=mods(m),bonus=progression.rank_bonus_pct[side>0||specialBosses.includes(m)?'normal':rank]||progression.rank_bonus_pct.normal,roundScale=side>0?allyScale():enemyScale(),scale=roundScale*(1+bonus.hp/100),damageScale=roundScale*(1+bonus.damage/100),skillScale=roundScale*(1+bonus.skill_power/100),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*scale,spawnX=side>0?263:925;
 // Deploy just beyond the visible tower art (not behind or inside the castle).
 // Prefer a clear depth lane and shift *toward the battlefield* when occupied.
 const groundRows=[343,363,385,407,429];
 const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(best,Math.hypot((u.x-spawnX)*.8,(u.y-y)*1.4)),Infinity)})).sort((a,b)=>b.clearance-a.clearance)[0];
 const forward=side>0?1:-1;
 const x=spawnX+forward*Math.min(54,Math.max(0,54-row.clearance));
-state.units.push({m,side,rank,scale,visualScale:rank==='boss'?cfg.boss_sprite_scale:rank==='elite'?cfg.elite_sprite_scale:1,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,shieldTime:0,shieldImpact:0,shieldStart:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});return true}
+state.units.push({m,side,rank,scale,damageScale,skillScale,visualScale:rank==='boss'?cfg.boss_sprite_scale:rank==='elite'?cfg.elite_sprite_scale:1,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,shieldTime:0,shieldImpact:0,shieldStart:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});return true}
 function dmg(u,amount){
  const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;
  if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;
@@ -881,7 +881,7 @@ function dmg(u,amount){
 }
 function activateShield(u){
  const effect=u.m.skill?.effect;if(effect?.type!=='shield_self')return;
- u.shield=Math.max(u.shield,(Number(effect.amount)||0)*(u.side>0?allyScale():Math.min(u.scale,enemyScale()*1.8)));
+ u.shield=Math.max(u.shield,(Number(effect.amount)||0)*u.skillScale);
  u.shieldTime=Math.max(0,Number(effect.duration_seconds)||0);
  u.shieldStart=.32;u.shieldImpact=0;
  u.anim={type:'skill',duration:.55,remaining:.55};
@@ -936,7 +936,7 @@ function performCharge(u,dt){
   if(reached){
    if(!c.hit){
     const damage=Number(u.m.skill.effect.damage)||0;
-    const power=damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?(u.rank==='elite'?enemyScale()*progression.defence.elite_attack:Math.min(u.scale,enemyScale()*1.8)):allyScale());
+    const power=damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*u.skillScale;
     let landed=false;
     if(c.target&&c.target.hp>0&&unitDistance(u,c.target)<u.radius+c.target.radius+18){
      dmg(c.target,power);landed=true;
@@ -1071,7 +1071,7 @@ function step(dt){
    u.x=Math.max(TOWER_APPROACH.ally+1,Math.min(925,u.x));
    u.y=Math.max(343,Math.min(429,u.y));
   }else if(u.atk<=0&&(target||slot.rank===0)){
-   const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*(u.side<0?(u.rank==='elite'?enemyScale()*progression.defence.elite_attack:Math.min(u.scale,enemyScale()*1.8)):allyScale());
+   const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*u.damageScale;
    if(target)dmg(target,amount);else hitTower(u.side,amount);
    if(u.side===1)soundEffect(target?'attack':'tower_hit');
    u.atk=u.m.attack.interval_seconds;
@@ -1357,9 +1357,8 @@ function showMonsterProfile(id,fromRoute=false,rank='normal'){
   const cfg=progression.defence;
   // Rank-only values: evaluate existing combat scaling at round one, without map modifiers.
   // Standalone bosses retain their authored base statistics.
-  const hpFactor=special?1:rank==='elite'?cfg.elite_hp:rank==='boss'?cfg.boss_hp:1;
-  const attackFactor=special?1:rank==='elite'?cfg.elite_attack:rank==='boss'?Math.min(cfg.boss_hp,1.8):1;
-  const shieldFactor=special?1:Math.min(hpFactor,1.8);
+  const bonus=progression.rank_bonus_pct[special?'normal':rank]||progression.rank_bonus_pct.normal;
+  const hpFactor=1+bonus.hp/100,attackFactor=1+bonus.damage/100,shieldFactor=1+bonus.skill_power/100;
   const heading=document.createElement('h3');heading.textContent='Base Statistics';details.append(heading);
   const stats=document.createElement('div');stats.className='profile-stats';
   for(const [label,value] of [['HP',monster.stats?.hp==null?null:Math.round(monster.stats.hp*hpFactor*100)/100],['Attack Damage',monster.attack?.base_damage==null?null:Math.round(monster.attack.base_damage*attackFactor*100)/100],['STR',monster.stats?.str],['AGI',monster.stats?.agi],['INT',monster.stats?.int],['VIT',monster.stats?.vit],['DEF',monster.stats?.def],['RES',monster.stats?.res],['Move Speed',monster.stats?.move_speed]]){
@@ -1369,10 +1368,10 @@ function showMonsterProfile(id,fromRoute=false,rank='normal'){
    const name=document.createElement('small');name.textContent=label;stat.append(number,name);stats.append(stat);
   }
   details.append(stats);
-  if(rank!=='normal'){const note=document.createElement('p');note.textContent=(special?'Special boss: authored base statistics.':'Rank-only HP ×'+hpFactor+' · Attack ×'+attackFactor+'. Other attributes remain unchanged unless the combat engine scales them.')+' Round progression and environmental bonuses are excluded.'+(rank==='boss'&&!special&&hpFactor===1?' Current boss difficulty comes from additional round-based scaling.':'');details.append(note);}
+  if(rank!=='normal'){const note=document.createElement('p');note.textContent=(special?'Special boss: authored base statistics.':'Rank bonuses: HP +'+bonus.hp+'% · Attack +'+bonus.damage+'% · Skill power +'+bonus.skill_power+'%. Other attributes remain unchanged.')+' Round progression and environmental bonuses are excluded.';details.append(note);}
   const attack=document.createElement('p');attack.textContent='Attack: '+(monster.attack?.type||'Unknown')+' · '+(monster.attack?.base_damage==null?'—':Math.round(monster.attack.base_damage*attackFactor*100)/100)+' damage · Range '+(monster.attack?.range??'—')+' · '+(monster.attack?.interval_seconds??'—')+'s interval';
   const skill=document.createElement('p');skill.textContent='Skill: '+String(monster.skill?.id||'Unknown').replaceAll('_',' ')+' · '+(monster.skill?.cooldown_seconds??'—')+'s cooldown';
-  const effect=monster.skill?.effect;if(effect?.damage!=null)skill.textContent+=' · '+Math.round(effect.damage*attackFactor*100)/100+' damage';if(effect?.type==='shield_self'&&effect.amount!=null)skill.textContent+=' · '+Math.round(effect.amount*shieldFactor*100)/100+' shield HP';details.append(attack,skill);
+  const effect=monster.skill?.effect;if(effect?.damage!=null)skill.textContent+=' · '+Math.round(effect.damage*shieldFactor*100)/100+' damage';if(effect?.type==='shield_self'&&effect.amount!=null)skill.textContent+=' · '+Math.round(effect.amount*shieldFactor*100)/100+' shield HP';details.append(attack,skill);
  }
  // The in-game screen is authoritative. URL linking must never block navigation.
  openView('monster-profile',true);

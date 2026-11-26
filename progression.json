@@ -26,19 +26,34 @@
     "initial_spawn_seconds": 5,
     "min_spawn_seconds": 0.8,
     "spawn_acceleration": 0.25,
-    "enemy_growth": 0.18,
-    "ally_growth": 0.12,
-    "elite_hp": 1.5,
-    "boss_hp": 1,
-    "boss_growth": 1.1111111111111112,
     "boss_every": 5,
     "round_break_seconds": 4,
     "attack_cost": 75,
     "max_upgrade": 10,
     "monster_unlock_cost": 250,
-    "elite_attack": 1.5,
     "elite_sprite_scale": 2,
     "tower_range_cap": 425,
     "boss_sprite_scale": 2.15
+  },
+  "rank_bonus_pct": {
+    "normal": {
+      "hp": 0,
+      "damage": 0,
+      "skill_power": 0
+    },
+    "elite": {
+      "hp": 50,
+      "damage": 50,
+      "skill_power": 50
+    },
+    "boss": {
+      "hp": 200,
+      "damage": 100,
+      "skill_power": 100
+    }
+  },
+  "round_growth_pct": {
+    "ally": 12,
+    "enemy": 18
   }
 }
