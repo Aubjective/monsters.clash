@@ -302,7 +302,11 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .equipment-card{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#172d43;border:1px solid #3a5871;border-radius:12px;padding:12px;min-width:0}
 .equipment-card.equipped{border-color:#d7b66d}.equipment-art{width:76px;height:76px;flex:none;background-repeat:no-repeat;background-position:left center;background-size:400% 100%;border-radius:6px;display:grid;place-items:center;font-size:38px}.equipment-copy{flex:1;min-width:90px}.equipment-copy strong,.equipment-copy small{display:block}.equipment-copy small{color:#b1c8de;margin-top:5px}.equipment-card button{width:100%;font-size:12px}
 @media(max-height:500px){.equipment-card{padding:7px}.equipment-art{width:55px;height:55px}.equipment-tabs{margin:6px 0}}
-.rank-elite{filter:sepia(.45) saturate(1.65) hue-rotate(345deg) brightness(1.12)}.rank-boss{filter:grayscale(.72) sepia(.65) hue-rotate(215deg) saturate(2.5) brightness(.92)}
+.rank-elite{animation:rank-elite-palette 5s linear infinite}
+@keyframes rank-elite-palette{0%{filter:sepia(0) hue-rotate(0deg) saturate(1) brightness(1)}28.000000000000004%{filter:sepia(0.65) hue-rotate(-25deg) saturate(1.8) brightness(1.08)}60%{filter:sepia(1) hue-rotate(-45deg) saturate(3.1) brightness(0.95)}100%{filter:sepia(0) hue-rotate(0deg) saturate(1) brightness(1)}}
+.rank-boss{animation:rank-boss-palette 7s linear infinite}
+@keyframes rank-boss-palette{0%{filter:sepia(0) hue-rotate(0deg) saturate(1) brightness(1)}25%{filter:sepia(0.85) hue-rotate(-140deg) saturate(2.2) brightness(1.06)}50%{filter:sepia(1) hue-rotate(-125deg) saturate(3) brightness(0.87)}75%{filter:sepia(1) hue-rotate(-115deg) saturate(1.6) brightness(0.54)}100%{filter:sepia(0) hue-rotate(0deg) saturate(1) brightness(1)}}
+@media(prefers-reduced-motion:reduce){.rank-elite,.rank-boss{animation:none}.rank-elite{filter:sepia(1) hue-rotate(-45deg) saturate(3.1) brightness(0.95)}.rank-boss{filter:sepia(1) hue-rotate(-125deg) saturate(3) brightness(0.87)}}
 </style>
 </head>
 <body>
@@ -525,6 +529,16 @@ async function loadGameCatalog(){
  }
 }
 function readyImage(img){return img&&img.complete&&img.naturalWidth>0&&img.naturalHeight>0}
+const rankPalettes={"elite":{"seconds":5,"frames":[[0,0,0,1,1],[0.28,0.65,-25,1.8,1.08],[0.6,1,-45,3.1,0.95],[1,0,0,1,1]]},"boss":{"seconds":7,"frames":[[0,0,0,1,1],[0.25,0.85,-140,2.2,1.06],[0.5,1,-125,3,0.87],[0.75,1,-115,1.6,0.54],[1,0,0,1,1]]}};
+const reducedRankMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)');
+function rankFilter(rank,time){
+ const palette=rankPalettes[rank];if(!palette)return 'none';
+ const frames=palette.frames;
+ let phase=reducedRankMotion?.matches?frames[2][0]:((time%palette.seconds)+palette.seconds)%palette.seconds/palette.seconds;
+ let i=1;while(i<frames.length-1&&phase>frames[i][0])i++;
+ const a=frames[i-1],b=frames[i],p=(phase-a[0])/(b[0]-a[0]),v=k=>a[k]+(b[k]-a[k])*p;
+ return 'sepia('+v(1)+') hue-rotate('+v(2)+'deg) saturate('+v(3)+') brightness('+v(4)+')';
+}
 function spriteFrame(img,frame,x,y,w,h,columns=4,rows=4){
  const sw=img.naturalWidth/columns,sh=img.naturalHeight/rows;
  ctx.drawImage(img,(frame%columns)*sw,Math.floor(frame/columns)*sh,sw,sh,x,y,w,h);
@@ -1206,8 +1220,7 @@ function draw(){
       const frame=monsterFrame(u);
       if(u.hit>0)ctx.globalAlpha=.85;
       // Rank palette preserves source alpha and uses the original animation frames.
-      if(u.rank==='elite')ctx.filter='sepia(.45) saturate(1.65) hue-rotate(345deg) brightness(1.12)';
-      else if(u.rank==='boss')ctx.filter='grayscale(.72) sepia(.65) hue-rotate(215deg) saturate(2.5) brightness(.92)';
+      if(u.rank==='elite'||u.rank==='boss')ctx.filter=rankFilter(u.rank,state.time);
       spriteFrame(img,frame,-size/2,-size*.82,size,size);
    }else{ctx.fillStyle='#f4f3e9';ctx.fillRect(-25,-64,50,64)}
    ctx.restore();
