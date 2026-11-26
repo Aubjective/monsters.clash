@@ -1354,18 +1354,25 @@ function showMonsterProfile(id,fromRoute=false,rank='normal'){
   }
   details.append(tags);
   const p=document.createElement('p');p.textContent=monster.description||'No description available.';details.append(p);
+  const cfg=progression.defence;
+  // Rank-only values: evaluate existing combat scaling at round one, without map modifiers.
+  // Standalone bosses retain their authored base statistics.
+  const hpFactor=special?1:rank==='elite'?cfg.elite_hp:rank==='boss'?cfg.boss_hp:1;
+  const attackFactor=special?1:rank==='elite'?cfg.elite_attack:rank==='boss'?Math.min(cfg.boss_hp,1.8):1;
+  const shieldFactor=special?1:Math.min(hpFactor,1.8);
+  const heading=document.createElement('h3');heading.textContent='Base Statistics';details.append(heading);
   const stats=document.createElement('div');stats.className='profile-stats';
-  for(const [label,value] of [['HP',monster.stats?.hp],['STR',monster.stats?.str],['AGI',monster.stats?.agi],['VIT',monster.stats?.vit],['DEF',monster.stats?.def],['RES',monster.stats?.res]]){
+  for(const [label,value] of [['HP',monster.stats?.hp==null?null:Math.round(monster.stats.hp*hpFactor*100)/100],['Attack Damage',monster.attack?.base_damage==null?null:Math.round(monster.attack.base_damage*attackFactor*100)/100],['STR',monster.stats?.str],['AGI',monster.stats?.agi],['INT',monster.stats?.int],['VIT',monster.stats?.vit],['DEF',monster.stats?.def],['RES',monster.stats?.res],['Move Speed',monster.stats?.move_speed]]){
    if(value==null)continue;
    const stat=document.createElement('div');stat.className='profile-stat';
    const number=document.createElement('strong');number.textContent=String(value);
    const name=document.createElement('small');name.textContent=label;stat.append(number,name);stats.append(stat);
   }
   details.append(stats);
-  if(rank!=='normal'){const note=document.createElement('p');note.textContent=rank==='elite'?'Elite: '+Math.round(progression.defence.elite_hp*100)+'% normal round HP, '+Math.round(progression.defence.elite_attack*100)+'% normal round attack. Listed stats are the base monster stats.':special?'Special boss: listed stats are base values.':'Boss: HP and attack scale with round progression. Listed stats are the base monster stats.';details.append(note);}
-  const attack=document.createElement('p');attack.textContent='Attack: '+(monster.attack?.type||'Unknown')+' · '+(monster.attack?.base_damage??'—')+' base damage';
+  if(rank!=='normal'){const note=document.createElement('p');note.textContent=(special?'Special boss: authored base statistics.':'Rank-only HP ×'+hpFactor+' · Attack ×'+attackFactor+'. Other attributes remain unchanged unless the combat engine scales them.')+' Round progression and environmental bonuses are excluded.'+(rank==='boss'&&!special&&hpFactor===1?' Current boss difficulty comes from additional round-based scaling.':'');details.append(note);}
+  const attack=document.createElement('p');attack.textContent='Attack: '+(monster.attack?.type||'Unknown')+' · '+(monster.attack?.base_damage==null?'—':Math.round(monster.attack.base_damage*attackFactor*100)/100)+' damage · Range '+(monster.attack?.range??'—')+' · '+(monster.attack?.interval_seconds??'—')+'s interval';
   const skill=document.createElement('p');skill.textContent='Skill: '+String(monster.skill?.id||'Unknown').replaceAll('_',' ')+' · '+(monster.skill?.cooldown_seconds??'—')+'s cooldown';
-  details.append(attack,skill);
+  const effect=monster.skill?.effect;if(effect?.damage!=null)skill.textContent+=' · '+Math.round(effect.damage*attackFactor*100)/100+' damage';if(effect?.type==='shield_self'&&effect.amount!=null)skill.textContent+=' · '+Math.round(effect.amount*shieldFactor*100)/100+' shield HP';details.append(attack,skill);
  }
  // The in-game screen is authoritative. URL linking must never block navigation.
  openView('monster-profile',true);
