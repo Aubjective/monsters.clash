@@ -444,7 +444,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script src="modules/elements/environment.js?v=20261126-metal-traps"></script>
 <script src="modules/day-night/engine.js?v=20261127-30s"></script>
-<script src="modules/towers/upgrades.js?v=20261127-formation-refined"></script>
+<script src="modules/towers/upgrades.js?v=20261127-barrier-ring"></script>
 <script>
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
@@ -862,7 +862,7 @@ function deployCooldown(m,side){cooldowns[side>0?'ally':'enemy'][m.id]=Math.max(
 
 function stage(){return currentStage||stages[0]}function mods(m){const s=stage();return s&&window.MonstersClashEnvironment?.matchesElement(m)?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
 function spawn(m,side,rank='normal'){if(!m||!canSummon(m,side))return false;if(side<0)markEncounter(m.id,rank);if(side===1&&!team.includes(m.id))return false;deployCooldown(m,side);if(side===1)soundEffect('summon');
-const cfg=progression.defence,b=mods(m),bonus=progression.rank_bonus_pct[side>0||specialBosses.includes(m)?'normal':rank]||progression.rank_bonus_pct.normal,roundScale=side>0?allyScale():enemyScale(),scale=roundScale*(1+bonus.hp/100),damageScale=roundScale*(1+bonus.damage/100),skillScale=roundScale*(1+bonus.skill_power/100),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*scale,spawnX=side>0?263:925;
+const cfg=progression.defence,b=mods(m),bonus=progression.rank_bonus_pct[side>0||specialBosses.includes(m)?'normal':rank]||progression.rank_bonus_pct.normal,roundScale=side>0?allyScale():enemyScale(),scale=roundScale*(1+bonus.hp/100),damageScale=roundScale*(1+bonus.damage/100),skillScale=roundScale*(1+bonus.skill_power/100),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*scale,spawnX=side>0?TOWER_APPROACH.ally+28:925;
 // Deploy just beyond the visible tower art (not behind or inside the castle).
 // Prefer a clear depth lane and shift *toward the battlefield* when occupied.
 const groundRows=[343,363,385,407,429];
@@ -890,8 +890,8 @@ function activateShield(u){
 }
 function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
 // Tower collision is separate from the visual center of the castle.
-const TOWER_APPROACH={ally:235};
-const towerLayout={x:156,ground:402,height:160,width:136,hpY:213,shieldY:331,generatorX:65,generatorHeight:130,droneX:270,droneSpacing:64,droneY:190};
+const TOWER_APPROACH={ally:309};
+const towerLayout={x:230,ground:402,height:160,width:136,hpY:213,shieldY:331,generatorX:65,generatorHeight:130,droneX:344,droneSpacing:64,droneY:190};
 const TOWER_LANES=[350,373,396,419,441];
 function towerSlotFor(u){
  const same=state.units.filter(a=>a.hp>0&&a.side===u.side&&a.assaultTower).sort((a,b)=>a.uid-b.uid);
@@ -990,7 +990,7 @@ function stepTowerDefense(dt){
  if(!attack||state.allyBase<=0)return;
  towerCooldowns.ally=Math.max(0,towerCooldowns.ally-dt);
  const {range,damage}=attack;
- const foes=state.units.filter(u=>u.hp>0&&u.side<0&&Math.hypot(u.x-116,(u.y-335)*.6)<=range).sort((a,b)=>a.x-b.x);
+ const foes=state.units.filter(u=>u.hp>0&&u.side<0&&Math.hypot(u.x-(towerLayout.x-40),(u.y-335)*.6)<=range).sort((a,b)=>a.x-b.x);
  if(foes.length&&towerCooldowns.ally<=0){
  if(attack.type==='electric_pulse'){
   for(const u of foes){dmg(u,damage);if(attack.stun>0){u.environmentStatus=u.environmentStatus||{slowTime:0,slowPct:0,freezeTime:0};u.environmentStatus.staggerTime=Math.max(u.environmentStatus.staggerTime||0,attack.stun);}}

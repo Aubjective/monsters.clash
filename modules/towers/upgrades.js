@@ -35,13 +35,26 @@ function absorb(shield,damage){const used=Math.min(shield.hp,Math.max(0,damage))
 const shieldImages=new Map();
 function renderShield(ctx,s,level,cfg,x,y,front){
  if(!s)return;
- const rx=70,ry=45,flash=s.flash/.35;
+ const rx=76,ry=48,orbitY=ry*.67,flash=Math.max(0,Math.min(1,s.flash/.35));
  if(s.hp>0){
  const ratio=s.hp/Math.max(1,s.max),max=Math.min(cfg.shield_plate_max||6,(cfg.shield_plate_min||3)+Math.floor(Math.max(0,level-1)/3)),count=Math.max(1,Math.ceil(max*(.55+.45*ratio)));
+ // Render the rear and front halves on their corresponding sides of the tower.
+ ctx.save();
+ const intensity=(.18+.035*level)*(.6+.4*ratio);
+ ctx.globalAlpha=Math.min(.85,intensity*(front?1:.65)+flash*.30);
+ ctx.strokeStyle=flash>.2?'#dcfbff':'#64d9ff';
+ ctx.shadowColor='#38cfff';ctx.shadowBlur=5+level*.65+flash*12;
+ ctx.lineWidth=1.6+level*.12+flash*1.5;
+ ctx.beginPath();ctx.ellipse(x,y,rx,orbitY,0,front?0:Math.PI,front?Math.PI:Math.PI*2);ctx.stroke();
+ // Secondary fine energy line, kept transparent to preserve the tower silhouette.
+ ctx.globalAlpha*=.55;ctx.lineWidth=.8;ctx.shadowBlur=2;
+ ctx.beginPath();ctx.ellipse(x,y,rx+4,orbitY+3,0,front?0:Math.PI,front?Math.PI:Math.PI*2);ctx.stroke();
+ if(flash>0){const expand=(1-flash)*12;ctx.globalAlpha=flash*.65;ctx.strokeStyle='#d7faff';ctx.lineWidth=2;ctx.shadowBlur=10;ctx.beginPath();ctx.ellipse(x,y,rx+expand,orbitY+expand*.45,0,front?0:Math.PI,front?Math.PI:Math.PI*2);ctx.stroke();}
+ ctx.restore();
  for(let i=0;i<count;i++){
  const a=s.phase+i*Math.PI*2/count,depth=Math.sin(a);if((depth>=0)!==front)continue;
- const px=x+Math.cos(a)*rx,py=y+depth*ry*.67;
- const depthScale=.92+.08*depth,width=17*depthScale,height=21*depthScale;
+ const px=x+Math.cos(a)*rx,py=y+depth*orbitY;
+ const depthScale=.92+.08*depth,width=19.4*depthScale,height=24*depthScale;
  const glow=Math.max(0,flash*Math.cos(a-s.hitAngle));
  ctx.save();ctx.translate(px,py);
  ctx.globalAlpha=(front?.98:.70)*(.8+.2*ratio);ctx.shadowColor='#72dfff';ctx.shadowBlur=6+level*.9+glow*18;
