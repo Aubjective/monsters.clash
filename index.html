@@ -378,7 +378,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <div class="page-head"><div><div class="eyebrow">Permanent Equipment</div><h2>Upgrades</h2></div><span class="coin-wallet"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> Gold <span id="upgrade-wallet">0</span></span></div>
   <p class="page-sub">Unlock equipment with Gold and choose your loadout before battle. Use Battle Coins during a run to upgrade your equipped tower and shield, or deploy your equipped drone.</p>
   <nav class="equipment-tabs" aria-label="Equipment categories">
-   <button type="button" data-equipment="towers" aria-pressed="true">Towers</button><button type="button" data-equipment="shields" aria-pressed="false">Shields</button><button type="button" data-equipment="drones" aria-pressed="false">Drones</button>
+   <button type="button" data-equipment="towers" aria-pressed="true">Towers</button><button type="button" data-equipment="shields" aria-pressed="false">Shields</button><button type="button" data-equipment="drones" aria-pressed="false">Drones</button><button type="button" data-equipment="generators" aria-pressed="false">Generators</button>
   </nav>
   <div id="equipment-loadout" class="equipment-loadout"></div>
   <div id="equipment-list" class="app-grid"></div>
@@ -428,7 +428,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  </div>
  <div class="battle-bottom">
   <div class="cards" id="cards"></div>
-  <div id="battle-upgrades"><span id="tower-shield-label"></span><button id="upgrade-attack">Attack</button><button id="upgrade-shield">Shield</button><button id="upgrade-drone">Drones</button></div><div class="battle-stats"><strong id="unit-count"></strong><button id="restart" hidden>Restart Run</button><span id="status"></span></div>
+  <div id="battle-upgrades"><span id="tower-shield-label"></span><button id="upgrade-attack">Attack</button><button id="upgrade-shield">Shield</button><button id="upgrade-drone">Drones</button><button id="upgrade-generator">Generator</button></div><div class="battle-stats"><strong id="unit-count"></strong><button id="restart" hidden>Restart Run</button><span id="status"></span></div>
  </div>
  <button id="battle-menu-toggle" class="floating-plus" aria-label="Open battle menu" aria-expanded="false">+</button>
  <nav class="pop-menu" id="battle-menu" hidden aria-label="Battle menu">
@@ -444,11 +444,11 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script src="modules/elements/environment.js?v=20261126-metal-traps"></script>
 <script src="modules/day-night/engine.js?v=20261127-30s"></script>
-<script src="modules/towers/upgrades.js?v=20261127-royal"></script>
+<script src="modules/towers/upgrades.js?v=20261127-sentinel"></script>
 <script>
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,ground=325;
-const backgroundImages=new Map(),towerImages={ally:new Image()},droneImage=new Image();
+const backgroundImages=new Map(),towerImages={ally:new Image()},droneImage=new Image(),generatorImage=new Image(),hpBarImage=new Image(),towerArrowImage=new Image(),droneArrowImage=new Image();
 const towerCooldowns={ally:0},towerAttackAnims={ally:0};
 let towerProjectiles=[],unitSerial=0,chargeEffects=[];
 function mapBackground(path){
@@ -514,7 +514,7 @@ let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentC
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json?v=20261127-royal',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
+  fetch('towers.json?v=20261127-sentinel',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('progression.json?v=20261127-equipment',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
@@ -522,7 +522,7 @@ async function loadGameCatalog(){
  if(progress?.team&&progress?.coins&&progress?.defence)progression=progress;
  towerRegistry=towers;
  if(!TowerUpgrades?.selectEquipment)throw Error('Tower upgrade engine is outdated. Reload the page.');
- if(!towerRegistry?.towers?.length||!towerRegistry?.shields?.length||!towerRegistry?.drones?.length)throw Error('Equipment catalog missing or incomplete. Reload the page.');
+ if(!towerRegistry?.towers?.length||!towerRegistry?.shields?.length||!towerRegistry?.drones?.length||!towerRegistry?.generators?.length)throw Error('Equipment catalog missing or incomplete. Reload the page.');
  if(rules?.summoning)battleRules=rules;
  if(audio?.bgm)audioConfig=audio;
  loadAudioPreferences();audioLabels();refreshSettings();
@@ -595,9 +595,9 @@ function sheetPreview(id){const el=document.createElement('span');el.className='
 const PROFILE_KEY='monsters-clash-profile-v1';
 const AUDIO_KEY='monsters-clash-audio-v1';
 let profile={owned:[],encountered:[],coins:0,teamSlots:8,team:[],towers:['t001'],tower:'t001'};
-let run={active:false,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,wallet:0,menuEarned:0};
+let run={active:false,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,generatorLevel:0,generatorElapsed:0,wallet:0,menuEarned:0};
 function startRun(){
- run={active:true,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,wallet:0,menuEarned:0};
+ run={active:true,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,generatorLevel:0,generatorElapsed:0,wallet:0,menuEarned:0};
  reset();openView('battle');launchLandscape();
 }
 function nextBattle(){
@@ -605,7 +605,7 @@ function nextBattle(){
  run.battle+=1;reset();toggleBattleMenu(false);
 }
 function restartRun(){
- run={active:true,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,wallet:0,menuEarned:0};
+ run={active:true,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,generatorLevel:0,generatorElapsed:0,wallet:0,menuEarned:0};
  reset();toggleBattleMenu(false);
 }
 function endRun(){
@@ -642,7 +642,8 @@ function loadProfile(defaults){
   team:Array.isArray(saved?.team)?[...new Set(saved.team)]:defaults.slice(),
   towers:[...new Set(['t001',...(Array.isArray(saved?.towers)?saved.towers:[])])],tower:typeof saved?.tower==='string'?saved.tower:'t001',
   shields:[...new Set([towerRegistry.default_shield,...(Array.isArray(saved?.shields)?saved.shields:[])])],shield:typeof saved?.shield==='string'?saved.shield:towerRegistry.default_shield,
-  drones:[...new Set([towerRegistry.default_drone,...(Array.isArray(saved?.drones)?saved.drones:[])])],drone:typeof saved?.drone==='string'?saved.drone:towerRegistry.default_drone
+  drones:[...new Set([towerRegistry.default_drone,...(Array.isArray(saved?.drones)?saved.drones:[])])],drone:typeof saved?.drone==='string'?saved.drone:towerRegistry.default_drone,
+ generators:[...new Set([towerRegistry.default_generator,...(Array.isArray(saved?.generators)?saved.generators:[])])],generator:typeof saved?.generator==='string'?saved.generator:towerRegistry.default_generator
  };
  storeProfile();
 }
@@ -674,12 +675,13 @@ function selectEquipment(){
  towerConfigs.ally=selected.tower;equipmentConfig=selected.config;
  if(selected.tower.sheet)towerImages.ally.src=selected.tower.sheet;
  if(selected.drone.sheet)droneImage.src=selected.drone.sheet;else droneImage.removeAttribute('src');
+ for(const [img,path] of [[generatorImage,selected.generator.sprite],[hpBarImage,selected.tower.hp_bar],[towerArrowImage,selected.tower.basic_attack.sprite],[droneArrowImage,selected.drone.projectile_sprite]]){if(path)img.src=path;else img.removeAttribute('src');}
  storeProfile();
 }
 function renderEquipment(){
  $('equipment-info').hidden=true;refreshCoinDisplays();
  for(const button of document.querySelectorAll('[data-equipment]'))button.setAttribute('aria-pressed',String(button.dataset.equipment===equipmentTab));
- const names=[['towers','tower'],['shields','shield'],['drones','drone']].map(([group,key])=>{const item=towerRegistry[group].find(x=>x.id===profile[key]);const el=document.createElement('span');el.textContent=({tower:'Tower',shield:'Shield',drone:'Drone'}[key])+': '+(item?.name||'Not selected');return el;});
+ const names=[['towers','tower'],['shields','shield'],['drones','drone'],['generators','generator']].map(([group,key])=>{const item=towerRegistry[group].find(x=>x.id===profile[key]);const el=document.createElement('span');el.textContent=({tower:'Tower',shield:'Shield',drone:'Drone',generator:'Generator'}[key])+': '+(item?.name||'Not selected');return el;});
  $('equipment-loadout').replaceChildren(...names);
  const group=equipmentTab,key=group.slice(0,-1);
  $('equipment-list').replaceChildren(...towerRegistry[group].map(item=>{
@@ -689,11 +691,11 @@ function renderEquipment(){
  if(item.sprite){art.style.backgroundImage='url("'+item.sprite+'")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}else if(item.sheet)art.style.backgroundImage='url("'+item.sheet+'")';else art.textContent='◇';
  const copy=document.createElement('div');copy.className='equipment-copy';const name=document.createElement('strong'),detail=document.createElement('small'),description=document.createElement('small');
  name.textContent=item.name;description.textContent=[item.series?item.series+' Series':null,item.ability,item.description].filter(Boolean).join(' · ');
- detail.textContent=group==='towers'?item.max_hp+' HP · '+item.basic_attack.damage+' damage · Range '+item.basic_attack.range+' · '+item.basic_attack.cooldown_seconds+'s interval':group==='shields'?item.hp_per_level+' shield HP / level · '+item.upgrade_cost+' BC starting upgrade':item.damage+' damage · '+item.interval_seconds+'s interval · '+item.deploy_cost+' BC starting deployment · Max '+item.max_active;
+ detail.textContent=group==='towers'?item.max_hp+' HP · '+item.basic_attack.damage+' damage · Range '+item.basic_attack.range+' · '+item.basic_attack.cooldown_seconds+'s interval':group==='shields'?item.hp_per_level+' shield HP / level · '+item.upgrade_cost+' BC starting upgrade':group==='generators'?item.income_per_level+' BC / level every '+item.interval_seconds+'s · '+item.upgrade_cost+' BC starting upgrade':item.damage+' damage · '+item.interval_seconds+'s interval · '+item.deploy_cost+' BC starting deployment · Max '+item.max_active;
  copy.append(name,detail,description);
  const button=document.createElement('button');button.type='button';button.textContent=equipped?'Equipped':owned?'Equip':'Unlock · '+item.unlock_cost+' Gold';button.disabled=equipped||(!owned&&profile.coins<item.unlock_cost);
  button.onclick=()=>{if(view!=='upgrades'||!TowerUpgrades.equip(towerRegistry,profile,group,item.id))return;selectEquipment();renderEquipment();$('equipment-message').textContent=item.name+' equipped.';};
- const info=document.createElement('button');info.type='button';info.textContent='View Info';info.onclick=()=>{const panel=$('equipment-info');panel.replaceChildren();const title=document.createElement('h3');title.textContent=item.name+' · '+item.id.toUpperCase();const summary=document.createElement('p');summary.textContent=[item.series+' Series',item.ability,item.description,detail.textContent,'Unlock: '+item.unlock_cost+' Gold'].filter(Boolean).join(' · ');panel.append(title,summary);if(group==='towers'){const table=document.createElement('table');table.className='equipment-stats-table';const header=table.insertRow();for(const label of ['Level','Damage','Range','Interval','Attack']){const th=document.createElement('th');th.textContent=label;header.append(th);}for(let level=0;level<=progression.defence.max_upgrade;level++){const a=TowerUpgrades.attackStats(item,{attackLevel:level},equipmentConfig),row=table.insertRow();for(const value of [level,a.damage.toFixed(1),Math.round(a.range),a.interval.toFixed(2)+'s',a.type==='arrow'?a.arrows+' arrows':a.stun.toFixed(2)+'s stun'])row.insertCell().textContent=value;}panel.append(table);}else if(group==='shields'||group==='drones'){const table=document.createElement('table');table.className='equipment-stats-table';const head=table.insertRow();for(const label of group==='shields'?['Level','Shield HP','Upgrade cost (BC)']:['Count','Combined damage / volley','Deployment cost (BC)']){const th=document.createElement('th');th.textContent=label;head.append(th);}const config={...equipmentConfig,...(group==='shields'?{shield_cost:item.upgrade_cost,shield_hp:item.hp_per_level}:{drone_cost:item.deploy_cost,drone_max:item.max_active})};const max=group==='shields'?config.max_upgrade:config.drone_max;for(let level=1;level<=max;level++){const quote=TowerUpgrades.quote({shieldLevel:level-1,drones:level-1},config,group==='shields'?'shield':'drone'),row=table.insertRow();for(const value of [level,level*(group==='shields'?item.hp_per_level:item.damage),quote.cost])row.insertCell().textContent=value;}panel.append(table);}panel.hidden=false;panel.scrollIntoView({block:'nearest'});};card.append(art,copy,button,info);return card;
+ const info=document.createElement('button');info.type='button';info.textContent='View Info';info.onclick=()=>{const panel=$('equipment-info');panel.replaceChildren();const title=document.createElement('h3');title.textContent=item.name+' · '+item.id.toUpperCase();const summary=document.createElement('p');summary.textContent=[item.series+' Series',item.ability,item.description,detail.textContent,'Unlock: '+item.unlock_cost+' Gold'].filter(Boolean).join(' · ');panel.append(title,summary);if(group==='towers'){const table=document.createElement('table');table.className='equipment-stats-table';const header=table.insertRow();for(const label of ['Level','Damage','Range','Interval','Attack']){const th=document.createElement('th');th.textContent=label;header.append(th);}for(let level=0;level<=progression.defence.max_upgrade;level++){const a=TowerUpgrades.attackStats(item,{attackLevel:level},equipmentConfig),row=table.insertRow();for(const value of [level,a.damage.toFixed(1),Math.round(a.range),a.interval.toFixed(2)+'s',a.type==='arrow'?a.arrows+' arrows':a.stun.toFixed(2)+'s stun'])row.insertCell().textContent=value;}panel.append(table);}else if(group==='generators'){const table=document.createElement('table');table.className='equipment-stats-table';const header=table.insertRow();for(const label of ['Level','BC / '+item.interval_seconds+'s','Upgrade cost (BC)']){const th=document.createElement('th');th.textContent=label;header.append(th);}for(let level=1;level<=item.max_level;level++){const q=TowerUpgrades.quote({generatorLevel:level-1},{generator_cost:item.upgrade_cost,generator_max:item.max_level},'generator'),row=table.insertRow();for(const value of [level,level*item.income_per_level,q.cost])row.insertCell().textContent=value;}panel.append(table);}else if(group==='shields'||group==='drones'){const table=document.createElement('table');table.className='equipment-stats-table';const head=table.insertRow();for(const label of group==='shields'?['Level','Shield HP','Upgrade cost (BC)']:['Count','Combined damage / volley','Deployment cost (BC)']){const th=document.createElement('th');th.textContent=label;head.append(th);}const config={...equipmentConfig,...(group==='shields'?{shield_cost:item.upgrade_cost,shield_hp:item.hp_per_level}:{drone_cost:item.deploy_cost,drone_max:item.max_active})};const max=group==='shields'?config.max_upgrade:config.drone_max;for(let level=1;level<=max;level++){const quote=TowerUpgrades.quote({shieldLevel:level-1,drones:level-1},config,group==='shields'?'shield':'drone'),row=table.insertRow();for(const value of [level,level*(group==='shields'?item.hp_per_level:item.damage),quote.cost])row.insertCell().textContent=value;}panel.append(table);}panel.hidden=false;panel.scrollIntoView({block:'nearest'});};card.append(art,copy,button,info);return card;
  }));
  $('upgrades-play').disabled=team.length===0;
 }
@@ -703,9 +705,9 @@ function buyUpgrade(kind){
 }
 function renderUpgrades(){
  const cfg=equipmentConfig;if(!cfg||!state)return;
- for(const kind of ['attack','shield','drone']){
+ for(const kind of ['attack','shield','drone','generator']){
  const {level,max,cost}=TowerUpgrades.quote(run,cfg,kind),b=$('upgrade-'+kind);
- const label=(kind==='attack'?(towerConfigs.ally?.basic_attack?.type==='electric_pulse'?'Wave':'Arrows'):kind==='shield'?'Shield':'Drones');
+ const label=(kind==='attack'?(towerConfigs.ally?.basic_attack?.type==='electric_pulse'?'Wave':'Arrows'):kind==='shield'?'Shield':kind==='generator'?'Generator':'Drones');
  const text=label+' '+level+'/'+max+' · '+(level>=max?'MAX':cost+' Coins');
  if(b.textContent!==text)b.textContent=text;
  b.disabled=state.ended||battleMenuOpen||level>=max||run.wallet<cost;
@@ -1002,12 +1004,12 @@ function stepTowerDefense(dt){
  state.droneTimers[i]=Math.max(0,(state.droneTimers[i]||0)-dt);
  const x=120+i*50+Math.sin(state.time*1.6+i)*12,y=180+Math.sin(state.time*2+i)*9;
  const target=state.units.filter(u=>u.hp>0&&u.side<0&&Math.abs(u.x-x)<=dc.drone_range).sort((a,b)=>a.x-b.x)[0];
- if(target&&state.droneTimers[i]<=0){dmg(target,attack.droneDamage);towerProjectiles.push({type:'arrow',x,y,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=dc.drone_interval;}
+ if(target&&state.droneTimers[i]<=0){dmg(target,attack.droneDamage);towerProjectiles.push({type:'arrow',drone:true,x,y,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=dc.drone_interval;}
  }
 }
 function step(dt){
  if(state.ended){if(state.victory){state.breakLeft=Math.max(0,state.breakLeft-dt);if(state.breakLeft<=0)nextBattle();}return;}
- state.time+=dt;state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig);
+ state.time+=dt;if(run.generatorLevel>0&&state.allyBase>0){run.generatorElapsed+=dt;while(run.generatorElapsed>=equipmentConfig.generator_interval){run.generatorElapsed-=equipmentConfig.generator_interval;const coins=run.generatorLevel*equipmentConfig.generator_income;run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.earnings.push({x:35,y:350,value:coins,life:1.35});refreshCoinDisplays();}}state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig);
  window.MonstersClashDayNight?.update(dt);
  window.MonstersClashDayNight?.updateLabel($('day-night-label'));
  window.MonstersClashEnvironment?.update(dt,state.units,dmg);
@@ -1118,8 +1120,8 @@ function drawTowerAttacks(){
    const x=p.x+(p.tx-p.x)*progress,y=p.y+(p.ty-p.y)*progress;
    const angle=Math.atan2(p.ty-p.y,p.tx-p.x);
    ctx.translate(x,y);ctx.rotate(angle);
-   ctx.strokeStyle='#ffe3a1';ctx.shadowColor='#ffbd55';ctx.shadowBlur=5;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(8,0);ctx.stroke();
-   ctx.fillStyle='#fff0c1';ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(3,-5);ctx.lineTo(3,5);ctx.closePath();ctx.fill();
+   const arrow=p.drone?droneArrowImage:towerArrowImage;if(readyImage(arrow)){const w=34,h=w*arrow.naturalHeight/arrow.naturalWidth;ctx.shadowColor='#57cfff';ctx.shadowBlur=5;ctx.drawImage(arrow,-w/2,-h/2,w,h);}else{ctx.strokeStyle='#ffe3a1';ctx.shadowColor='#ffbd55';ctx.shadowBlur=5;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(8,0);ctx.stroke();
+   ctx.fillStyle='#fff0c1';ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(3,-5);ctx.lineTo(3,5);ctx.closePath();ctx.fill();}
   }else{
    const wave=Math.max(0,Math.sin(Math.PI*progress));
    const radius=34+progress*(p.range||180);
@@ -1200,6 +1202,7 @@ function draw(){
  window.MonstersClashEnvironment?.render(ctx,'background');
  TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,80,310,false);
  drawTower('ally',80,state.allyBase);
+ if(run.generatorLevel>0&&readyImage(generatorImage)){const hh=72,ww=hh*generatorImage.naturalWidth/generatorImage.naturalHeight;ctx.save();ctx.shadowColor='#55ceff';ctx.shadowBlur=3+run.generatorLevel*1.1+Math.sin(state.time*3)*2;ctx.drawImage(generatorImage,35-ww/2,445-hh,ww,hh);ctx.restore();}
  TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,80,310,true);
  for(let i=0;i<run.drones;i++){const x=120+i*50+Math.sin(state.time*1.6+i)*12,y=180+Math.sin(state.time*2+i)*9;ctx.save();ctx.translate(x,y);if(readyImage(droneImage)){spriteFrame(droneImage,0,-36,-36,72,72,equipmentConfig.drone_sheet_columns,1);ctx.restore();continue;}ctx.fillStyle='#627e91';ctx.fillRect(-22,-3,44,7);ctx.fillStyle='#a8bdca';ctx.beginPath();ctx.ellipse(0,0,15,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ce9ff';ctx.fillRect(-4,-3,8,6);ctx.restore();}
  drawTowerAttacks();
@@ -1251,7 +1254,7 @@ function draw(){
    if(ranked){ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#101722';ctx.strokeText(u.rank.toUpperCase(),u.x,barY-25);ctx.fillStyle=edge;ctx.fillText(u.rank.toUpperCase(),u.x,barY-25);}
    ctx.restore();window.MonstersClashEnvironment?.renderIndicators(ctx,u,barY);
  }
- TowerUpgrades.renderHealth(ctx,80,190,state.allyBase,towerConfigs.ally?.max_hp||1900,state.towerShield);
+ TowerUpgrades.renderHealth(ctx,80,190,state.allyBase,towerConfigs.ally?.max_hp||1900,state.towerShield,hpBarImage);
  for(const f of state.earnings){ctx.save();ctx.globalAlpha=Math.min(1,f.life/.35);ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#132131';const y=f.y-(1.35-f.life)*24;ctx.strokeText('+'+f.value+' BC',f.x,y);ctx.fillStyle='#a5e4ff';ctx.fillText('+'+f.value+' BC',f.x,y);ctx.restore();}
 
  if(state.ended){ctx.fillStyle='#06152578';ctx.fillRect(0,0,W,H)}
@@ -1463,7 +1466,7 @@ function bindMenu(){
  for(const b of document.querySelectorAll('[data-bestiary]'))b.onclick=()=>{bestiaryRank=b.dataset.bestiary;renderBestiary();updateRoute('bestiary',true);};
  $('menu-upgrades-home').onclick=()=>openView('upgrades');$('nav-upgrades').onclick=()=>openView('upgrades');$('upgrades-back').onclick=()=>openView('home');$('upgrades-play').onclick=startRun;
  for(const button of document.querySelectorAll('[data-equipment]'))button.onclick=()=>{equipmentTab=button.dataset.equipment;$('equipment-message').textContent='';renderEquipment();};
- for(const kind of ['attack','shield','drone'])$('upgrade-'+kind).onclick=()=>buyUpgrade(kind);
+ for(const kind of ['attack','shield','drone','generator'])$('upgrade-'+kind).onclick=()=>buyUpgrade(kind);
  $('profile-back').onclick=()=>{if(profileReturnView==='team'){renderTeam();openView('team')}else openView('bestiary')};
  $('bgm-volume').oninput=e=>setAudioLevel('bgm',e.target.value);
  $('sfx-volume').oninput=e=>setAudioLevel('sfx',e.target.value);

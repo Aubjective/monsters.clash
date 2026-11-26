@@ -4,18 +4,19 @@
 function selectEquipment(registry,profile,base){
  const pick=(group,key,def)=>{const list=registry[group];const entry=list.find(x=>x.id===profile[key]&&profile[group].includes(x.id))||list.find(x=>x.id===def);if(!entry)throw Error('No default '+key);profile[key]=entry.id;return entry;};
  const tower=pick('towers','tower',registry.default_towers.ally),shield=pick('shields','shield',registry.default_shield),drone=pick('drones','drone',registry.default_drone);
- return {tower,shield,drone,config:{...base,shield_cost:shield.upgrade_cost,shield_hp:shield.hp_per_level,shield_plate_min:shield.plate_min,shield_plate_max:shield.plate_max,shield_orbit_speed:shield.orbit_speed,shield_sprite:shield.sprite,drone_cost:drone.deploy_cost,drone_max:drone.max_active,drone_damage:drone.damage,drone_interval:drone.interval_seconds,drone_range:drone.range,drone_sheet_columns:drone.sheet_columns}};
+ const generator=pick('generators','generator',registry.default_generator);
+ return {tower,shield,drone,generator,config:{...base,shield_cost:shield.upgrade_cost,shield_hp:shield.hp_per_level,shield_plate_min:shield.plate_min,shield_plate_max:shield.plate_max,shield_orbit_speed:shield.orbit_speed,shield_sprite:shield.sprite,drone_cost:drone.deploy_cost,drone_max:drone.max_active,drone_damage:drone.damage,drone_interval:drone.interval_seconds,drone_range:drone.range,drone_sheet_columns:drone.sheet_columns,generator_cost:generator.upgrade_cost,generator_income:generator.income_per_level,generator_interval:generator.interval_seconds,generator_max:generator.max_level}};
 }
 function equip(registry,profile,group,id){
- if(!['towers','shields','drones'].includes(group))return false;const key=group.slice(0,-1),item=registry[group].find(x=>x.id===id);if(!item)return false;
+ if(!['towers','shields','drones','generators'].includes(group))return false;const key=group.slice(0,-1),item=registry[group].find(x=>x.id===id);if(!item)return false;
  if(!profile[group].includes(id)){const price=Number(item.unlock_cost);if(!Number.isFinite(price)||price<0||profile.coins<price)return false;profile.coins-=price;profile[group].push(id);}
  profile[key]=id;return true;
 }
 function quote(run,cfg,kind){
- if(!['attack','shield','drone'].includes(kind))return null;
- const key=kind==='drone'?'drones':kind==='shield'?'shieldLevel':'attackLevel';
- const level=Number(run[key])||0,max=kind==='drone'?cfg.drone_max:cfg.max_upgrade;
- const base=kind==='drone'?cfg.drone_cost:kind==='shield'?cfg.shield_cost:cfg.attack_cost;
+ if(!['attack','shield','drone','generator'].includes(kind))return null;
+ const key=kind==='generator'?'generatorLevel':kind==='drone'?'drones':kind==='shield'?'shieldLevel':'attackLevel';
+ const level=Number(run[key])||0,max=kind==='generator'?cfg.generator_max:kind==='drone'?cfg.drone_max:cfg.max_upgrade;
+ const base=kind==='generator'?cfg.generator_cost:kind==='drone'?cfg.drone_cost:kind==='shield'?cfg.shield_cost:cfg.attack_cost;
  return {kind,key,level,max,cost:Math.round(base*(1+level*.5))};
 }
 function createShield(run,cfg){const hp=run.shieldLevel*cfg.shield_hp;return {hp,max:hp,phase:0,flash:0,broken:0,hitAngle:0};}
@@ -54,9 +55,19 @@ function renderShield(ctx,s,level,cfg,x,y,front){
  }
  if(front&&s.broken>0){const q=1-s.broken/.65;ctx.save();ctx.globalAlpha=1-q;ctx.fillStyle='#a9eaff';for(let i=0;i<22;i++){const a=i*2.399963+s.hitAngle;const px=x+Math.cos(a)*(rx+45*q),py=y+Math.sin(a)*(ry*.7+45*q);ctx.save();ctx.translate(px,py);ctx.rotate(a+q*5);ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(5,1);ctx.lineTo(-3,5);ctx.closePath();ctx.fill();ctx.restore();}ctx.restore();}
 }
-function renderHealth(ctx,x,y,hp,maxHp,shield){
+function renderHealth(ctx,x,y,hp,maxHp,shield,art){
  const ratio=Math.max(0,Math.min(1,hp/Math.max(1,maxHp))),breached=hp<=0;
  const sr=shield?.max>0?Math.max(0,Math.min(1,shield.hp/shield.max)):0;
+ if(art?.complete&&art.naturalWidth>0){
+ const w=148,h=w*art.naturalHeight/art.naturalWidth;
+ ctx.save();ctx.translate(x,y);ctx.drawImage(art,-w/2,-h/2,w,h);
+ const left=-w/2+w*.232,right=-w/2+w*.919,top=-h/2+h*.378,bottom=-h/2+h*.574;
+ ctx.save();ctx.beginPath();ctx.moveTo(left+3,top);ctx.lineTo(right-4,top);ctx.lineTo(right,(top+bottom)/2);ctx.lineTo(right-4,bottom);ctx.lineTo(left+3,bottom);ctx.lineTo(left,(top+bottom)/2);ctx.closePath();ctx.clip();
+ const fill=ctx.createLinearGradient(0,top,0,bottom);fill.addColorStop(0,ratio<=.3?'#ffac72':ratio<=.7?'#ffe098':'#a0eaff');fill.addColorStop(1,ratio<=.3?'#b83136':ratio<=.7?'#bb7728':'#216ab3');ctx.fillStyle=fill;ctx.fillRect(left,top,(right-left)*ratio,bottom-top);ctx.restore();
+ ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=2;ctx.strokeStyle='#10202f';ctx.fillStyle='#fff6dd';const label=breached?'BREACHED':Math.ceil(hp)+' / '+Math.ceil(maxHp);ctx.strokeText(label,(left+right)/2,(top+bottom)/2);ctx.fillText(label,(left+right)/2,(top+bottom)/2);
+ if(shield?.max>0){ctx.fillStyle='#081421';ctx.fillRect(left,bottom+7,right-left,4);ctx.fillStyle='#78e4fc';ctx.fillRect(left,bottom+7,(right-left)*sr,4);ctx.fillStyle='#b0ebff';ctx.fillText('Shield '+Math.ceil(shield.hp)+' / '+Math.ceil(shield.max),(left+right)/2,bottom+18);}
+ ctx.restore();return;
+ }
  const metal=ctx.createLinearGradient(0,y-16,0,y+26);metal.addColorStop(0,'#f6d99a');metal.addColorStop(.32,'#ac8548');metal.addColorStop(.65,'#78582f');metal.addColorStop(1,'#d0a75d');
  ctx.save();ctx.translate(x,y);ctx.shadowColor='#07111b';ctx.shadowBlur=5;
  // Symmetrical battlement crest, bevelled gold frame, tapered fortress ends.

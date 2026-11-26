@@ -6,8 +6,8 @@
   "towers": [
     {
       "id": "t001",
-      "name": "Royal Tower",
-      "sheet": "assets/towers/t001/archer-tower-sheet.png",
+      "name": "Sentinel Tower",
+      "sheet": "assets/towers/t001/sentinel-tower-sheet.png",
       "max_hp": 1900,
       "damage_thresholds_pct": [
         70,
@@ -19,14 +19,16 @@
         "type": "arrow",
         "range": 280,
         "damage": 22,
-        "cooldown_seconds": 2.6
+        "cooldown_seconds": 2.6,
+        "sprite": "assets/weapons/w001/sentinel-arrow.png"
       },
       "sheet_columns": 4,
       "sheet_rows": 1,
       "unlock_cost": 0,
-      "series": "Royal",
-      "description": "Royal fortress with Arrow Volley attacks.",
-      "ability": "Arrow Volley"
+      "series": "Sentinel",
+      "description": "Crystal-powered fortress with automatic arrow volleys.",
+      "ability": "Arrow Volley",
+      "hp_bar": "assets/towers/t001/sentinel-hp-bar.png"
     },
     {
       "id": "t002",
@@ -58,7 +60,7 @@
   "shields": [
     {
       "id": "s001",
-      "name": "Royal Shield",
+      "name": "Sentinel Shield",
       "description": "Orbiting crystal plates absorb damage to the tower.",
       "type": "mirror",
       "unlock_cost": 0,
@@ -67,15 +69,15 @@
       "plate_min": 5,
       "plate_max": 8,
       "orbit_speed": 0.85,
-      "series": "Royal",
+      "series": "Sentinel",
       "ability": "Mirror Barrier",
-      "sprite": "assets/shields/s001/royal-shield.png"
+      "sprite": "assets/shields/s001/sentinel-shield.png"
     }
   ],
   "drones": [
     {
       "id": "d001",
-      "name": "Royal Drone",
+      "name": "Sentinel Drone",
       "description": "Hovering support unit that fires at approaching enemies.",
       "type": "projectile",
       "unlock_cost": 0,
@@ -84,10 +86,27 @@
       "damage": 12,
       "interval_seconds": 1.8,
       "range": 320,
-      "sheet": "assets/drones/d001/sentry-drone-sheet.png",
+      "sheet": "assets/drones/d001/sentinel-drone-sheet.png",
       "sheet_columns": 4,
-      "series": "Royal",
-      "ability": "Sentry Fire"
+      "series": "Sentinel",
+      "ability": "Sentry Fire",
+      "projectile_sprite": "assets/weapons/w001/sentinel-arrow.png"
+    }
+  ],
+  "default_generator": "g001",
+  "generators": [
+    {
+      "id": "g001",
+      "name": "Sentinel Generator",
+      "series": "Sentinel",
+      "description": "Protected auxiliary structure producing Battle Coins during active combat.",
+      "ability": "Coin Production",
+      "sprite": "assets/generators/g001/sentinel-generator.png",
+      "unlock_cost": 0,
+      "upgrade_cost": 100,
+      "income_per_level": 5,
+      "interval_seconds": 10,
+      "max_level": 10
     }
   ]
 }
