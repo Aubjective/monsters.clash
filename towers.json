@@ -139,8 +139,8 @@
       "sprite": "assets/generators/g001/sentinel-generator.png",
       "unlock_cost": 0,
       "upgrade_cost": 100,
-      "income_per_level": 5,
-      "interval_seconds": 10,
+      "income_per_level": 8,
+      "interval_seconds": 8,
       "max_level": 10
     },
     {

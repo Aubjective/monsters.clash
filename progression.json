@@ -11,13 +11,15 @@
     ]
   },
   "coins": {
-    "kill_base": 10,
+    "kill_base": 12,
     "elite_multiplier": 3,
-    "boss_multiplier": 6,
-    "round_clear_battle_base": 40,
-    "round_clear_battle_growth": 5,
-    "round_clear_menu_base": 25,
-    "round_clear_menu_growth": 5
+    "boss_multiplier": 8,
+    "round_clear_battle_base": 45,
+    "round_clear_battle_growth": 10,
+    "round_clear_menu_base": 30,
+    "round_clear_menu_growth": 6,
+    "elite_kill_gold": 2,
+    "boss_kill_gold": 8
   },
   "defence": {
     "first_count": 5,
@@ -58,5 +60,10 @@
   "round_growth_pct": {
     "ally": 12,
     "enemy": 18
+  },
+  "dark_night_bonus_pct": {
+    "hp": 10,
+    "damage": 15,
+    "attack_speed": 10
   }
 }
