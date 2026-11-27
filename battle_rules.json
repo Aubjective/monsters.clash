@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "summoning": {
-    "mode": "cooldown_only",
+    "mode": "summoner_power_and_cooldown",
     "max_active_per_team": 10,
     "default_max_active_per_monster": 3,
     "tier_caps": {

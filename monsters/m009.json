@@ -37,9 +37,9 @@
     "move_speed": 65
   },
   "deployment": {
-    "mana_cost": 4,
     "cooldown_seconds": 10,
-    "max_active_copies": 4
+    "max_active_copies": 4,
+    "summon_power_cost": 10
   },
   "attack": {
     "type": "ranged",

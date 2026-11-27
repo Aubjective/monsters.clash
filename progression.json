@@ -11,21 +11,22 @@
     ]
   },
   "coins": {
-    "kill_base": 12,
+    "kill_base": 20,
     "elite_multiplier": 3,
     "boss_multiplier": 8,
-    "round_clear_battle_base": 45,
+    "round_clear_battle_base": 80,
     "round_clear_battle_growth": 10,
-    "round_clear_menu_base": 30,
+    "round_clear_menu_base": 50,
     "round_clear_menu_growth": 6,
     "elite_kill_gold": 2,
-    "boss_kill_gold": 8
+    "boss_kill_gold": 8,
+    "starting_battle_coins": 100
   },
   "defence": {
-    "first_count": 5,
-    "count_per_round": 2,
+    "first_count": 4,
+    "count_per_round": 1,
     "max_count": 45,
-    "initial_spawn_seconds": 5,
+    "initial_spawn_seconds": 7,
     "min_spawn_seconds": 0.8,
     "spawn_acceleration": 0.25,
     "boss_every": 5,
@@ -35,7 +36,9 @@
     "monster_unlock_cost": 250,
     "elite_sprite_scale": 2,
     "tower_range_cap": 425,
-    "boss_sprite_scale": 2.15
+    "boss_sprite_scale": 2.15,
+    "first_elite_round": 3,
+    "first_boss_round": 10
   },
   "rank_bonus_pct": {
     "normal": {
@@ -59,7 +62,7 @@
   },
   "round_growth_pct": {
     "ally": 12,
-    "enemy": 18
+    "enemy": 12
   },
   "dark_night_bonus_pct": {
     "hp": 10,
@@ -71,11 +74,11 @@
     "base_power": 100,
     "power_per_level": 1,
     "xp_base": 100,
-    "xp_growth": 50,
-    "xp_normal": 5,
-    "xp_elite": 15,
-    "xp_boss": 40,
-    "xp_round": 25,
+    "xp_growth": 20,
+    "xp_normal": 10,
+    "xp_elite": 30,
+    "xp_boss": 80,
+    "xp_round": 50,
     "elite_unlock_level": 10,
     "boss_unlock_level": 20,
     "surge_unlock_level": 5,
@@ -110,6 +113,11 @@
           "id": "uncommon",
           "name": "Uncommon",
           "color": "#40b85c"
+        },
+        {
+          "id": "rare",
+          "name": "Rare",
+          "color": "#408de0"
         },
         {
           "id": "epic",
@@ -176,6 +184,8 @@
         ]
       },
       "effects_enabled": false
-    }
+    },
+    "power_regen_per_second": 2,
+    "surge_regen_pct": 50
   }
 }

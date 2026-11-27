@@ -37,9 +37,9 @@
     "move_speed": 22
   },
   "deployment": {
-    "mana_cost": 6,
     "cooldown_seconds": 18,
-    "max_active_copies": 4
+    "max_active_copies": 4,
+    "summon_power_cost": 10
   },
   "attack": {
     "type": "melee",
