@@ -523,7 +523,7 @@ async function loadGameCatalog(){
   fetch('towers.json?v=20261127-dark-economy',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json?v=20261127-sp',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch('progression.json?v=20261127-aether',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
+  fetch('progression.json?v=20261127-testing',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
  ]);
  if(!progress?.team||!progress?.coins||!progress?.defence||!progress?.rank_bonus_pct||!progress?.round_growth_pct||!progress?.summoner)throw Error('Progression configuration incomplete. Reload the page.');progression=progress;
  towerRegistry=towers;
@@ -537,9 +537,9 @@ async function loadGameCatalog(){
  specialBosses=(await Promise.all((index.special_boss_ids||[]).map(id=>fetch('monsters/'+encodeURIComponent(id)+'.json',{cache:'no-store'}).then(r=>r.ok?r.json():null)))).filter(Boolean);
  roster=catalog.filter(m=>m.art?.status==='ready'&&m.art?.sheet);
  loadProfile((index.default_deck||[]).filter(id=>roster.some(m=>m.id===id)));
- team=profile.team.filter(id=>owns(id)&&roster.some(m=>m.id===id)).slice(0,profile.teamSlots);
- if(team.length===0)team=roster.slice(0,profile.teamSlots).filter(m=>owns(m.id)).map(m=>m.id);
- profile.team=team.slice();storeProfile();refreshCoinDisplays();
+ team=profile.team.filter(id=>owns(id)&&roster.some(m=>m.id===id)).slice(0,progression.testing_mode===true?progression.team.max_slots:profile.teamSlots);
+ if(team.length===0)team=roster.slice(0,progression.testing_mode===true?progression.team.max_slots:profile.teamSlots).filter(m=>owns(m.id)).map(m=>m.id);
+ if(progression.testing_mode!==true){profile.team=team.slice();storeProfile();}refreshCoinDisplays();
  selectEquipment();
  for(const [id,selector] of [['m001','.lobby-moss'],['m002','.lobby-cinder']]){
   const m=catalog.find(entry=>entry.id===id);
@@ -635,8 +635,8 @@ function showResult(){
  $('next-battle').hidden=!victory;
  $('restart-run-result').hidden=victory;
 }
-let progression={"schema_version":"1.0.0","team":{"starting_slots":8,"max_slots":12,"slot_unlock_costs":[250,500,900,1400]},"coins":{"kill_base":20,"elite_multiplier":3,"boss_multiplier":8,"round_clear_battle_base":80,"round_clear_battle_growth":10,"round_clear_menu_base":50,"round_clear_menu_growth":6,"elite_kill_gold":2,"boss_kill_gold":8,"starting_battle_coins":100},"defence":{"first_count":4,"count_per_round":1,"max_count":45,"initial_spawn_seconds":7,"min_spawn_seconds":0.8,"spawn_acceleration":0.25,"boss_every":5,"round_break_seconds":4,"attack_cost":75,"max_upgrade":10,"monster_unlock_cost":250,"elite_sprite_scale":2,"tower_range_cap":425,"boss_sprite_scale":2.15,"first_elite_round":3,"first_boss_round":10},"rank_bonus_pct":{"normal":{"hp":0,"damage":0,"skill_power":0,"attack_speed":0},"elite":{"hp":50,"damage":50,"skill_power":50,"attack_speed":20},"boss":{"hp":200,"damage":100,"skill_power":100,"attack_speed":40}},"round_growth_pct":{"ally":12,"enemy":12},"dark_night_bonus_pct":{"hp":10,"damage":15,"attack_speed":10},"summoner":{"max_level":100,"base_power":100,"power_per_level":1,"xp_base":100,"xp_growth":20,"xp_normal":10,"xp_elite":30,"xp_boss":80,"xp_round":50,"elite_unlock_level":10,"boss_unlock_level":20,"surge_unlock_level":5,"surge_speed_pct":50,"surge_duration":10,"surge_cooldown":60,"characters":[{"id":"s001","name":"Aether Voss","passive":"summoner_power","active":"summoning_surge","available":true,"element":"neutral","art":{"sheet":"assets/characters/s001/aether-voss-sheet.png","columns":4,"rows":1,"frames":{"ready":0,"idle":1,"summon":2,"skill":3}}}],"equipment":{"slots":["headgear","amulet","weapon","armour","ring","relic"],"rarities":[{"id":"common","name":"Common","color":"#929292"},{"id":"uncommon","name":"Uncommon","color":"#40b85c"},{"id":"rare","name":"Rare","color":"#408de0"},{"id":"epic","name":"Epic","color":"#e53935"},{"id":"legendary","name":"Legendary","color":"#e5b539"}],"attributes":["summoner_power","skill_power_pct","skill_cooldown_reduction_pct","summoned_damage_pct","curse_max_hp_pct_per_second","curse_resistance_pct","dark_damage_resistance_pct","night_damage_bonus_pct"],"items":[],"loot_enabled":false,"elements":["neutral","nature","fire","water","earth","metal","lightning","light","dark"],"specializations":{"water":["ice"]},"item_fields":["id","name","slot","level","rarity","element","attributes","sell_gold","sprite"],"attribute_limits":{"curse_resistance_pct":[0,100],"dark_damage_resistance_pct":[0,100],"skill_cooldown_reduction_pct":[0,100]},"effects_enabled":false},"power_regen_per_second":2,"surge_regen_pct":50}};
-function storeProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile))}catch(e){}}
+let progression={"schema_version":"1.0.0","team":{"starting_slots":8,"max_slots":12,"slot_unlock_costs":[250,500,900,1400]},"coins":{"kill_base":20,"elite_multiplier":3,"boss_multiplier":8,"round_clear_battle_base":80,"round_clear_battle_growth":10,"round_clear_menu_base":50,"round_clear_menu_growth":6,"elite_kill_gold":2,"boss_kill_gold":8,"starting_battle_coins":100},"defence":{"first_count":4,"count_per_round":1,"max_count":45,"initial_spawn_seconds":7,"min_spawn_seconds":0.8,"spawn_acceleration":0.25,"boss_every":5,"round_break_seconds":4,"attack_cost":75,"max_upgrade":10,"monster_unlock_cost":250,"elite_sprite_scale":2,"tower_range_cap":425,"boss_sprite_scale":2.15,"first_elite_round":3,"first_boss_round":10},"rank_bonus_pct":{"normal":{"hp":0,"damage":0,"skill_power":0,"attack_speed":0},"elite":{"hp":50,"damage":50,"skill_power":50,"attack_speed":20},"boss":{"hp":200,"damage":100,"skill_power":100,"attack_speed":40}},"round_growth_pct":{"ally":12,"enemy":12},"dark_night_bonus_pct":{"hp":10,"damage":15,"attack_speed":10},"summoner":{"max_level":100,"base_power":100,"power_per_level":1,"xp_base":100,"xp_growth":20,"xp_normal":10,"xp_elite":30,"xp_boss":80,"xp_round":50,"elite_unlock_level":10,"boss_unlock_level":20,"surge_unlock_level":5,"surge_speed_pct":50,"surge_duration":10,"surge_cooldown":60,"characters":[{"id":"s001","name":"Aether Voss","passive":"summoner_power","active":"summoning_surge","available":true,"element":"neutral","art":{"sheet":"assets/characters/s001/aether-voss-sheet.png","columns":4,"rows":1,"frames":{"ready":0,"idle":1,"summon":2,"skill":3}}}],"equipment":{"slots":["headgear","amulet","weapon","armour","ring","relic"],"rarities":[{"id":"common","name":"Common","color":"#929292"},{"id":"uncommon","name":"Uncommon","color":"#40b85c"},{"id":"rare","name":"Rare","color":"#408de0"},{"id":"epic","name":"Epic","color":"#e53935"},{"id":"legendary","name":"Legendary","color":"#e5b539"}],"attributes":["summoner_power","skill_power_pct","skill_cooldown_reduction_pct","summoned_damage_pct","curse_max_hp_pct_per_second","curse_resistance_pct","dark_damage_resistance_pct","night_damage_bonus_pct"],"items":[],"loot_enabled":false,"elements":["neutral","nature","fire","water","earth","metal","lightning","light","dark"],"specializations":{"water":["ice"]},"item_fields":["id","name","slot","level","rarity","element","attributes","sell_gold","sprite"],"attribute_limits":{"curse_resistance_pct":[0,100],"dark_damage_resistance_pct":[0,100],"skill_cooldown_reduction_pct":[0,100]},"effects_enabled":false},"power_regen_per_second":2,"surge_regen_pct":50},"testing_mode":true};
+function storeProfile(){try{let saved=profile;if(progression.testing_mode===true){const previous=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');saved={...profile};for(const key of ['tower','shield','drone','generator'])if(!profile[key+'s'].includes(profile[key]))saved[key]=previous?.[key]||profile[key+'s'][0];}localStorage.setItem(PROFILE_KEY,JSON.stringify(saved))}catch(e){}}
 function loadProfile(defaults){
  let saved=null;
  try{saved=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')}catch(e){}
@@ -660,18 +660,18 @@ function loadProfile(defaults){
  };
  storeProfile();
 }
-function owns(id){return profile.owned.includes(id)}
+function owns(id){return profile.owned.includes(id)||(progression.testing_mode===true&&roster.some(m=>m.id===id))}
 function summonerStats(){
  const c=progression.summoner;let level=1,xp=profile.xp||0,required=c.xp_base;
  while(level<c.max_level&&xp>=required){xp-=required;level++;required=c.xp_base+(level-1)*c.xp_growth;}
  return {level,xp,required,power:c.base_power+(level-1)*c.power_per_level,max:level>=c.max_level};
 }
-function rankUnlockLevel(rank){const c=progression.summoner;return rank==='elite'?c.elite_unlock_level:rank==='boss'?c.boss_unlock_level:1;}
+function rankUnlockLevel(rank){if(progression.testing_mode===true)return 1;const c=progression.summoner;return rank==='elite'?c.elite_unlock_level:rank==='boss'?c.boss_unlock_level:1;}
 function refreshSummoner(){
  const s=summonerStats(),c=progression.summoner;
  const homeLabel=$('summoner-home-label'),homeBar=$('summoner-home-bar');homeLabel.textContent='Lv '+s.level+' · Max SP '+s.power;homeBar.value=s.max?1:s.xp/s.required;homeBar.title=s.max?'Maximum level':s.xp+' / '+s.required+' EXP';const available=Math.min(s.power,state?.availablePower??s.power),battleLabel=$('summoner-battle-label'),battleBar=$('summoner-battle-bar');battleLabel.textContent=Math.floor(available)+' / '+s.power+' SP';battleBar.value=available/s.power;battleBar.title='Summoner Power · +'+(c.power_regen_per_second*(run.surgeTime>0?1+c.surge_regen_pct/100:1))+' SP/s';
  $('summoner-home-exp').textContent=s.max?'Maximum level':s.xp+' / '+s.required+' EXP · Summoning speed +'+(s.power/c.base_power*100-100).toFixed(0)+'%';
- const button=$('summoner-surge');const locked=s.level<c.surge_unlock_level,active=run.surgeTime>0,cd=run.surgeCooldown>0;
+ const button=$('summoner-surge');const locked=progression.testing_mode!==true&&s.level<c.surge_unlock_level,active=run.surgeTime>0,cd=run.surgeCooldown>0;
  const label=locked?'Surge · Lv '+c.surge_unlock_level:active?'Surge '+Math.ceil(run.surgeTime)+'s':cd?'Surge '+Math.ceil(run.surgeCooldown)+'s':'Surge';
  if(button.textContent!==label)button.textContent=label;
  button.disabled=locked||active||cd||!run.active||!!state?.ended;
@@ -685,7 +685,7 @@ function renderSummonerPage(){
  if(art?.sheet){const img=new Image();img.onload=()=>{if(artwork.dataset.character!==selected.id)return;const cols=art.columns||4,rows=art.rows||1;sprite.style.aspectRatio=(img.naturalWidth/cols)+' / '+(img.naturalHeight/rows);sprite.style.backgroundImage='url("'+art.sheet+'")';sprite.style.backgroundSize=(cols*100)+'% '+(rows*100)+'%';sprite.style.setProperty('--ready-frame',(art.frames.ready/(cols-1)*100)+'%');sprite.style.setProperty('--idle-frame',(art.frames.idle/(cols-1)*100)+'%');placeholder.hidden=true;sprite.hidden=false;};img.onerror=()=>{if(artwork.dataset.character===selected.id){sprite.hidden=true;placeholder.hidden=false;}};img.src=art.sheet;}
 
  $('summoner-power-breakdown').textContent='Maximum SP '+s.power+' · Regeneration '+c.power_regen_per_second+' SP/s · Equipment bonus +0 (Coming Soon)';
- $('summoner-skill-info').textContent='Active · +'+c.surge_speed_pct+'% summoning speed and +'+c.surge_regen_pct+'% SP regeneration for '+c.surge_duration+'s · '+c.surge_cooldown+'s cooldown · '+(s.level<c.surge_unlock_level?'Unlocks at Lv '+c.surge_unlock_level:'Unlocked');
+ $('summoner-skill-info').textContent='Active · +'+c.surge_speed_pct+'% summoning speed and +'+c.surge_regen_pct+'% SP regeneration for '+c.surge_duration+'s · '+c.surge_cooldown+'s cooldown · '+(progression.testing_mode===true?'Unlocked · Testing':s.level<c.surge_unlock_level?'Unlocks at Lv '+c.surge_unlock_level:'Unlocked');
  $('summoner-collection').replaceChildren(...c.characters.map(m=>{const b=document.createElement('button');b.className='app-card';b.textContent=m.name+' · '+(m.id===selected.id?'Selected':profile.summoners.includes(m.id)?'Owned':'Locked');b.disabled=m.id===selected.id||!m.available||!profile.summoners.includes(m.id);b.onclick=()=>{profile.summoner=m.id;storeProfile();renderSummonerPage();};return b;}));
  $('summoner-equipment').replaceChildren(...c.equipment.slots.map(slot=>{const d=document.createElement('div');d.className='summoner-slot';const title=document.createElement('strong');title.textContent=slot[0].toUpperCase()+slot.slice(1);const sub=document.createElement('small');sub.textContent='Empty · Coming Soon';d.append(title,sub);return d;}));
 }
@@ -703,6 +703,7 @@ function refreshCoinDisplays(){refreshSummoner();
  $('battle-gold').textContent=label;$('battle-gold-earned').textContent='+'+(run.menuEarned||0).toLocaleString('en-US');
 }
 function nextSlotPrice(){
+ if(progression.testing_mode===true)return null;
  const index=profile.teamSlots-progression.team.starting_slots;
  return profile.teamSlots>=progression.team.max_slots?null:progression.team.slot_unlock_costs[index]??null;
 }
@@ -718,7 +719,8 @@ function settleBattle(){
  if(state.victory){run.wins++;const c=progression.coins;const battleBonus=c.round_clear_battle_base+(run.battle-1)*c.round_clear_battle_growth,menuBonus=c.round_clear_menu_base+(run.battle-1)*c.round_clear_menu_growth;run.wallet+=battleBonus;run.coins+=battleBonus;state.roundCoins+=battleBonus;profile.coins+=menuBonus;profile.xp+=progression.summoner.xp_round;run.menuEarned+=menuBonus;state.menuReward=menuBonus;storeProfile();refreshCoinDisplays();}
 }
 function selectEquipment(){
- const selected=TowerUpgrades.selectEquipment(towerRegistry,profile,progression.defence);
+ const selectionProfile=progression.testing_mode===true?{...profile,...Object.fromEntries(['towers','shields','drones','generators'].map(group=>[group,towerRegistry[group].filter(x=>x.available!==false).map(x=>x.id)]))}:profile;
+ const selected=TowerUpgrades.selectEquipment(towerRegistry,selectionProfile,progression.defence);
  towerConfigs.ally=selected.tower;equipmentConfig=selected.config;
  if(selected.tower.sheet)towerImages.ally.src=selected.tower.sheet;
  if(selected.drone.sheet)droneImage.src=selected.drone.sheet;else droneImage.removeAttribute('src');
@@ -732,7 +734,7 @@ function renderEquipment(){
  $('equipment-loadout').replaceChildren(...names);
  const group=equipmentTab,key=group.slice(0,-1);
  $('equipment-list').replaceChildren(...towerRegistry[group].map(item=>{
- const pending=item.available===false,owned=profile[group].includes(item.id),equipped=!pending&&profile[key]===item.id;
+ const pending=item.available===false,owned=profile[group].includes(item.id)||progression.testing_mode===true,equipped=!pending&&profile[key]===item.id;
  const card=document.createElement('article');card.className='equipment-card'+(equipped?' equipped':'');
  const art=document.createElement('span');art.className='equipment-art';art.setAttribute('aria-hidden','true');
  if(item.sprite){art.style.backgroundImage='url("'+item.sprite+'")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}else if(item.sheet)art.style.backgroundImage='url("'+item.sheet+'")';else art.textContent='◇';
@@ -741,7 +743,7 @@ function renderEquipment(){
  detail.textContent=group==='towers'?item.max_hp+' HP · '+item.basic_attack.damage+' damage · Range '+item.basic_attack.range+' · '+item.basic_attack.cooldown_seconds+'s interval':group==='shields'?item.hp_per_level+' shield HP / level · '+item.upgrade_cost+' BC starting upgrade':group==='generators'?item.income_per_level+' BC / level every '+item.interval_seconds+'s · '+item.upgrade_cost+' BC starting upgrade':item.damage+' damage · '+item.interval_seconds+'s interval · '+item.deploy_cost+' BC starting deployment · Max '+item.max_active;
  if(pending){const status=document.createElement('small');status.textContent='Coming Soon · Planned stats';status.style.color='#d6b9ff';copy.append(name,status,detail,description);}else copy.append(name,detail,description);
  const button=document.createElement('button');button.type='button';button.textContent=pending?'Coming Soon':equipped?'Equipped':owned?'Equip':'Unlock · '+item.unlock_cost+' Gold';button.disabled=pending||equipped||(!owned&&profile.coins<item.unlock_cost);
- button.onclick=()=>{if(view!=='upgrades'||!TowerUpgrades.equip(towerRegistry,profile,group,item.id))return;selectEquipment();renderEquipment();$('equipment-message').textContent=item.name+' equipped.';};
+ button.onclick=()=>{if(view!=='upgrades'||pending)return;if(progression.testing_mode===true){profile[key]=item.id;}else if(!TowerUpgrades.equip(towerRegistry,profile,group,item.id))return;selectEquipment();renderEquipment();$('equipment-message').textContent=item.name+' equipped.';};
  const info=document.createElement('button');info.type='button';info.textContent='View Info';info.onclick=()=>{const panel=$('equipment-info');panel.replaceChildren();const title=document.createElement('h3');title.textContent=item.name+' · '+item.id.toUpperCase();const summary=document.createElement('p');summary.textContent=[item.series+' Series',item.ability,item.description,detail.textContent,pending?'Coming Soon · Planned statistics, subject to balancing':null,item.unlock_cost==null?'Gold unlock cost: To be confirmed':'Unlock: '+item.unlock_cost+' Gold',item.planned_skill?'Planned ability: '+item.planned_skill:null].filter(Boolean).join(' · ');panel.append(title,summary);if(group==='towers'){const table=document.createElement('table');table.className='equipment-stats-table';const header=table.insertRow();for(const label of ['Level','Damage','Range','Interval','Attack']){const th=document.createElement('th');th.textContent=label;header.append(th);}for(let level=0;level<=progression.defence.max_upgrade;level++){const a=TowerUpgrades.attackStats(item,{attackLevel:level},equipmentConfig),row=table.insertRow();for(const value of [level,a.damage.toFixed(1),Math.round(a.range),a.interval.toFixed(2)+'s',a.type==='arrow'?a.arrows+' arrows':a.stun.toFixed(2)+'s stun'])row.insertCell().textContent=value;}panel.append(table);}else if(group==='generators'){const table=document.createElement('table');table.className='equipment-stats-table';const header=table.insertRow();for(const label of ['Level','BC / '+item.interval_seconds+'s','Upgrade cost (BC)']){const th=document.createElement('th');th.textContent=label;header.append(th);}for(let level=1;level<=item.max_level;level++){const q=TowerUpgrades.quote({generatorLevel:level-1},{generator_cost:item.upgrade_cost,generator_max:item.max_level},'generator'),row=table.insertRow();for(const value of [level,level*item.income_per_level,q.cost])row.insertCell().textContent=value;}panel.append(table);}else if(group==='shields'||group==='drones'){const table=document.createElement('table');table.className='equipment-stats-table';const head=table.insertRow();for(const label of group==='shields'?['Level','Shield HP','Upgrade cost (BC)']:['Count',item.type==='chain_lightning'?'Base damage / first targets':'Combined damage / volley','Deployment cost (BC)']){const th=document.createElement('th');th.textContent=label;head.append(th);}const config={...equipmentConfig,...(group==='shields'?{shield_cost:item.upgrade_cost,shield_hp:item.hp_per_level}:{drone_cost:item.deploy_cost,drone_max:item.max_active})};const max=group==='shields'?config.max_upgrade:config.drone_max;for(let level=1;level<=max;level++){const quote=TowerUpgrades.quote({shieldLevel:level-1,drones:level-1},config,group==='shields'?'shield':'drone'),row=table.insertRow();for(const value of [level,level*(group==='shields'?item.hp_per_level:item.damage),quote.cost])row.insertCell().textContent=value;}panel.append(table);}panel.hidden=false;panel.scrollIntoView({block:'nearest'});};card.append(art,copy,button,info);return card;
  }));
  $('upgrades-play').disabled=team.length===0;
@@ -765,8 +767,8 @@ function renderUpgrades(){
  const shield='Shield '+Math.ceil(state.towerShield.hp);
  if($('tower-shield-label').textContent!==shield)$('tower-shield-label').textContent=shield;
 }
-function encountered(id,rank='normal'){const key=rank==='elite'?'eliteEncountered':rank==='boss'?'bossEncountered':'encountered';return profile[key].includes(id)}
-function markEncounter(id,rank='normal'){if(!id||encountered(id,rank))return;const key=rank==='elite'?'eliteEncountered':rank==='boss'?'bossEncountered':'encountered';profile[key].push(id);storeProfile();if(view==='bestiary')renderBestiary();}
+function encountered(id,rank='normal'){const key=rank==='elite'?'eliteEncountered':rank==='boss'?'bossEncountered':'encountered';return progression.testing_mode===true||profile[key].includes(id)}
+function markEncounter(id,rank='normal'){const key=rank==='elite'?'eliteEncountered':rank==='boss'?'bossEncountered':'encountered';if(!id||profile[key].includes(id))return;profile[key].push(id);storeProfile();if(view==='bestiary')renderBestiary();}
 function loadAudioPreferences(){
  let v=null;try{v=JSON.parse(localStorage.getItem(AUDIO_KEY)||'null')}catch(e){}
  if(!v||!audioConfig)return;
@@ -797,7 +799,7 @@ function setAudioLevel(kind,value){
 }
 
 let roster=[],catalog=[],team=[],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;
-async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json',{cache:'no-store'})).json();if(!Array.isArray(stages))stages=stages.stages||[];stages=(await Promise.all(stages.map(async entry=>entry.source?fetch(entry.source,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Missing map '+entry.source);return r.json()}):entry))).filter(entry=>entry&&entry.enabled!==false);for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();if(allowBestiaryHash&&location.hash.startsWith('#/bestiary'))readBestiaryRoute();window.addEventListener('popstate',readBestiaryRoute);window.addEventListener('hashchange',readBestiaryRoute);$('startup-message').hidden=true;for(const id of ['home-start','menu-team-home','menu-upgrades-home'])$(id).disabled=false;requestAnimationFrame(frame)}
+async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json',{cache:'no-store'})).json();if(!Array.isArray(stages))stages=stages.stages||[];stages=(await Promise.all(stages.map(async entry=>entry.source?fetch(entry.source,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Missing map '+entry.source);return r.json()}):entry))).filter(entry=>entry&&entry.enabled!==false);for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();if(allowBestiaryHash&&location.hash.startsWith('#/bestiary'))readBestiaryRoute();window.addEventListener('popstate',readBestiaryRoute);window.addEventListener('hashchange',readBestiaryRoute);$('startup-message').hidden=progression.testing_mode!==true;if(progression.testing_mode===true)$('startup-message').textContent='TEST MODE · Unlock restrictions bypassed';for(const id of ['home-start','menu-team-home','menu-upgrades-home'])$(id).disabled=false;requestAnimationFrame(frame)}
 let currentStage=null;
 function stageBackgroundPath(s){
  // The JSON is authoritative. Existing older manifests may omit background;
@@ -1389,15 +1391,15 @@ function cardFor(m,selectable){
  desc.innerHTML='<strong></strong><br><small></small><br><em class="app-pending"></em>';
  desc.querySelector('strong').textContent=m.name;
  desc.querySelector('small').textContent=m.element+' · '+m.role+' · '+m.deployment.cooldown_seconds+'s Cooldown · '+summonPowerCost(m)+' SP · Max '+unitCap(m);
- desc.querySelector('em').textContent=!unlocked?'Locked':ready?'Owned · Battle Ready':'Owned · Artwork Pending';
+ desc.querySelector('em').textContent=!unlocked?'Locked':ready?(progression.testing_mode===true&&!profile.owned.includes(m.id)?'Testing · Battle Ready':'Owned · Battle Ready'):'Owned · Artwork Pending';
  node.append(art,desc);
  if(!selectable)node.disabled=true;
  else{
   node.disabled=!ready||!unlocked;
   node.onclick=()=>{
    if(team.includes(m.id))team=team.filter(id=>id!==m.id);
-   else if(team.length<profile.teamSlots)team.push(m.id);
-   profile.team=team.slice();storeProfile();renderTeam();
+   else if(team.length<(progression.testing_mode===true?progression.team.max_slots:profile.teamSlots))team.push(m.id);
+   if(progression.testing_mode!==true){profile.team=team.slice();storeProfile();}renderTeam();
   };
  }
  return node;
@@ -1509,7 +1511,7 @@ function renderTeam(){
   if(!owns(m.id)){const buy=document.createElement('button'),cost=Number(m.unlock_cost)||progression.defence.monster_unlock_cost;buy.textContent=m.art?.status==='ready'?'Unlock · '+cost+' Gold':'Artwork Pending';buy.disabled=m.art?.status!=='ready'||profile.coins<cost;buy.onclick=()=>{if(owns(m.id)||m.art?.status!=='ready'||profile.coins<cost)return;profile.coins-=cost;profile.owned.push(m.id);markEncounter(m.id);storeProfile();renderTeam();};wrapper.append(buy);}
   return wrapper;
  }));
- $('team-slot-count').textContent='Team Slots: '+team.length+'/'+profile.teamSlots;
+ $('team-slot-count').textContent='Team Slots: '+team.length+'/'+(progression.testing_mode===true?progression.team.max_slots:profile.teamSlots);
  refreshCoinDisplays();
  const price=nextSlotPrice(),unlock=$('unlock-team-slot');
  unlock.hidden=price===null;
@@ -1521,7 +1523,7 @@ function renderTeam(){
   unlock.append(img,document.createTextNode(' '+price.toLocaleString('en-US')+' Gold'));
  }
  unlock.disabled=price!==null&&profile.coins<price;
- const slots=Array.from({length:profile.teamSlots},(_,i)=>{
+ const slots=Array.from({length:progression.testing_mode===true?progression.team.max_slots:profile.teamSlots},(_,i)=>{
   const d=document.createElement('div');d.className='app-slot';
   const m=roster.find(m=>m.id===team[i]);
   d.textContent='Slot '+(i+1)+': '+(m?.name||'Empty');
@@ -1562,7 +1564,7 @@ function toggleQuickNav(force){
 }
 function bindMenu(){
  $('nav-summoner').onclick=()=>openView('summoner');$('nav-inventory').onclick=()=>openView('inventory');$('summoner-back').onclick=()=>openView('home');$('summoner-inventory').onclick=()=>openView('inventory');$('inventory-back').onclick=()=>openView('summoner');
- $('summoner-surge').onclick=()=>{const c=progression.summoner;if(view!=='battle'||!run.active||state?.ended||battleMenuOpen||summonerStats().level<c.surge_unlock_level||run.surgeCooldown>0)return;run.surgeTime=c.surge_duration;run.surgeCooldown=c.surge_cooldown;refreshSummoner();};
+ $('summoner-surge').onclick=()=>{const c=progression.summoner;if(view!=='battle'||!run.active||state?.ended||battleMenuOpen||(progression.testing_mode!==true&&summonerStats().level<c.surge_unlock_level)||run.surgeCooldown>0)return;run.surgeTime=c.surge_duration;run.surgeCooldown=c.surge_cooldown;refreshSummoner();};
  for(const b of document.querySelectorAll('[data-bestiary]'))b.onclick=()=>{bestiaryRank=b.dataset.bestiary;renderBestiary();updateRoute('bestiary',true);};
  $('menu-upgrades-home').onclick=()=>openView('upgrades');$('nav-upgrades').onclick=()=>openView('upgrades');$('upgrades-back').onclick=()=>openView('home');$('upgrades-play').onclick=startRun;
  for(const button of document.querySelectorAll('[data-equipment]'))button.onclick=()=>{equipmentTab=button.dataset.equipment;$('equipment-message').textContent='';renderEquipment();};

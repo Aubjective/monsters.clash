@@ -199,5 +199,6 @@
     },
     "power_regen_per_second": 2,
     "surge_regen_pct": 50
-  }
+  },
+  "testing_mode": true
 }
