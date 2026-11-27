@@ -585,7 +585,7 @@ function drawMapBackground(img,x,y,w,h){
  window.MonstersClashEnvironment?.renderSmoke(ctx,x,y,w,h);
 }
 function resizeBattleCanvas(){
- const rect=cv.getBoundingClientRect();
+ const rect={width:cv.clientWidth,height:cv.clientHeight};
  if(rect.width<1||rect.height<1)return;
  const density=Math.min(2,Math.max(1,window.devicePixelRatio||1));
  const nextWidth=Math.max(1,Math.round(rect.width*density)),nextHeight=Math.max(1,Math.round(rect.height*density));
@@ -1273,26 +1273,30 @@ function drawNatureShield(u,front){
 }
 function draw(){
  resizeBattleCanvas();
- const worldScale=Math.min(cv.width/W,cv.height/H);
- const viewWidth=cv.width/worldScale,viewHeight=cv.height/worldScale;
- // Center the fixed combat width and anchor the ground line at the same
- // fraction of the viewport height, including when the screen rotates.
- const viewOffsetX=(viewWidth-W)/2,viewOffsetY=(viewHeight-H)*ground/H;
+ // The full logical combat width spans the display; no centered empty side gutters.
+ // Horizontal positions adapt to screen width, but sprites retain uniform proportions.
+ const phone= Math.min(cv.clientWidth,cv.clientHeight)<=500;
+ const horizontalScale=cv.width/W;
+ const worldScale=Math.min(horizontalScale,cv.height/(phone?450:H));
+ const viewWidth=W,viewHeight=cv.height/worldScale;
+ const viewOffsetX=0,viewOffsetY=(viewHeight-H)*.5;
+ const actorRatio=worldScale/horizontalScale;
  ctx.setTransform(1,0,0,1,0,0);
  ctx.clearRect(0,0,cv.width,cv.height);
- ctx.save();ctx.setTransform(worldScale,0,0,worldScale,viewOffsetX*worldScale,viewOffsetY*worldScale);
+ ctx.save();ctx.setTransform(horizontalScale,0,0,worldScale,0,viewOffsetY*worldScale);
  const s=stage(),colors={nature:['#78ceff','#95cb79','#7dbe57'],fire:['#f87b52','#a84c35','#b75c3d'],ice:['#b6e7ff','#a5d3e5','#cceaf5'],earth:['#b5c5cf','#9b927f','#bfae85'],neutral:['#93cce7','#81a081','#9eb982']}[s?.affinity]||['#8ed1ef','#89bd73','#92c269'];
  const backdrop=mapBackground(stageBackgroundPath(s));
  if(readyImage(backdrop))drawMapBackground(backdrop,-viewOffsetX,-viewOffsetY,viewWidth,viewHeight);
  else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(-viewOffsetX,-viewOffsetY,viewWidth,viewHeight);ctx.fillStyle=colors[2];ctx.fillRect(-viewOffsetX,ground,viewWidth,Math.max(0,viewHeight-viewOffsetY-ground));ctx.fillStyle='#446b48';ctx.fillRect(-viewOffsetX,ground,viewWidth,5)}
  window.MonstersClashDayNight?.render(ctx,-viewOffsetX,-viewOffsetY,viewWidth,viewHeight);
  window.MonstersClashEnvironment?.render(ctx,'background',-viewOffsetX,-viewOffsetY,viewWidth,viewHeight);
- TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,false);
+ ctx.save();ctx.translate(towerLayout.x,0);ctx.scale(actorRatio,1);ctx.translate(-towerLayout.x,0);
+ TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,false);ctx.restore();
  if(run.generatorLevel>0&&readyImage(generatorImage)){
  const hh=towerLayout.generatorHeight,ww=hh*generatorImage.naturalWidth/generatorImage.naturalHeight;
  const gx=towerLayout.generatorX,gy=towerLayout.generatorY+Math.sin(state.time*1.8)*5;
  const pulse=state.generatorPulse/.85,baseY=gy+hh/2;
- ctx.save();
+ ctx.save();ctx.translate(gx,0);ctx.scale(actorRatio,1);ctx.translate(-gx,0);
  // Levitation rings sit underneath the floating structure, independent of its coin pulse.
  for(let i=0;i<3;i++){const phase=(state.time*.65+i/3)%1;ctx.globalAlpha=(1-phase)*(.24+run.generatorLevel*.025);ctx.strokeStyle='#65ddff';ctx.shadowColor='#38bfff';ctx.shadowBlur=7;ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(gx,baseY+4+phase*13,Math.max(12,ww*.27)*(1+phase*.45),3+phase*3,0,0,Math.PI*2);ctx.stroke();}
  ctx.globalAlpha=1;ctx.shadowColor=pulse>0?'#ffd979':'#55ceff';ctx.shadowBlur=4+run.generatorLevel*1.1+Math.sin(state.time*3)*2+16*pulse;
@@ -1300,13 +1304,14 @@ function draw(){
  if(pulse>0){ctx.shadowColor='#ffe09a';ctx.shadowBlur=7;ctx.fillStyle='#ffe4a1';ctx.globalAlpha=pulse;for(let i=0;i<5;i++){const a=i*2.39996,q=1-pulse;ctx.beginPath();ctx.arc(gx+Math.cos(a)*(8+q*24),gy-hh*.25-q*30+Math.sin(a)*7,1.5,0,Math.PI*2);ctx.fill();}}
  ctx.restore();
  }
+ ctx.save();ctx.translate(towerLayout.x,0);ctx.scale(actorRatio,1);ctx.translate(-towerLayout.x,0);
  drawTower('ally',towerLayout.x,state.allyBase);
- TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,true);
- for(let i=0;i<run.drones;i++){const x=towerLayout.droneX+i*towerLayout.droneSpacing+Math.sin(state.time*1.6+i)*7,y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*7;ctx.save();ctx.translate(x,y);if(readyImage(droneImage)){spriteFrame(droneImage,0,-30,-30,60,60,equipmentConfig.drone_sheet_columns,1);ctx.restore();continue;}ctx.fillStyle='#627e91';ctx.fillRect(-22,-3,44,7);ctx.fillStyle='#a8bdca';ctx.beginPath();ctx.ellipse(0,0,15,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ce9ff';ctx.fillRect(-4,-3,8,6);ctx.restore();}
+ TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,true);ctx.restore();
+ for(let i=0;i<run.drones;i++){const x=towerLayout.droneX+i*towerLayout.droneSpacing+Math.sin(state.time*1.6+i)*7,y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*7;ctx.save();ctx.translate(x,y);ctx.scale(actorRatio,1);if(readyImage(droneImage)){spriteFrame(droneImage,0,-30,-30,60,60,equipmentConfig.drone_sheet_columns,1);ctx.restore();continue;}ctx.fillStyle='#627e91';ctx.fillRect(-22,-3,44,7);ctx.fillStyle='#a8bdca';ctx.beginPath();ctx.ellipse(0,0,15,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ce9ff';ctx.fillRect(-4,-3,8,6);ctx.restore();}
  drawTowerAttacks();
  for(const fx of chargeEffects){
   const fade=Math.max(0,fx.life/fx.maxLife);
-  ctx.save();ctx.translate(fx.x,fx.y);ctx.scale(fx.scale||1,fx.scale||1);ctx.translate(-fx.x,-fx.y);ctx.globalAlpha=fade;ctx.strokeStyle=fx.impact?'#ffe7a0':'#ed8a45';
+  ctx.save();ctx.translate(fx.x,fx.y);ctx.scale((fx.scale||1)*actorRatio,fx.scale||1);ctx.translate(-fx.x,-fx.y);ctx.globalAlpha=fade;ctx.strokeStyle=fx.impact?'#ffe7a0':'#ed8a45';
   ctx.lineWidth=fx.impact?5:3;ctx.beginPath();
   if(fx.impact){ctx.arc(fx.x,fx.y,18+(1-fade)*22,0,Math.PI*2)}
   else{ctx.moveTo(fx.x-23,fx.y-7);ctx.lineTo(fx.x+23,fx.y-7);ctx.moveTo(fx.x-15,fx.y+7);ctx.lineTo(fx.x+12,fx.y+7)}
@@ -1314,6 +1319,7 @@ function draw(){
  }
  // Depth-sort monsters by their individual ground positions.
  for(const u of [...state.units].sort((a,b)=>a.y-b.y)){
+   ctx.save();ctx.translate(u.x,0);ctx.scale(actorRatio,1);ctx.translate(-u.x,0);
    const img=images[u.m.id],kind=u.m.ai.locomotion||'walk',flying=kind==='fly'||kind==='float';
    const hover=flying?13+Math.sin(u.phase)*4:0;
    const size=(u.m.id==='m001'?134:128)*u.visualScale;
@@ -1349,10 +1355,11 @@ function draw(){
      }ctx.restore();
    }
    drawNatureShield(u,true);
-   ctx.save();ctx.translate(u.x,u.y);ctx.scale(u.visualScale,u.visualScale);ctx.translate(-u.x,-u.y);window.MonstersClashEnvironment?.renderStatus(ctx,u);ctx.restore();
+   ctx.save();ctx.translate(u.x,u.y);ctx.scale(u.visualScale,u.visualScale);ctx.translate(-u.x,-u.y);window.MonstersClashEnvironment?.renderStatus(ctx,u);ctx.restore();ctx.restore();
  }
  // Draw health UI in a separate pass so foreground sprites never hide another unit's bar.
  for(const u of [...state.units].sort((a,b)=>a.y-b.y)){
+   ctx.save();ctx.translate(u.x,0);ctx.scale(actorRatio,1);ctx.translate(-u.x,0);
    const size=(u.m.id==='m001'?134:128)*u.visualScale,hover=['fly','float'].includes(u.m.ai.locomotion)?13+Math.sin(u.phase)*4:0;
    const ranked=u.rank==='elite'||u.rank==='boss',w=ranked?Math.min(108,64*u.visualScale):64,hpH=ranked?9:7;
    const barY=u.y-size*.82-12-hover,x=u.x-w/2,ratio=Math.max(0,Math.min(1,u.hp/u.maxhp));
@@ -1362,10 +1369,10 @@ function draw(){
    if(ratio>0){const grad=ctx.createLinearGradient(0,barY,0,barY+hpH);grad.addColorStop(0,u.side>0?'#a2ecff':'#ffad99');grad.addColorStop(1,u.side>0?'#278ecb':'#bd343f');ctx.fillStyle=grad;ctx.beginPath();ctx.roundRect(x,barY,w*ratio,hpH,2);ctx.fill();}
    if(u.shield>0&&u.shieldTime>0){ctx.fillStyle='#a4f4cc';ctx.fillRect(x,barY+hpH+4,w*Math.min(1,u.shield/u.maxhp),2);}
    if(ranked){ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#101722';ctx.strokeText((u.nightBoost?'BOSS · DARK ↑':u.darkEvolved?'BOSS · DARK':u.rank.toUpperCase()),u.x,barY-25);ctx.fillStyle=edge;ctx.fillText((u.nightBoost?'BOSS · DARK ↑':u.darkEvolved?'BOSS · DARK':u.rank.toUpperCase()),u.x,barY-25);}
-   ctx.restore();window.MonstersClashEnvironment?.renderIndicators(ctx,u,barY);
+   ctx.restore();window.MonstersClashEnvironment?.renderIndicators(ctx,u,barY);ctx.restore();
  }
- TowerUpgrades.renderHealth(ctx,towerLayout.x,towerLayout.hpY,state.allyBase,towerConfigs.ally?.max_hp||1900,state.towerShield,hpBarImage);
- for(const f of state.earnings){ctx.save();ctx.globalAlpha=Math.min(1,f.life/.35);ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#132131';const y=f.y-(1.35-f.life)*24;ctx.strokeText('+'+f.value+' BC',f.x,y);ctx.fillStyle='#a5e4ff';ctx.fillText('+'+f.value+' BC',f.x,y);ctx.restore();}
+ ctx.save();ctx.translate(towerLayout.x,0);ctx.scale(actorRatio,1);ctx.translate(-towerLayout.x,0);TowerUpgrades.renderHealth(ctx,towerLayout.x,towerLayout.hpY,state.allyBase,towerConfigs.ally?.max_hp||1900,state.towerShield,hpBarImage);ctx.restore();
+ for(const f of state.earnings){ctx.save();ctx.translate(f.x,0);ctx.scale(actorRatio,1);ctx.translate(-f.x,0);ctx.globalAlpha=Math.min(1,f.life/.35);ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#132131';const y=f.y-(1.35-f.life)*24;ctx.strokeText('+'+f.value+' BC',f.x,y);ctx.fillStyle='#a5e4ff';ctx.fillText('+'+f.value+' BC',f.x,y);ctx.restore();}
 
  if(state.ended){ctx.fillStyle='#06152578';ctx.fillRect(-viewOffsetX,-viewOffsetY,viewWidth,viewHeight)}
  ctx.restore();
