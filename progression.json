@@ -39,7 +39,11 @@
     "boss_sprite_scale": 1.4,
     "first_elite_round": 3,
     "first_boss_round": 10,
-    "normal_sprite_scale": 0.7
+    "normal_sprite_scale": 0.7,
+    "fortress_start_x": 156,
+    "fortress_goal_x": 745,
+    "fortress_move_speed": 13,
+    "fortress_stop_distance": 185
   },
   "rank_bonus_pct": {
     "normal": {

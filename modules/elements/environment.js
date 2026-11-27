@@ -55,7 +55,7 @@ function status(u){
 }
 function movementMultiplier(u){const s=u?.environmentStatus;return (s?.freezeTime>0||s?.rootTime>0||s?.staggerTime>0)?0:(s?.slowTime>0?1-s.slowPct:1)}
 function canAct(u){return !(u?.environmentStatus?.freezeTime>0||u?.environmentStatus?.staggerTime>0)}
-function update(dt,units,applyDamage,playSound){
+function update(dt,units,applyDamage,playSound,frontline=236){
  if(!stage||!enabled)return;
  dt=Math.max(0,Math.min(.06,Number(dt)||0));if(!dt)return;
  elapsed+=dt;gustClock+=dt;
@@ -151,7 +151,7 @@ function update(dt,units,applyDamage,playSound){
              st.staggerTime=Math.max(st.staggerTime||0,Number(hazard.stagger_duration_seconds)||.8);
              u.charge=null;u.walking=false;if(u.anim)u.anim=null;
              const vx=u.x-zone.x,vy=(u.y-zone.y)*1.45,len=Math.hypot(vx,vy),push=Math.max(0,Number(hazard.knockback_distance)||20);
-             u.x=Math.max(171,Math.min(789,u.x+(len>.001?vx/len:(u.side>0?-1:1))*push));
+             u.x=Math.max(frontline,Math.min(925,u.x+(len>.001?vx/len:(u.side>0?-1:1))*push));
              u.y=Math.max(343,Math.min(429,u.y+(len>.001?vy/len:0)*push/1.45));
              if(typeof applyDamage==='function')applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct)||0),'true');
            }else if(hazard.type==='entangling_roots'){
@@ -177,7 +177,8 @@ function update(dt,units,applyDamage,playSound){
    for(let i=0;i<count;i++){
      const radius=Math.max(25,Math.min(120,Number(hazard.zone_radius)||73));
      // Positions stay on the continuous battle floor, away from both towers.
-     const x=count===1?rand(320,640):i===0?rand(300,365):rand(595,660);
+     const left=Math.min(850,Math.max(300,frontline+35)),right=Math.max(left,850),span=right-left;
+     const x=count===1?rand(left,right):i===0?rand(left,left+span*.35):rand(left+span*.65,right);
      hazardZones.push({x,y:rand(362,408),radius,warning:Math.max(.3,Number(hazard.warning_seconds)||1),
        remaining:Math.max(.5,Number(hazard.active_seconds)||4),phase:rand(0,6),caught:new Set(),impacted:false});
    }
