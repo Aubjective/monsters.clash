@@ -63,7 +63,7 @@
     {
       "id": "s001",
       "name": "Sentinel Shield",
-      "description": "Orbiting crystal plates absorb damage to the tower.",
+      "description": "Orbiting translucent blue energy plates absorb damage to the tower.",
       "type": "mirror",
       "unlock_cost": 0,
       "upgrade_cost": 60,
@@ -73,7 +73,8 @@
       "orbit_speed": 0.85,
       "series": "Sentinel",
       "ability": "Mirror Barrier",
-      "sprite": "assets/shields/s001/sentinel-shield.png"
+      "sprite": "assets/shields/s001/sentinel-shield.png",
+      "render_mode": "procedural"
     },
     {
       "id": "s002",

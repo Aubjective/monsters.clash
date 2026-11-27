@@ -450,7 +450,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script src="modules/elements/environment.js?v=20261127-lava-flow"></script>
 <script src="modules/day-night/engine.js?v=20261127-fixed-time"></script>
-<script src="modules/towers/upgrades.js?v=20261127-barrier-ring"></script>
+<script src="modules/towers/upgrades.js?v=20261127-blue-shield"></script>
 <script>
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=960,H=480,ground=325;
@@ -520,7 +520,7 @@ let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentC
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json?v=20261127-dark-economy',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
+  fetch('towers.json?v=20261127-blue-shield',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json?v=20261127-sp',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('progression.json?v=20261127-testing',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
