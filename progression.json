@@ -82,8 +82,8 @@
     "elite_unlock_level": 10,
     "boss_unlock_level": 20,
     "surge_unlock_level": 5,
-    "surge_speed_pct": 50,
-    "surge_duration": 10,
+    "surge_speed_pct": 30,
+    "surge_duration": 8,
     "surge_cooldown": 60,
     "characters": [
       {
@@ -197,8 +197,8 @@
       },
       "effects_enabled": false
     },
-    "power_regen_per_second": 2,
-    "surge_regen_pct": 50
+    "power_regen_per_second": 1,
+    "surge_regen_pct": 25
   },
   "testing_mode": true
 }

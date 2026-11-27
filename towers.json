@@ -97,7 +97,7 @@
     {
       "id": "d001",
       "name": "Sentinel Drone",
-      "description": "Hovering support unit that fires at approaching enemies.",
+      "description": "Patrolling aerial support unit firing at approaching enemies from the left-to-middle battlefield.",
       "type": "projectile",
       "unlock_cost": 0,
       "deploy_cost": 80,
@@ -109,7 +109,24 @@
       "sheet_columns": 4,
       "series": "Sentinel",
       "ability": "Sentry Fire",
-      "projectile_sprite": "assets/weapons/w001/sentinel-arrow.png"
+      "projectile_sprite": "assets/weapons/w001/sentinel-arrow.png",
+      "patrol": {
+        "min_x": 270,
+        "max_x": 525,
+        "period_seconds": 9,
+        "vertical_amplitude": 7
+      },
+      "upgrade_plan": {
+        "enabled": false,
+        "attributes": [
+          "damage",
+          "attack_speed",
+          "range",
+          "max_active",
+          "tracking",
+          "special_effect"
+        ]
+      }
     },
     {
       "id": "d002",
