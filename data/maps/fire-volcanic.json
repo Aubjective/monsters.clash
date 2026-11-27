@@ -43,7 +43,8 @@
     "warning_seconds": 1,
     "active_seconds": 4,
     "damage_max_hp_pct_per_second": 0.01,
-    "minimum_spawn_age_seconds": 2
+    "minimum_spawn_age_seconds": 2,
+    "burn_visual_seconds": 8
   },
   "visual_design": {
     "base_art": "neutral_sky",

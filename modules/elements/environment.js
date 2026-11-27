@@ -99,7 +99,7 @@ function update(dt,units,applyDamage,playSound){
    const s=status(u);
    const feedback=s.feedback||(s.feedback={});
    for(const key of Object.keys(feedback)){feedback[key]=Math.max(0,feedback[key]-dt);if(!feedback[key])delete feedback[key];}
-   if(s.fireVisual>0)feedback.burning=3;
+   if(s.fireVisual>0)feedback.burning=s.fireVisual;
    if(s.bleedTime>0)feedback.bleeding=3;
    if(s.rootTime>0)feedback.rooted=3;
    if(s.staggerTime>0)feedback.staggered=3;
@@ -156,7 +156,7 @@ function update(dt,units,applyDamage,playSound){
              if(typeof applyDamage==='function')applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct)||0),'true');
            }else if(hazard.type==='entangling_roots'){
              if(!zone.caught.has(u)){zone.caught.add(u);const st=status(u);st.rootTime=Math.max(st.rootTime||0,Number(hazard.root_duration_seconds)||1.8);st.rootRelease=0;}
-           }else if(typeof applyDamage==='function'){status(u).fireVisual=.16;applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct_per_second)||0)*dt,'true');}
+           }else if(typeof applyDamage==='function'){status(u).fireVisual=Math.max(.1,Number(hazard.burn_visual_seconds)||8);applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct_per_second)||0)*dt,'true');}
          }
        }
      }
@@ -429,15 +429,30 @@ function renderStatus(ctx,u){
  const s=u?.environmentStatus;
  if(!enabled||!s)return;
  if(s.fireVisual>0){
-   ctx.save();const strength=Math.min(1,s.fireVisual/.1);
-   for(let i=0;i<5;i++){
-     const t=elapsed*8+i*2.1, x=u.x+(i-2)*9, y=u.y+2-Math.abs(i-2)*2;
-     const h=13+7*Math.sin(t)**2, sway=5*Math.sin(t*.7);
-     ctx.globalAlpha=.8*strength;ctx.fillStyle='#ff7a21';ctx.beginPath();ctx.moveTo(x-5,y);
-     ctx.quadraticCurveTo(x-8,y-h*.5,x+sway,y-h);ctx.quadraticCurveTo(x+9,y-h*.4,x+5,y);ctx.closePath();ctx.fill();
-     ctx.fillStyle='#ffe4a0';ctx.beginPath();ctx.moveTo(x-2,y);ctx.quadraticCurveTo(x-3,y-h*.3,x+sway*.5,y-h*.65);ctx.quadraticCurveTo(x+4,y-h*.25,x+2,y);ctx.fill();
-     const p=(elapsed*1.5+i*.23)%1;ctx.globalAlpha=(1-p)*strength;ctx.beginPath();ctx.arc(x+sway*p,y-8-p*29,1.4,0,Math.PI*2);ctx.fill();
-   }ctx.restore();
+   // Body-bound burn particles use the same unit transform as other status effects.
+   // The visual persists after leaving the hot ground, without adding damage.
+   const strength=Math.min(1,s.fireVisual/1.3)*(.72+.28*Math.min(1,s.fireVisual/8));
+   const seed=(u.uid||0)*.791;
+   ctx.save();
+   for(let i=0;i<24;i++){
+     const emitter=i%12,angle=emitter*2.399963+seed;
+     const px=Math.cos(angle)*(18+emitter%3*6),py=-18-(emitter%5)*10;
+     const p=(elapsed*(.9+(emitter%4)*.14)+i*.173+seed)%1;
+     const x=u.x+px+Math.sin(p*6+angle)*6*p,y=u.y+py-p*(19+emitter%4*6);
+     const rx=(5+emitter%3*1.5)*(1+p*.4),ry=rx*(1.5+.5*(1-p));
+     const alpha=Math.sin(Math.PI*p)*strength*.72;
+     ctx.save();ctx.translate(x,y);ctx.scale(rx,ry);
+     const g=ctx.createRadialGradient(0,.15,0,0,0,1);
+     g.addColorStop(0,'rgba(255,226,137,'+alpha+')');g.addColorStop(.35,'rgba(255,145,35,'+(alpha*.85)+')');g.addColorStop(.7,'rgba(235,55,12,'+(alpha*.48)+')');g.addColorStop(1,'rgba(190,35,6,0)');
+     ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);ctx.restore();
+   }
+   for(let i=0;i<12;i++){
+     const a=i*2.399963+seed,p=(elapsed*(.55+i%4*.12)+i*.139+seed)%1;
+     const x=u.x+Math.cos(a)*25+Math.sin(p*5+a)*p*9,y=u.y-22-(i%4)*11-p*48;
+     ctx.globalAlpha=Math.sin(Math.PI*p)*strength*.9;ctx.fillStyle=i%3?'#ff9c35':'#ffe4a0';ctx.shadowColor='#ff671c';ctx.shadowBlur=3;
+     ctx.beginPath();ctx.ellipse(x,y,.8+i%3*.25,1.3+i%3*.35,-.2,0,Math.PI*2);ctx.fill();
+   }
+   ctx.restore();
  }
  if(s.shatterTime>0){
    const p=1-s.shatterTime/.38;ctx.save();ctx.globalAlpha=1-p;ctx.fillStyle='#b6efff';ctx.strokeStyle='#f4ffff';ctx.lineWidth=1;
