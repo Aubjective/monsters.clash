@@ -44,7 +44,9 @@
     "fortress_goal_x": 2665,
     "fortress_move_speed": 8,
     "fortress_stop_distance": 185,
-    "fortress_world_width": 2880
+    "fortress_world_width": 2880,
+    "ally_advance_distance": 420,
+    "ranked_encounter_distance": 340
   },
   "rank_bonus_pct": {
     "normal": {
