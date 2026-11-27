@@ -23,7 +23,7 @@
     "starting_battle_coins": 100
   },
   "defence": {
-    "first_count": 4,
+    "first_count": 12,
     "count_per_round": 1,
     "max_count": 45,
     "initial_spawn_seconds": 7,
@@ -41,10 +41,10 @@
     "first_boss_round": 10,
     "normal_sprite_scale": 0.7,
     "fortress_start_x": 156,
-    "fortress_goal_x": 1334,
+    "fortress_goal_x": 2665,
     "fortress_move_speed": 8,
     "fortress_stop_distance": 185,
-    "fortress_world_width": 1549
+    "fortress_world_width": 2880
   },
   "rank_bonus_pct": {
     "normal": {
