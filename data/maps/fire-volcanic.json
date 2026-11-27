@@ -64,7 +64,30 @@
   },
   "lava_animation": {
     "enabled": true,
-    "strength": 0.48,
-    "speed": 0.65
+    "strength": 0.85,
+    "speed": 1.2
+  },
+  "smoke_animation": {
+    "enabled": true,
+    "plumes": [
+      {
+        "x": 0.309,
+        "y": 0.185,
+        "width": 0.035,
+        "height": 0.19
+      },
+      {
+        "x": 0.583,
+        "y": 0.195,
+        "width": 0.045,
+        "height": 0.2
+      },
+      {
+        "x": 0.75,
+        "y": 0.095,
+        "width": 0.065,
+        "height": 0.2
+      }
+    ]
   }
 }

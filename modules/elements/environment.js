@@ -554,7 +554,7 @@ function renderLava(ctx,img,x,y,w,h){
    const data=mc.getImageData(0,0,mask.width,mask.height),p=data.data;
    for(let i=0;i<p.length;i+=4){
     const r=p[i],g=p[i+1],b=p[i+2];
-    const heat=Math.min(1,Math.max(0,(r-195)/45),Math.max(0,(g-78)/60),Math.max(0,(g-b-48)/55),Math.max(0,(r-b-100)/65));
+    const heat=Math.min(1,Math.max(0,(r-185)/50),Math.max(0,(g-65)/65),Math.max(0,(g-b-36)/55),Math.max(0,(r-b-90)/65));
     p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=Math.round(p[i+3]*heat);
    }
    mc.putImageData(data,0,0);lavaMask=mask;lavaSurface=document.createElement('canvas');lavaSurface.width=mask.width;lavaSurface.height=mask.height;
@@ -571,13 +571,30 @@ function renderLava(ctx,img,x,y,w,h){
   for(let i=-1;i<8;i++){
    const pos=i*period+(t*length*.075)%period,half=period*.43;
    const g=vertical?lc.createLinearGradient(0,pos-half,0,pos+half):lc.createLinearGradient(pos-half,0,pos+half,0);
-   g.addColorStop(0,'rgba(255,145,24,0)');g.addColorStop(.5,'rgba(255,221,100,.72)');g.addColorStop(1,'rgba(255,145,24,0)');
+   g.addColorStop(0,'rgba(255,94,0,0)');g.addColorStop(.24,'rgba(185,40,0,.36)');g.addColorStop(.47,'rgba(255,178,18,.72)');g.addColorStop(.62,'rgba(255,248,162,.9)');g.addColorStop(1,'rgba(255,145,24,0)');
    lc.fillStyle=g;if(vertical)lc.fillRect(0,pos-half,mw,half*2);else lc.fillRect(pos-half,0,half*2,mh);
   }lc.restore();
  }
  lc.globalCompositeOperation='destination-in';lc.drawImage(lavaMask,0,0);lc.globalCompositeOperation='source-over';
- ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=stage.lava_animation.strength??.48;ctx.drawImage(lavaSurface,x,y,w,h);ctx.restore();
+ ctx.save();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=stage.lava_animation.strength??.85;ctx.drawImage(lavaSurface,x,y,w,h);ctx.restore();
 }
 
-global.MonstersClashEnvironment=Object.freeze({renderLava,configure,update,render,renderStatus,renderIndicators,matchesElement,movementMultiplier,canAct,setEnabled,setHazardsEnabled});
+// Soft rising smoke at authored volcano mouths, in original map coordinates.
+function renderSmoke(ctx,x,y,w,h){
+ if(!enabled||!stage?.smoke_animation?.enabled||global.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+ ctx.save();
+ for(const [j,p] of stage.smoke_animation.plumes.entries()){
+  for(let i=0;i<8;i++){
+   const q=(elapsed*.14+i/8+j*.23)%1;
+   const px=x+w*(p.x+q*.055+Math.sin(q*5+j+i)*p.width*.22),py=y+h*(p.y-q*p.height);
+   const rx=w*p.width*(.32+q*.85),ry=h*p.height*(.10+q*.20),alpha=.24*Math.sin(Math.PI*q);
+   ctx.save();ctx.translate(px,py);ctx.scale(rx,ry);
+   const g=ctx.createRadialGradient(0,0,.08,0,0,1);
+   g.addColorStop(0,'rgba(64,48,51,'+alpha+')');g.addColorStop(.55,'rgba(76,60,63,'+(alpha*.62)+')');g.addColorStop(1,'rgba(76,60,63,0)');
+   ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);ctx.restore();
+  }
+ }
+ ctx.restore();
+}
+global.MonstersClashEnvironment=Object.freeze({renderSmoke,renderLava,configure,update,render,renderStatus,renderIndicators,matchesElement,movementMultiplier,canAct,setEnabled,setHazardsEnabled});
 })(window);

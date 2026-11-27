@@ -448,7 +448,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <button id="battle-menu-home">Main Menu</button>
  </nav>
 </main>
-<script src="modules/elements/environment.js?v=20261127-lava-flow"></script>
+<script src="modules/elements/environment.js?v=20261127-lava-smoke"></script>
 <script src="modules/day-night/engine.js?v=20261127-fixed-time"></script>
 <script src="modules/towers/upgrades.js?v=20261127-blue-shield"></script>
 <script>
@@ -572,6 +572,7 @@ function drawMapBackground(img,x,y,w,h){
  // Scenery alone fills the viewport; actors use a separate uniform world scale.
  ctx.drawImage(img,x,y,w,h);
  window.MonstersClashEnvironment?.renderLava(ctx,img,x,y,w,h);
+ window.MonstersClashEnvironment?.renderSmoke(ctx,x,y,w,h);
 }
 function resizeBattleCanvas(){
  const rect=cv.getBoundingClientRect();
@@ -733,7 +734,12 @@ function renderEquipment(){
  const pending=item.available===false,owned=profile[group].includes(item.id)||progression.testing_mode===true,equipped=!pending&&profile[key]===item.id;
  const card=document.createElement('article');card.className='equipment-card'+(equipped?' equipped':'');
  const art=document.createElement('span');art.className='equipment-art';art.setAttribute('aria-hidden','true');
- if(item.sprite){art.style.backgroundImage='url("'+item.sprite+'")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}else if(item.sheet)art.style.backgroundImage='url("'+item.sheet+'")';else art.textContent='◇';
+ if(group==='shields'&&item.render_mode==='procedural'){
+ const preview=document.createElement('canvas');preview.width=240;preview.height=160;preview.style.cssText='width:100%;height:100%;object-fit:contain';
+ const pc=preview.getContext('2d'),cfg={shield_plate_min:item.plate_min,shield_plate_max:item.plate_max,shield_render_mode:item.render_mode};
+ const shield={hp:item.hp_per_level,max:item.hp_per_level,phase:Math.PI/2,flash:0,broken:0,hitAngle:0};
+ TowerUpgrades.renderShield(pc,shield,1,cfg,120,80,false);TowerUpgrades.renderShield(pc,shield,1,cfg,120,80,true);art.append(preview);
+ }else if(item.sprite){art.style.backgroundImage='url("'+item.sprite+'")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}else if(item.sheet)art.style.backgroundImage='url("'+item.sheet+'")';else art.textContent='◇';
  const copy=document.createElement('div');copy.className='equipment-copy';const name=document.createElement('strong'),detail=document.createElement('small'),description=document.createElement('small');
  name.textContent=item.name;description.textContent=[item.series?item.series+' Series':null,item.ability,item.description].filter(Boolean).join(' · ');
  detail.textContent=group==='towers'?item.max_hp+' HP · '+item.basic_attack.damage+' damage · Range '+item.basic_attack.range+' · '+item.basic_attack.cooldown_seconds+'s interval':group==='shields'?item.hp_per_level+' shield HP / level · '+item.upgrade_cost+' BC starting upgrade':group==='generators'?item.income_per_level+' BC / level every '+item.interval_seconds+'s · '+item.upgrade_cost+' BC starting upgrade':item.damage+' damage · '+item.interval_seconds+'s interval · '+item.deploy_cost+' BC starting deployment · Max '+item.max_active;
