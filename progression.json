@@ -88,10 +88,22 @@
     "characters": [
       {
         "id": "s001",
-        "name": "Summoner",
+        "name": "Aether Voss",
         "passive": "summoner_power",
         "active": "summoning_surge",
-        "available": true
+        "available": true,
+        "element": "neutral",
+        "art": {
+          "sheet": "assets/characters/s001/aether-voss-sheet.png",
+          "columns": 4,
+          "rows": 1,
+          "frames": {
+            "ready": 0,
+            "idle": 1,
+            "summon": 2,
+            "skill": 3
+          }
+        }
       }
     ],
     "equipment": {
