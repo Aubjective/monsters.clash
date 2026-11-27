@@ -26,7 +26,7 @@
     "first_count": 12,
     "count_per_round": 1,
     "max_count": 45,
-    "initial_spawn_seconds": 7,
+    "initial_spawn_seconds": 12,
     "min_spawn_seconds": 0.8,
     "spawn_acceleration": 0.25,
     "boss_every": 5,
@@ -49,9 +49,12 @@
     "fortress_extended_stage": 11,
     "fortress_extended_world_width": 2880,
     "fortress_extended_goal_x": 2665,
-    "final_encounter_progress": 0.85,
     "final_minions_short": 4,
-    "final_minions_extended": 6
+    "final_minions_extended": 6,
+    "final_encounter_distance": 500,
+    "portal_clearance": 155,
+    "final_spawn_seconds": 4,
+    "portal_exit_seconds": 1.4
   },
   "rank_bonus_pct": {
     "normal": {
@@ -84,8 +87,8 @@
   },
   "summoner": {
     "max_level": 100,
-    "base_power": 100,
-    "power_per_level": 1,
+    "base_power": 40,
+    "power_per_level": 0.5,
     "xp_base": 100,
     "xp_growth": 20,
     "xp_normal": 10,
