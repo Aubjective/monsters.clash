@@ -65,5 +65,22 @@
     "hp": 10,
     "damage": 15,
     "attack_speed": 10
+  },
+  "summoner": {
+    "max_level": 100,
+    "base_power": 100,
+    "power_per_level": 1,
+    "xp_base": 100,
+    "xp_growth": 50,
+    "xp_normal": 5,
+    "xp_elite": 15,
+    "xp_boss": 40,
+    "xp_round": 25,
+    "elite_unlock_level": 10,
+    "boss_unlock_level": 20,
+    "surge_unlock_level": 5,
+    "surge_speed_pct": 50,
+    "surge_duration": 10,
+    "surge_cooldown": 60
   }
 }
