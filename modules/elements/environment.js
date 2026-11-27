@@ -55,7 +55,7 @@ function status(u){
 }
 function movementMultiplier(u){const s=u?.environmentStatus;return (s?.freezeTime>0||s?.rootTime>0||s?.staggerTime>0)?0:(s?.slowTime>0?1-s.slowPct:1)}
 function canAct(u){return !(u?.environmentStatus?.freezeTime>0||u?.environmentStatus?.staggerTime>0)}
-function update(dt,units,applyDamage){
+function update(dt,units,applyDamage,playSound){
  if(!stage||!enabled)return;
  dt=Math.max(0,Math.min(.06,Number(dt)||0));if(!dt)return;
  elapsed+=dt;gustClock+=dt;
@@ -129,7 +129,7 @@ function update(dt,units,applyDamage){
    // Zones are spatial hazards. They warn before igniting and damage only occupants.
    for(const zone of hazardZones){
      if(zone.warning>0){
-       zone.warning=Math.max(0,zone.warning-dt);
+       zone.warning=Math.max(0,zone.warning-dt);if(zone.warning===0)playSound?.(hazard.type+'_active');
      }else if(zone.remaining>0){
        zone.remaining=Math.max(0,zone.remaining-dt);
        // Tremor is a single impact, not a repeated damage field.
@@ -166,8 +166,10 @@ function update(dt,units,applyDamage){
  hazardIn-=dt;
  if(hazardIn>0)return;
 
+ if(hazard.type==='heavy_rain'||hazard.type==='chill_freeze')playSound?.(hazard.type+'_active');
  if(hazard.type==='heavy_rain')heavyRainTime=Math.max(0,Number(hazard.visual_duration_seconds)||3.8);
  if(hazard.type==='burning_areas'||hazard.type==='entangling_roots'||hazard.type==='earth_tremor'||hazard.type==='piercing_spikes'){
+   playSound?.(hazard.type+'_warning');
    const range=Array.isArray(hazard.zone_count)?hazard.zone_count:[1,2];
    const low=Math.max(1,Math.round(Number(range[0])||1)),high=Math.max(low,Math.round(Number(range[1])||low));
    const count=Math.min(2,Math.floor(rand(low,high+1)));

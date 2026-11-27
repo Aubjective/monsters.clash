@@ -8,57 +8,881 @@
   },
   "sfx": {
     "enabled": true,
-    "volume": 0.42,
+    "volume": 0.65,
     "presets": {
       "summon": {
-        "wave": "sine",
-        "frequency": 410,
-        "duration": 0.16
+        "layers": [
+          {
+            "frequency": 90,
+            "end": 230,
+            "duration": 0.48,
+            "level": 0.7,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "frequency": 135,
+            "end": 285,
+            "duration": 0.38,
+            "level": 0.28,
+            "delay": 0.08,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 400,
+            "duration": 0.35,
+            "level": 0.18,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 0.8,
+        "interval_ms": 100
       },
       "attack": {
-        "wave": "triangle",
-        "frequency": 190,
-        "duration": 0.075
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 330,
+            "duration": 0.12,
+            "level": 0.5,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 130,
+            "end": 65,
+            "duration": 0.15,
+            "level": 0.8,
+            "delay": 0,
+            "wave": "sine"
+          }
+        ],
+        "gain": 0.75,
+        "interval_ms": 145
       },
       "impact": {
-        "wave": "sawtooth",
-        "frequency": 115,
-        "duration": 0.1
+        "layers": [
+          {
+            "frequency": 115,
+            "end": 48,
+            "duration": 0.21,
+            "level": 0.85,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 480,
+            "duration": 0.13,
+            "level": 0.5,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 0.85,
+        "interval_ms": 130
+      },
+      "collapse": {
+        "layers": [
+          {
+            "frequency": 82,
+            "end": 34,
+            "duration": 0.36,
+            "level": 0.8,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 280,
+            "duration": 0.4,
+            "level": 0.7,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 110,
+            "end": 45,
+            "duration": 0.22,
+            "level": 0.35,
+            "delay": 0.14,
+            "wave": "sine"
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 180
+      },
+      "charge": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 320,
+            "duration": 0.48,
+            "level": 0.75,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 75,
+            "end": 150,
+            "duration": 0.4,
+            "level": 0.65,
+            "delay": 0,
+            "wave": "sine"
+          }
+        ],
+        "gain": 0.9,
+        "interval_ms": 100
+      },
+      "charge_hit": {
+        "layers": [
+          {
+            "frequency": 105,
+            "end": 42,
+            "duration": 0.34,
+            "level": 0.95,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 500,
+            "duration": 0.26,
+            "level": 0.8,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
       },
       "skill": {
-        "wave": "sine",
-        "frequency": 620,
-        "duration": 0.22
+        "layers": [
+          {
+            "frequency": 100,
+            "end": 260,
+            "duration": 0.4,
+            "level": 0.7,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 420,
+            "duration": 0.3,
+            "level": 0.3,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
       },
       "shield": {
-        "wave": "sine",
-        "frequency": 570,
-        "duration": 0.2
+        "layers": [
+          {
+            "frequency": 150,
+            "end": 220,
+            "duration": 0.4,
+            "level": 0.65,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "frequency": 225,
+            "end": 160,
+            "duration": 0.32,
+            "level": 0.3,
+            "delay": 0.04,
+            "wave": "sine"
+          }
+        ],
+        "gain": 0.8,
+        "interval_ms": 100
       },
-      "stun": {
-        "wave": "square",
-        "frequency": 320,
-        "duration": 0.24
+      "shield_hit": {
+        "layers": [
+          {
+            "frequency": 180,
+            "end": 90,
+            "duration": 0.23,
+            "level": 0.7,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 380,
+            "duration": 0.18,
+            "level": 0.4,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 0.85,
+        "interval_ms": 100
       },
-      "freeze": {
-        "wave": "triangle",
-        "frequency": 850,
-        "duration": 0.22
+      "shield_break": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 700,
+            "duration": 0.36,
+            "level": 0.75,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 190,
+            "end": 60,
+            "duration": 0.35,
+            "level": 0.75,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 440,
+            "duration": 0.22,
+            "level": 0.5,
+            "delay": 0.12,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
       },
       "tower_hit": {
-        "wave": "triangle",
-        "frequency": 85,
-        "duration": 0.16
+        "layers": [
+          {
+            "frequency": 75,
+            "end": 35,
+            "duration": 0.33,
+            "level": 0.9,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 330,
+            "duration": 0.2,
+            "level": 0.65,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "arrow": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 550,
+            "duration": 0.13,
+            "level": 0.65,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 185,
+            "end": 95,
+            "duration": 0.1,
+            "level": 0.25,
+            "delay": 0,
+            "wave": "sine"
+          }
+        ],
+        "gain": 0.65,
+        "interval_ms": 160
+      },
+      "lightning": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 650,
+            "duration": 0.3,
+            "level": 0.8,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 92,
+            "end": 62,
+            "duration": 0.27,
+            "level": 0.55,
+            "delay": 0,
+            "wave": "sine"
+          }
+        ],
+        "gain": 0.9,
+        "interval_ms": 100
+      },
+      "surge": {
+        "layers": [
+          {
+            "frequency": 75,
+            "end": 235,
+            "duration": 0.8,
+            "level": 0.75,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "frequency": 110,
+            "end": 280,
+            "duration": 0.64,
+            "level": 0.45,
+            "delay": 0.12,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 460,
+            "duration": 0.65,
+            "level": 0.4,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "heal": {
+        "layers": [
+          {
+            "frequency": 140,
+            "end": 220,
+            "duration": 0.5,
+            "level": 0.6,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "frequency": 210,
+            "end": 280,
+            "duration": 0.4,
+            "level": 0.3,
+            "delay": 0.09,
+            "wave": "sine"
+          }
+        ],
+        "gain": 0.8,
+        "interval_ms": 100
+      },
+      "explosion": {
+        "layers": [
+          {
+            "frequency": 95,
+            "end": 35,
+            "duration": 0.65,
+            "level": 0.95,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 400,
+            "duration": 0.65,
+            "level": 0.8,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "poison": {
+        "layers": [
+          {
+            "frequency": 115,
+            "end": 70,
+            "duration": 0.23,
+            "level": 0.5,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "frequency": 130,
+            "end": 85,
+            "duration": 0.25,
+            "level": 0.4,
+            "delay": 0.14,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 250,
+            "duration": 0.3,
+            "level": 0.4,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 0.8,
+        "interval_ms": 100
+      },
+      "stun": {
+        "layers": [
+          {
+            "frequency": 95,
+            "end": 55,
+            "duration": 0.25,
+            "level": 0.7,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 270,
+            "duration": 0.22,
+            "level": 0.45,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "freeze": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 660,
+            "duration": 0.3,
+            "level": 0.6,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 200,
+            "end": 85,
+            "duration": 0.4,
+            "level": 0.5,
+            "delay": 0,
+            "wave": "sine"
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
       },
       "victory": {
-        "wave": "sine",
-        "frequency": 740,
-        "duration": 0.38
+        "layers": [
+          {
+            "frequency": 130,
+            "end": 160,
+            "duration": 0.3,
+            "level": 0.5,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "frequency": 195,
+            "end": 245,
+            "duration": 0.45,
+            "level": 0.5,
+            "delay": 0.2,
+            "wave": "sine"
+          }
+        ],
+        "gain": 0.85,
+        "interval_ms": 100
       },
       "defeat": {
-        "wave": "triangle",
-        "frequency": 105,
-        "duration": 0.4
+        "layers": [
+          {
+            "frequency": 115,
+            "end": 45,
+            "duration": 0.8,
+            "level": 0.8,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 260,
+            "duration": 0.55,
+            "level": 0.3,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "elite_arrival": {
+        "layers": [
+          {
+            "frequency": 95,
+            "end": 48,
+            "duration": 0.23,
+            "level": 0.95,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "frequency": 85,
+            "end": 45,
+            "duration": 0.24,
+            "level": 0.75,
+            "delay": 0.25,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 260,
+            "duration": 0.38,
+            "level": 0.3,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 500
+      },
+      "elite_heartbeat": {
+        "layers": [
+          {
+            "frequency": 85,
+            "end": 48,
+            "duration": 0.18,
+            "level": 0.8,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "frequency": 76,
+            "end": 44,
+            "duration": 0.15,
+            "level": 0.6,
+            "delay": 0.24,
+            "wave": "sine"
+          }
+        ],
+        "gain": 0.88,
+        "interval_ms": 500
+      },
+      "boss_arrival": {
+        "layers": [
+          {
+            "frequency": 108,
+            "end": 40,
+            "duration": 0.42,
+            "level": 1,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 280,
+            "duration": 0.55,
+            "level": 0.75,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 78,
+            "end": 39,
+            "duration": 0.33,
+            "level": 0.9,
+            "delay": 0.36,
+            "wave": "sine"
+          }
+        ],
+        "gain": 1.3,
+        "interval_ms": 500
+      },
+      "boss_heartbeat": {
+        "layers": [
+          {
+            "frequency": 90,
+            "end": 40,
+            "duration": 0.24,
+            "level": 1,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 210,
+            "duration": 0.18,
+            "level": 0.28,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 78,
+            "end": 36,
+            "duration": 0.22,
+            "level": 0.85,
+            "delay": 0.24,
+            "wave": "sine"
+          }
+        ],
+        "gain": 1.15,
+        "interval_ms": 500
+      },
+      "burning_areas_warning": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 270,
+            "duration": 0.9,
+            "level": 0.65,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 65,
+            "end": 95,
+            "duration": 0.85,
+            "level": 0.55,
+            "delay": 0,
+            "wave": "sine"
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "burning_areas_active": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 570,
+            "duration": 1.2,
+            "level": 0.85,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "noise": true,
+            "cutoff": 250,
+            "duration": 1.2,
+            "level": 0.65,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 90,
+            "end": 55,
+            "duration": 0.65,
+            "level": 0.45,
+            "delay": 0,
+            "wave": "sine"
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "entangling_roots_warning": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 210,
+            "duration": 0.85,
+            "level": 0.75,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 68,
+            "end": 48,
+            "duration": 0.7,
+            "level": 0.4,
+            "delay": 0,
+            "wave": "sine"
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "entangling_roots_active": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 420,
+            "duration": 0.5,
+            "level": 0.7,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 110,
+            "end": 62,
+            "duration": 0.43,
+            "level": 0.6,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 300,
+            "duration": 0.4,
+            "level": 0.5,
+            "delay": 0.18,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "earth_tremor_warning": {
+        "layers": [
+          {
+            "frequency": 60,
+            "end": 43,
+            "duration": 0.95,
+            "level": 0.85,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 230,
+            "duration": 0.95,
+            "level": 0.7,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "earth_tremor_active": {
+        "layers": [
+          {
+            "frequency": 90,
+            "end": 34,
+            "duration": 0.55,
+            "level": 1,
+            "delay": 0,
+            "wave": "sine"
+          },
+          {
+            "noise": true,
+            "cutoff": 380,
+            "duration": 0.65,
+            "level": 0.8,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 74,
+            "end": 40,
+            "duration": 0.25,
+            "level": 0.5,
+            "delay": 0.2,
+            "wave": "sine"
+          }
+        ],
+        "gain": 1.1,
+        "interval_ms": 100
+      },
+      "piercing_spikes_warning": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 350,
+            "duration": 0.9,
+            "level": 0.6,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 125,
+            "end": 68,
+            "duration": 0.8,
+            "level": 0.5,
+            "delay": 0,
+            "wave": "triangle"
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "piercing_spikes_active": {
+        "layers": [
+          {
+            "frequency": 190,
+            "end": 75,
+            "duration": 0.35,
+            "level": 0.7,
+            "delay": 0,
+            "wave": "triangle"
+          },
+          {
+            "noise": true,
+            "cutoff": 680,
+            "duration": 0.3,
+            "level": 0.8,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "frequency": 90,
+            "end": 48,
+            "duration": 0.25,
+            "level": 0.7,
+            "delay": 0,
+            "wave": "sine"
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "chill_freeze_active": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 430,
+            "duration": 1,
+            "level": 0.6,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "noise": true,
+            "cutoff": 650,
+            "duration": 0.28,
+            "level": 0.65,
+            "delay": 0.15,
+            "band": 100
+          },
+          {
+            "frequency": 160,
+            "end": 70,
+            "duration": 0.45,
+            "level": 0.5,
+            "delay": 0,
+            "wave": "sine"
+          }
+        ],
+        "gain": 1,
+        "interval_ms": 100
+      },
+      "heavy_rain_active": {
+        "layers": [
+          {
+            "noise": true,
+            "cutoff": 650,
+            "duration": 3.6,
+            "level": 0.65,
+            "delay": 0,
+            "band": 100
+          },
+          {
+            "noise": true,
+            "cutoff": 250,
+            "duration": 3.6,
+            "level": 0.5,
+            "delay": 0,
+            "band": 100
+          }
+        ],
+        "gain": 0.9,
+        "interval_ms": 100
       }
     }
   }
