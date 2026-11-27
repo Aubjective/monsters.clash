@@ -540,5 +540,44 @@ function renderIndicators(ctx,u,barY){
 }
 function setEnabled(v){enabled=!!v}
 function setHazardsEnabled(v){hazardsEnabled=!!v}
-global.MonstersClashEnvironment=Object.freeze({configure,update,render,renderStatus,renderIndicators,matchesElement,movementMultiplier,canAct,setEnabled,setHazardsEnabled});
+
+// Build a mask once from the actual artwork. Only hot, saturated orange/yellow
+// pixels qualify; dark red rock and neutral scenery remain untouched.
+let lavaSource=null,lavaMask=null,lavaSurface=null;
+function renderLava(ctx,img,x,y,w,h){
+ if(!enabled||!stage?.lava_animation?.enabled||global.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+ if(lavaSource!==img){
+  lavaSource=img;lavaMask=null;lavaSurface=null;
+  try{
+   const mask=document.createElement('canvas');mask.width=img.naturalWidth;mask.height=img.naturalHeight;
+   const mc=mask.getContext('2d',{willReadFrequently:true});mc.drawImage(img,0,0);
+   const data=mc.getImageData(0,0,mask.width,mask.height),p=data.data;
+   for(let i=0;i<p.length;i+=4){
+    const r=p[i],g=p[i+1],b=p[i+2];
+    const heat=Math.min(1,Math.max(0,(r-195)/45),Math.max(0,(g-78)/60),Math.max(0,(g-b-48)/55),Math.max(0,(r-b-100)/65));
+    p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=Math.round(p[i+3]*heat);
+   }
+   mc.putImageData(data,0,0);lavaMask=mask;lavaSurface=document.createElement('canvas');lavaSurface.width=mask.width;lavaSurface.height=mask.height;
+  }catch(err){return;}
+ }
+ if(!lavaMask||!lavaSurface)return;
+ const lc=lavaSurface.getContext('2d'),mw=lavaMask.width,mh=lavaMask.height,t=elapsed*(stage.lava_animation.speed||.65);
+ lc.globalCompositeOperation='source-over';lc.clearRect(0,0,mw,mh);
+ // Traveling highlights, vertically on the distant slopes and laterally
+ // along the foreground cracks. All light is clipped to the source mask.
+ for(const [top,bottom,vertical] of [[0,.38,true],[.38,1,false]]){
+  lc.save();lc.beginPath();lc.rect(0,top*mh,mw,(bottom-top)*mh);lc.clip();
+  const length=vertical?mh:mw,period=length*.17;
+  for(let i=-1;i<8;i++){
+   const pos=i*period+(t*length*.075)%period,half=period*.43;
+   const g=vertical?lc.createLinearGradient(0,pos-half,0,pos+half):lc.createLinearGradient(pos-half,0,pos+half,0);
+   g.addColorStop(0,'rgba(255,145,24,0)');g.addColorStop(.5,'rgba(255,221,100,.72)');g.addColorStop(1,'rgba(255,145,24,0)');
+   lc.fillStyle=g;if(vertical)lc.fillRect(0,pos-half,mw,half*2);else lc.fillRect(pos-half,0,half*2,mh);
+  }lc.restore();
+ }
+ lc.globalCompositeOperation='destination-in';lc.drawImage(lavaMask,0,0);lc.globalCompositeOperation='source-over';
+ ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=stage.lava_animation.strength??.48;ctx.drawImage(lavaSurface,x,y,w,h);ctx.restore();
+}
+
+global.MonstersClashEnvironment=Object.freeze({renderLava,configure,update,render,renderStatus,renderIndicators,matchesElement,movementMultiplier,canAct,setEnabled,setHazardsEnabled});
 })(window);

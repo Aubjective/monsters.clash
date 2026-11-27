@@ -61,5 +61,10 @@
       "night"
     ],
     "runtime_lighting_module": "modules/day-night/"
+  },
+  "lava_animation": {
+    "enabled": true,
+    "strength": 0.48,
+    "speed": 0.65
   }
 }
