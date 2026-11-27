@@ -303,10 +303,10 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .equipment-card.equipped{border-color:#d7b66d}.equipment-art{width:76px;height:76px;flex:none;background-repeat:no-repeat;background-position:left center;background-size:400% 100%;border-radius:6px;display:grid;place-items:center;font-size:38px}.equipment-copy{flex:1;min-width:90px}.equipment-copy strong,.equipment-copy small{display:block}.equipment-copy small{color:#b1c8de;margin-top:5px}.equipment-card button{width:100%;font-size:12px}
 @media(max-height:500px){.equipment-card{padding:7px}.equipment-art{width:55px;height:55px}.equipment-tabs{margin:6px 0}}
 .rank-elite{animation:rank-elite-palette 5s linear infinite}
-@keyframes rank-elite-palette{0%{filter:sepia(0) hue-rotate(0deg) saturate(1) brightness(1)}28.000000000000004%{filter:sepia(0.65) hue-rotate(-25deg) saturate(1.8) brightness(1.08)}60%{filter:sepia(1) hue-rotate(-45deg) saturate(3.1) brightness(0.95)}100%{filter:sepia(0) hue-rotate(0deg) saturate(1) brightness(1)}}
+@keyframes rank-elite-palette{0%{filter:sepia(1) hue-rotate(-12deg) saturate(3) brightness(1.08)}50%{filter:sepia(1) hue-rotate(-48deg) saturate(3.8) brightness(0.95)}100%{filter:sepia(1) hue-rotate(-12deg) saturate(3) brightness(1.08)}}
 .rank-boss{animation:rank-boss-palette 7s linear infinite}
-@keyframes rank-boss-palette{0%{filter:sepia(0) hue-rotate(0deg) saturate(1) brightness(1)}25%{filter:sepia(0.85) hue-rotate(-140deg) saturate(2.2) brightness(1.06)}50%{filter:sepia(1) hue-rotate(-125deg) saturate(3) brightness(0.87)}75%{filter:sepia(1) hue-rotate(-115deg) saturate(1.6) brightness(0.54)}100%{filter:sepia(0) hue-rotate(0deg) saturate(1) brightness(1)}}
-@media(prefers-reduced-motion:reduce){.rank-elite,.rank-boss{animation:none}.rank-elite{filter:sepia(1) hue-rotate(-45deg) saturate(3.1) brightness(0.95)}.rank-boss{filter:sepia(1) hue-rotate(-125deg) saturate(3) brightness(0.87)}}
+@keyframes rank-boss-palette{0%{filter:sepia(1) hue-rotate(-125deg) saturate(2.7) brightness(0.78)}50%{filter:sepia(1) hue-rotate(-135deg) saturate(1.5) brightness(0.42)}100%{filter:sepia(1) hue-rotate(-125deg) saturate(2.7) brightness(0.78)}}
+@media(prefers-reduced-motion:reduce){.rank-elite,.rank-boss{animation:none}.rank-elite{filter:sepia(1) hue-rotate(-12deg) saturate(3) brightness(1.08)}.rank-boss{filter:sepia(1) hue-rotate(-125deg) saturate(2.7) brightness(0.78)}}
 
 /* Shared collection layout across Bestiary, My Team and equipment. */
 .app-screen:not(#home-screen) .page-inner{width:min(1080px,100%);box-sizing:border-box}
@@ -517,7 +517,7 @@ async function loadGameCatalog(){
   fetch('towers.json?v=20261127-arcane-preview',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json').then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json').then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch('progression.json?v=20261127-rank-pct',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
+  fetch('progression.json?v=20261127-rage-ranks',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
  ]);
  if(!progress?.team||!progress?.coins||!progress?.defence||!progress?.rank_bonus_pct||!progress?.round_growth_pct)throw Error('Progression configuration incomplete. Reload the page.');progression=progress;
  towerRegistry=towers;
@@ -542,12 +542,12 @@ async function loadGameCatalog(){
  }
 }
 function readyImage(img){return img&&img.complete&&img.naturalWidth>0&&img.naturalHeight>0}
-const rankPalettes={"elite":{"seconds":5,"frames":[[0,0,0,1,1],[0.28,0.65,-25,1.8,1.08],[0.6,1,-45,3.1,0.95],[1,0,0,1,1]]},"boss":{"seconds":7,"frames":[[0,0,0,1,1],[0.25,0.85,-140,2.2,1.06],[0.5,1,-125,3,0.87],[0.75,1,-115,1.6,0.54],[1,0,0,1,1]]}};
+const rankPalettes={"elite":{"seconds":5,"frames":[[0,1,-12,3,1.08],[0.5,1,-48,3.8,0.95],[1,1,-12,3,1.08]]},"boss":{"seconds":7,"frames":[[0,1,-125,2.7,0.78],[0.5,1,-135,1.5,0.42],[1,1,-125,2.7,0.78]]}};
 const reducedRankMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)');
 function rankFilter(rank,time){
  const palette=rankPalettes[rank];if(!palette)return 'none';
  const frames=palette.frames;
- let phase=reducedRankMotion?.matches?frames[2][0]:((time%palette.seconds)+palette.seconds)%palette.seconds/palette.seconds;
+ let phase=reducedRankMotion?.matches?frames[0][0]:((time%palette.seconds)+palette.seconds)%palette.seconds/palette.seconds;
  let i=1;while(i<frames.length-1&&phase>frames[i][0])i++;
  const a=frames[i-1],b=frames[i],p=(phase-a[0])/(b[0]-a[0]),v=k=>a[k]+(b[k]-a[k])*p;
  return 'sepia('+v(1)+') hue-rotate('+v(2)+'deg) saturate('+v(3)+') brightness('+v(4)+')';
@@ -628,7 +628,7 @@ function showResult(){
  $('next-battle').hidden=!victory;
  $('restart-run-result').hidden=victory;
 }
-let progression={"schema_version":"1.0.0","team":{"starting_slots":8,"max_slots":12,"slot_unlock_costs":[250,500,900,1400]},"coins":{"kill_base":10,"elite_multiplier":3,"boss_multiplier":6,"round_clear_battle_base":40,"round_clear_battle_growth":5,"round_clear_menu_base":25,"round_clear_menu_growth":5},"defence":{"first_count":5,"count_per_round":2,"max_count":45,"initial_spawn_seconds":5,"min_spawn_seconds":0.8,"spawn_acceleration":0.25,"boss_every":5,"round_break_seconds":4,"attack_cost":75,"max_upgrade":10,"monster_unlock_cost":250,"elite_sprite_scale":2,"tower_range_cap":425,"boss_sprite_scale":2.15},"rank_bonus_pct":{"normal":{"hp":0,"damage":0,"skill_power":0},"elite":{"hp":50,"damage":50,"skill_power":50},"boss":{"hp":200,"damage":100,"skill_power":100}},"round_growth_pct":{"ally":12,"enemy":18}};
+let progression={"schema_version":"1.0.0","team":{"starting_slots":8,"max_slots":12,"slot_unlock_costs":[250,500,900,1400]},"coins":{"kill_base":10,"elite_multiplier":3,"boss_multiplier":6,"round_clear_battle_base":40,"round_clear_battle_growth":5,"round_clear_menu_base":25,"round_clear_menu_growth":5},"defence":{"first_count":5,"count_per_round":2,"max_count":45,"initial_spawn_seconds":5,"min_spawn_seconds":0.8,"spawn_acceleration":0.25,"boss_every":5,"round_break_seconds":4,"attack_cost":75,"max_upgrade":10,"monster_unlock_cost":250,"elite_sprite_scale":2,"tower_range_cap":425,"boss_sprite_scale":2.15},"rank_bonus_pct":{"normal":{"hp":0,"damage":0,"skill_power":0,"attack_speed":0},"elite":{"hp":50,"damage":50,"skill_power":50,"attack_speed":20},"boss":{"hp":200,"damage":100,"skill_power":100,"attack_speed":40}},"round_growth_pct":{"ally":12,"enemy":18}};
 function storeProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile))}catch(e){}}
 function loadProfile(defaults){
  let saved=null;
@@ -862,14 +862,14 @@ function deployCooldown(m,side){cooldowns[side>0?'ally':'enemy'][m.id]=Math.max(
 
 function stage(){return currentStage||stages[0]}function mods(m){const s=stage();return s&&window.MonstersClashEnvironment?.matchesElement(m)?s.modifier:{outgoing_damage_bonus_pct:0,incoming_damage_reduction_pct:0,max_hp_bonus_pct:0}}
 function spawn(m,side,rank='normal'){if(!m||!canSummon(m,side))return false;if(side<0)markEncounter(m.id,rank);if(side===1&&!team.includes(m.id))return false;deployCooldown(m,side);if(side===1)soundEffect('summon');
-const cfg=progression.defence,b=mods(m),bonus=progression.rank_bonus_pct[side>0||specialBosses.includes(m)?'normal':rank]||progression.rank_bonus_pct.normal,roundScale=side>0?allyScale():enemyScale(),scale=roundScale*(1+bonus.hp/100),damageScale=roundScale*(1+bonus.damage/100),skillScale=roundScale*(1+bonus.skill_power/100),hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*scale,spawnX=side>0?TOWER_APPROACH.ally+28:925;
+const cfg=progression.defence,b=mods(m),bonus=progression.rank_bonus_pct[side>0||specialBosses.includes(m)?'normal':rank]||progression.rank_bonus_pct.normal,roundScale=side>0?allyScale():enemyScale(),scale=roundScale*(1+bonus.hp/100),damageScale=roundScale*(1+bonus.damage/100),skillScale=roundScale*(1+bonus.skill_power/100),attackSpeed=1+(bonus.attack_speed??0)/100,hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*scale,spawnX=side>0?TOWER_APPROACH.ally+28:925;
 // Deploy just beyond the visible tower art (not behind or inside the castle).
 // Prefer a clear depth lane and shift *toward the battlefield* when occupied.
 const groundRows=[343,363,385,407,429];
 const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(best,Math.hypot((u.x-spawnX)*.8,(u.y-y)*1.4)),Infinity)})).sort((a,b)=>b.clearance-a.clearance)[0];
 const forward=side>0?1:-1;
 const x=spawnX+forward*Math.min(54,Math.max(0,54-row.clearance));
-state.units.push({m,side,rank,scale,damageScale,skillScale,visualScale:rank==='boss'?cfg.boss_sprite_scale:rank==='elite'?cfg.elite_sprite_scale:1,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,shieldTime:0,shieldImpact:0,shieldStart:0,atk:.5,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});return true}
+state.units.push({m,side,rank,scale,damageScale,skillScale,attackSpeed,rankStyle:specialBosses.includes(m)?'normal':rank,visualScale:rank==='boss'?cfg.boss_sprite_scale:rank==='elite'?cfg.elite_sprite_scale:1,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,shieldTime:0,shieldImpact:0,shieldStart:0,atk:.5/attackSpeed,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});return true}
 function dmg(u,amount){
  const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;
  if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;
@@ -1074,7 +1074,7 @@ function step(dt){
    const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*u.damageScale;
    if(target)dmg(target,amount);else hitTower(u.side,amount);
    if(u.side===1)soundEffect(target?'attack':'tower_hit');
-   u.atk=u.m.attack.interval_seconds;
+   u.atk=u.m.attack.interval_seconds/u.attackSpeed;
    // Mossguard uses a short shell/body lunge; Cinderhorn uses a horn-first thrust.
    u.motion=u.m.id==='m002'?.34:.24;
    u.anim={type:'attack',duration:u.m.id==='m002'?.4:.34,remaining:u.m.id==='m002'?.4:.34};
@@ -1232,6 +1232,14 @@ function draw(){
    const hover=flying?13+Math.sin(u.phase)*4:0;
    const size=(u.m.id==='m001'?134:128)*u.visualScale;
    ctx.save();ctx.globalAlpha=.22;ctx.fillStyle='#192b22';ctx.beginPath();ctx.ellipse(u.x,u.y-3,size*.28,6*u.visualScale,0,0,Math.PI*2);ctx.fill();ctx.restore();
+   // Rank effects follow the unit, with deterministic particles rather than per-frame random flicker.
+   if(u.rankStyle==='boss'){
+     ctx.save();const t=reducedRankMotion?.matches?0:state.time;
+     for(let i=0;i<9;i++){const a=i*2.39996+u.uid*.71,q=(t*.20+i/9)%1;
+       const x=u.x+Math.cos(a+q)*size*.32,y=u.y-hover-size*(.08+q*.48),r=size*(.11+q*.09);
+       const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(12,7,20,'+(.48*Math.sin(Math.PI*q))+')');g.addColorStop(.65,'rgba(26,13,38,'+(.22*Math.sin(Math.PI*q))+')');g.addColorStop(1,'rgba(12,7,20,0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);
+     }ctx.restore();
+   }
    drawNatureShield(u,false);
    ctx.save();ctx.translate(u.x,u.y-hover);ctx.scale(u.facing||u.side,1);
    if(u.motion>0){
@@ -1246,10 +1254,20 @@ function draw(){
       const frame=monsterFrame(u);
       if(u.hit>0)ctx.globalAlpha=.85;
       // Rank palette preserves source alpha and uses the original animation frames.
-      if(u.rank==='elite'||u.rank==='boss')ctx.filter=rankFilter(u.rank,state.time);
+      if(u.rankStyle!=='normal')ctx.filter=rankFilter(u.rankStyle,state.time+u.phase);
       spriteFrame(img,frame,-size/2,-size*.82,size,size);
    }else{ctx.fillStyle='#f4f3e9';ctx.fillRect(-25,-64,50,64)}
    ctx.restore();
+   if(u.rankStyle==='elite'||u.rankStyle==='boss'){
+     const elite=u.rankStyle==='elite',t=reducedRankMotion?.matches?0:state.time;
+     ctx.save();
+     for(let i=0;i<(elite?16:9);i++){const q=(t*(elite?.65:.24)+i*.6180339+u.uid*.13)%1,a=i*2.39996+u.uid;
+       const x=u.x+Math.cos(a+q*1.4)*size*(.18+.17*Math.sin(i*3.1)**2),y=u.y-hover-size*(.08+q*.66);
+       ctx.globalAlpha=Math.sin(Math.PI*q)*(elite?.9:.65);ctx.fillStyle=elite?(i%3===0?'#ffbd49':i%3===1?'#ff591f':'#e52e18'):'#9b55e8';ctx.shadowColor=elite?'#ff481b':'#7138b5';ctx.shadowBlur=elite?5:4;ctx.beginPath();ctx.ellipse(x,y,elite?1.7:1.5,elite?3.4:1.8,-.24,0,Math.PI*2);ctx.fill();
+     }
+     if(!elite){ctx.shadowBlur=0;for(let i=0;i<4;i++){const q=(t*.17+i*.25+.12)%1,x=u.x+Math.cos(i*2.4+q)*size*.26,y=u.y-hover-size*(.04+q*.22),r=size*.13;ctx.globalAlpha=1;const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(9,5,15,'+(.32*Math.sin(Math.PI*q))+')');g.addColorStop(1,'rgba(9,5,15,0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,2*r,2*r);}}
+     ctx.restore();
+   }
    drawNatureShield(u,true);
    ctx.save();ctx.translate(u.x,u.y);ctx.scale(u.visualScale,u.visualScale);ctx.translate(-u.x,-u.y);window.MonstersClashEnvironment?.renderStatus(ctx,u);ctx.restore();
  }
@@ -1369,18 +1387,18 @@ function showMonsterProfile(id,fromRoute=false,rank='normal'){
   // Rank-only values: evaluate existing combat scaling at round one, without map modifiers.
   // Standalone bosses retain their authored base statistics.
   const bonus=progression.rank_bonus_pct[special?'normal':rank]||progression.rank_bonus_pct.normal;
-  const hpFactor=1+bonus.hp/100,attackFactor=1+bonus.damage/100,shieldFactor=1+bonus.skill_power/100;
+  const hpFactor=1+bonus.hp/100,attackFactor=1+bonus.damage/100,shieldFactor=1+bonus.skill_power/100,speedFactor=1+(bonus.attack_speed??0)/100;
   const heading=document.createElement('h3');heading.textContent='Base Statistics';details.append(heading);
   const stats=document.createElement('div');stats.className='profile-stats';
-  for(const [label,value] of [['HP',monster.stats?.hp==null?null:Math.round(monster.stats.hp*hpFactor*100)/100],['Attack Damage',monster.attack?.base_damage==null?null:Math.round(monster.attack.base_damage*attackFactor*100)/100],['STR',monster.stats?.str],['AGI',monster.stats?.agi],['INT',monster.stats?.int],['VIT',monster.stats?.vit],['DEF',monster.stats?.def],['RES',monster.stats?.res],['Move Speed',monster.stats?.move_speed]]){
+  for(const [label,value] of [['HP',monster.stats?.hp==null?null:Math.round(monster.stats.hp*hpFactor*100)/100],['Attack Damage',monster.attack?.base_damage==null?null:Math.round(monster.attack.base_damage*attackFactor*100)/100],['Attack Speed','+'+(bonus.attack_speed??0)+'%'],['STR',monster.stats?.str],['AGI',monster.stats?.agi],['INT',monster.stats?.int],['VIT',monster.stats?.vit],['DEF',monster.stats?.def],['RES',monster.stats?.res],['Move Speed',monster.stats?.move_speed]]){
    if(value==null)continue;
    const stat=document.createElement('div');stat.className='profile-stat';
    const number=document.createElement('strong');number.textContent=String(value);
    const name=document.createElement('small');name.textContent=label;stat.append(number,name);stats.append(stat);
   }
   details.append(stats);
-  if(rank!=='normal'){const note=document.createElement('p');note.textContent=(special?'Special boss: authored base statistics.':'Rank bonuses: HP +'+bonus.hp+'% · Attack +'+bonus.damage+'% · Skill power +'+bonus.skill_power+'%. Other attributes remain unchanged.')+' Round progression and environmental bonuses are excluded.';details.append(note);}
-  const attack=document.createElement('p');attack.textContent='Attack: '+(monster.attack?.type||'Unknown')+' · '+(monster.attack?.base_damage==null?'—':Math.round(monster.attack.base_damage*attackFactor*100)/100)+' damage · Range '+(monster.attack?.range??'—')+' · '+(monster.attack?.interval_seconds??'—')+'s interval';
+  if(rank!=='normal'){const note=document.createElement('p');note.textContent=(special?'Special boss: authored base statistics.':'Rank bonuses: HP +'+bonus.hp+'% · Attack +'+bonus.damage+'% · Skill power +'+bonus.skill_power+'% · Attack speed +'+(bonus.attack_speed??0)+'%. Other attributes remain unchanged.')+' Round progression and environmental bonuses are excluded.';details.append(note);}
+  const attack=document.createElement('p');attack.textContent='Attack: '+(monster.attack?.type||'Unknown')+' · '+(monster.attack?.base_damage==null?'—':Math.round(monster.attack.base_damage*attackFactor*100)/100)+' damage · Range '+(monster.attack?.range??'—')+' · '+(monster.attack?.interval_seconds==null?'—':(monster.attack.interval_seconds/speedFactor).toFixed(2))+'s interval';
   const skill=document.createElement('p');skill.textContent='Skill: '+String(monster.skill?.id||'Unknown').replaceAll('_',' ')+' · '+(monster.skill?.cooldown_seconds??'—')+'s cooldown';
   const effect=monster.skill?.effect;if(effect?.damage!=null)skill.textContent+=' · '+Math.round(effect.damage*shieldFactor*100)/100+' damage';if(effect?.type==='shield_self'&&effect.amount!=null)skill.textContent+=' · '+Math.round(effect.amount*shieldFactor*100)/100+' shield HP';details.append(attack,skill);
  }
