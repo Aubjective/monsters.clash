@@ -923,7 +923,7 @@ function reset(){
  towerLayout.x=progression.defence.fortress_start_x;TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;battleHeroFrame=-1;
  chooseRandomStage();
  const cfg=equipmentConfig;
- state={heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power,units:[],allyBase:towerConfigs.ally?.max_hp||1900,towerShield:TowerUpgrades.createShield(run,cfg),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],earnings:[],generatorPulse:0};
+ state={heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power,units:[],allyBase:towerConfigs.ally?.max_hp||1900,towerShield:TowerUpgrades.createShield(run,cfg),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
  refreshCoinDisplays();
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  towerCooldowns.ally=1;
@@ -1098,8 +1098,12 @@ function stepTowerDefense(dt){
  for(let i=0;i<run.drones;i++){
  state.droneTimers[i]=Math.max(0,(state.droneTimers[i]||0)-dt);
  const patrol=equipmentConfig.drone_patrol||{min_x:270,max_x:525,period_seconds:9,vertical_amplitude:7},phase=(state.time/(patrol.period_seconds||9)+i/Math.max(1,equipmentConfig.drone_max||3))*Math.PI*2,x=Math.min(progression.defence.fortress_world_width-60,towerLayout.x-156+patrol.min_x+(patrol.max_x-patrol.min_x)*(.5-.5*Math.cos(phase))),y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*(patrol.vertical_amplitude||7);
- const target=state.units.filter(u=>u.hp>0&&u.side<0&&Math.abs(u.x-x)<=dc.drone_range).sort((a,b)=>a.x-b.x)[0];
- if(target&&state.droneTimers[i]<=0){soundEffect('arrow');dmg(target,attack.droneDamage,'physical');towerProjectiles.push({type:'arrow',drone:true,x:x+15,y:y+2,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=dc.drone_interval;}
+ const target=state.units.filter(u=>u.hp>0&&u.side<0&&Math.abs(u.x-x)<=dc.drone_range).sort((a,b)=>Math.hypot(a.x-x,a.y-32-y)-Math.hypot(b.x-x,b.y-32-y))[0];
+ const aim=state.droneAim[i]||(state.droneAim[i]={facing:1,tilt:0});
+ const facing=target?(target.x<x?-1:1):Math.sin(phase)>=0?1:-1;
+ const tilt=target?Math.max(-.42,Math.min(.42,Math.atan2(target.y-32-y,Math.max(1,Math.abs(target.x-x))))):0;
+ aim.facing=facing;aim.tilt+=(tilt-aim.tilt)*Math.min(1,dt*12);
+ if(target&&state.droneTimers[i]<=0){soundEffect('arrow');dmg(target,attack.droneDamage,'physical');const mx=16,my=2,ax=x+facing*(mx*Math.cos(aim.tilt)-my*Math.sin(aim.tilt)),ay=y+mx*Math.sin(aim.tilt)+my*Math.cos(aim.tilt);towerProjectiles.push({type:'arrow',drone:true,x:ax,y:ay,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=dc.drone_interval;}
  }
 }
 function step(dt){
@@ -1309,7 +1313,12 @@ function draw(){
  ctx.strokeStyle='#bfa168';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-55);ctx.stroke();
  ctx.fillStyle='#d9b76c';ctx.beginPath();ctx.moveTo(0,-55);ctx.lineTo(25,-47);ctx.lineTo(0,-39);ctx.closePath();ctx.fill();
  ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillStyle='#f2d9a7';ctx.fillText('GOAL',0,-62);ctx.restore();
- if(state.allyBase>0){ctx.save();ctx.translate(towerLayout.x,towerLayout.ground);ctx.scale(actorRatio,1);ctx.fillStyle='rgba(8,19,30,.24)';ctx.beginPath();ctx.ellipse(0,0,48,8,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+ if(state.allyBase>0){ctx.save();ctx.translate(towerLayout.x,towerLayout.ground);ctx.scale(actorRatio,1);
+ ctx.fillStyle='rgba(8,19,30,.24)';ctx.beginPath();ctx.ellipse(0,0,48,8,0,0,Math.PI*2);ctx.fill();
+ const pulse=.84+.16*Math.sin(state.time*4),hover=12-Math.sin(state.time*2.2)*3;
+ ctx.save();ctx.translate(0,-hover*.45);ctx.scale(1,.25);const glow=ctx.createRadialGradient(0,0,0,0,0,53);glow.addColorStop(0,'rgba(76,206,255,'+(.40*pulse)+')');glow.addColorStop(.45,'rgba(27,160,255,.19)');glow.addColorStop(1,'rgba(25,125,255,0)');ctx.fillStyle=glow;ctx.fillRect(-53,-53,106,106);ctx.restore();
+ for(let i=0;i<2;i++){const p=(state.time*.72+i*.5)%1;ctx.strokeStyle='rgba(95,211,255,'+(.32*(1-p))+')';ctx.lineWidth=1.15;ctx.beginPath();ctx.ellipse(0,-2,23+28*p,4+5*p,0,0,Math.PI*2);ctx.stroke();}
+ ctx.restore();}
  const hero=progression.summoner.characters.find(c=>c.id===profile.summoner)||progression.summoner.characters[0],art=hero?.art,heroCanvas=$('battle-hero');
  if(art?.sheet&&battleHeroSource!==art.sheet){battleHeroSource=art.sheet;battleHeroBounds=null;battleHeroFrame=-1;battleHeroImage.src=art.sheet;$('battle-hero-name').textContent=hero.name;}
  if(readyImage(battleHeroImage)&&art){
@@ -1341,7 +1350,7 @@ function draw(){
  ctx.save();ctx.translate(towerLayout.x,0);ctx.scale(actorRatio,1);ctx.translate(-towerLayout.x,0);
  drawTower('ally',towerLayout.x,state.allyBase);
  TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY+(state.allyBase>0?-12+Math.sin(state.time*2.2)*3:0),true);ctx.restore();
- for(let i=0;i<run.drones;i++){const patrol=equipmentConfig.drone_patrol||{min_x:270,max_x:525,period_seconds:9,vertical_amplitude:7},phase=(state.time/(patrol.period_seconds||9)+i/Math.max(1,equipmentConfig.drone_max||3))*Math.PI*2,x=Math.min(progression.defence.fortress_world_width-60,towerLayout.x-156+patrol.min_x+(patrol.max_x-patrol.min_x)*(.5-.5*Math.cos(phase))),y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*(patrol.vertical_amplitude||7);ctx.save();ctx.translate(x,y);ctx.scale(actorRatio,1);if(readyImage(droneImage)){const dw=60,dh=dw*droneImage.naturalHeight/(droneImage.naturalWidth/equipmentConfig.drone_sheet_columns);spriteFrame(droneImage,0,-dw/2,-dh/2,dw,dh,equipmentConfig.drone_sheet_columns,1);ctx.restore();continue;}ctx.fillStyle='#627e91';ctx.fillRect(-22,-3,44,7);ctx.fillStyle='#a8bdca';ctx.beginPath();ctx.ellipse(0,0,15,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ce9ff';ctx.fillRect(-4,-3,8,6);ctx.restore();}
+ for(let i=0;i<run.drones;i++){const patrol=equipmentConfig.drone_patrol||{min_x:270,max_x:525,period_seconds:9,vertical_amplitude:7},phase=(state.time/(patrol.period_seconds||9)+i/Math.max(1,equipmentConfig.drone_max||3))*Math.PI*2,x=Math.min(progression.defence.fortress_world_width-60,towerLayout.x-156+patrol.min_x+(patrol.max_x-patrol.min_x)*(.5-.5*Math.cos(phase))),y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*(patrol.vertical_amplitude||7);ctx.save();ctx.translate(x,y);ctx.scale(actorRatio,1);const aim=state.droneAim[i];ctx.scale(aim?.facing||1,1);ctx.rotate(aim?.tilt||0);if(readyImage(droneImage)){const dw=60,dh=dw*droneImage.naturalHeight/(droneImage.naturalWidth/equipmentConfig.drone_sheet_columns);spriteFrame(droneImage,0,-dw/2,-dh/2,dw,dh,equipmentConfig.drone_sheet_columns,1);ctx.restore();continue;}ctx.fillStyle='#627e91';ctx.fillRect(-22,-3,44,7);ctx.fillStyle='#a8bdca';ctx.beginPath();ctx.ellipse(0,0,15,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ce9ff';ctx.fillRect(-4,-3,8,6);ctx.restore();}
  drawTowerAttacks();
  for(const fx of chargeEffects){
   const fade=Math.max(0,fx.life/fx.maxLife);
