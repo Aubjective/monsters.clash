@@ -117,11 +117,6 @@
           "color": "#e53935"
         },
         {
-          "id": "evolved",
-          "name": "Evolved",
-          "color": "#292929"
-        },
-        {
           "id": "legendary",
           "name": "Legendary",
           "color": "#e5b539"
@@ -130,10 +125,57 @@
       "attributes": [
         "summoner_power",
         "skill_power_pct",
-        "skill_cooldown_reduction_pct"
+        "skill_cooldown_reduction_pct",
+        "summoned_damage_pct",
+        "curse_max_hp_pct_per_second",
+        "curse_resistance_pct",
+        "dark_damage_resistance_pct",
+        "night_damage_bonus_pct"
       ],
       "items": [],
-      "loot_enabled": false
+      "loot_enabled": false,
+      "elements": [
+        "neutral",
+        "nature",
+        "fire",
+        "water",
+        "earth",
+        "metal",
+        "lightning",
+        "light",
+        "dark"
+      ],
+      "specializations": {
+        "water": [
+          "ice"
+        ]
+      },
+      "item_fields": [
+        "id",
+        "name",
+        "slot",
+        "level",
+        "rarity",
+        "element",
+        "attributes",
+        "sell_gold",
+        "sprite"
+      ],
+      "attribute_limits": {
+        "curse_resistance_pct": [
+          0,
+          100
+        ],
+        "dark_damage_resistance_pct": [
+          0,
+          100
+        ],
+        "skill_cooldown_reduction_pct": [
+          0,
+          100
+        ]
+      },
+      "effects_enabled": false
     }
   }
 }
