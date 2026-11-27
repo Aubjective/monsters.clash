@@ -112,7 +112,7 @@ function update(dt,units,applyDamage){
    if(s.bleedTime>0){
      if(!hazardsEnabled||hazard?.type!=='piercing_spikes'){s.bleedTime=0;s.bleedTick=0;}
      else{const span=Math.min(dt,s.bleedTime);s.bleedTime=Math.max(0,s.bleedTime-span);s.bleedTick=(s.bleedTick||0)+span;
-       if(s.bleedTick>=.5||s.bleedTime<=0){if(typeof applyDamage==='function')applyDamage(u,u.maxhp*s.bleedRate*s.bleedTick);s.bleedTick=0;}
+       if(s.bleedTick>=.5||s.bleedTime<=0){if(typeof applyDamage==='function')applyDamage(u,u.maxhp*s.bleedRate*s.bleedTick,'true');s.bleedTick=0;}
      }
    }
    const wasRooted=s.rootTime>0;
@@ -144,7 +144,7 @@ function update(dt,units,applyDamage){
              zone.caught.add(u);const st=status(u);
              st.bleedTime=Math.max(st.bleedTime||0,Number(hazard.bleed_duration_seconds)||4);
              st.bleedRate=Math.max(0,Number(hazard.bleed_max_hp_pct_per_second)||0);
-             if(typeof applyDamage==='function')applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct)||0));
+             if(typeof applyDamage==='function')applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct)||0),'true');
            }else if(hazard.type==='earth_tremor'){
              if(!impact||zone.caught.has(u))continue;
              zone.caught.add(u);const st=status(u);
@@ -153,10 +153,10 @@ function update(dt,units,applyDamage){
              const vx=u.x-zone.x,vy=(u.y-zone.y)*1.45,len=Math.hypot(vx,vy),push=Math.max(0,Number(hazard.knockback_distance)||20);
              u.x=Math.max(171,Math.min(789,u.x+(len>.001?vx/len:(u.side>0?-1:1))*push));
              u.y=Math.max(343,Math.min(429,u.y+(len>.001?vy/len:0)*push/1.45));
-             if(typeof applyDamage==='function')applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct)||0));
+             if(typeof applyDamage==='function')applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct)||0),'true');
            }else if(hazard.type==='entangling_roots'){
              if(!zone.caught.has(u)){zone.caught.add(u);const st=status(u);st.rootTime=Math.max(st.rootTime||0,Number(hazard.root_duration_seconds)||1.8);st.rootRelease=0;}
-           }else if(typeof applyDamage==='function'){status(u).fireVisual=.16;applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct_per_second)||0)*dt);}
+           }else if(typeof applyDamage==='function'){status(u).fireVisual=.16;applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct_per_second)||0)*dt,'true');}
          }
        }
      }
@@ -193,7 +193,7 @@ function update(dt,units,applyDamage){
      if(!isRain&&Math.random()<Math.min(1,Math.max(0,Number(hazard.freeze_chance)||0)))
        s.freezeTime=Math.max(s.freezeTime,Number(hazard.freeze_duration_seconds)||.6);
    }else if(hazard.type==='instant_damage'&&typeof applyDamage==='function'){
-     applyDamage(u,Math.max(0,Number(hazard.damage)||0));
+     applyDamage(u,Math.max(0,Number(hazard.damage)||0),'true');
    }
  }
 }
