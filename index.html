@@ -551,7 +551,7 @@ async function loadGameCatalog(){
   fetch('towers.json?v=20261127-low-hover-v2',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json?v=20261127-sp',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json?v=20261127-deep-sfx',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch('progression.json?v=20261127-stage-journey',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
+  fetch('progression.json?v=20261127-final-encounter',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
  ]);
  if(!progress?.team||!progress?.coins||!progress?.defence||!progress?.rank_bonus_pct||!progress?.round_growth_pct||!progress?.summoner)throw Error('Progression configuration incomplete. Reload the page.');progression=progress;
  towerRegistry=towers;
@@ -660,7 +660,7 @@ function showResult(){
  $('next-battle').hidden=!victory;
  $('restart-run-result').hidden=victory;
 }
-let progression={"schema_version":"1.0.0","team":{"starting_slots":8,"max_slots":12,"slot_unlock_costs":[250,500,900,1400]},"coins":{"kill_base":20,"elite_multiplier":3,"boss_multiplier":8,"round_clear_battle_base":80,"round_clear_battle_growth":10,"round_clear_menu_base":50,"round_clear_menu_growth":6,"elite_kill_gold":2,"boss_kill_gold":8,"starting_battle_coins":100},"defence":{"first_count":12,"count_per_round":1,"max_count":45,"initial_spawn_seconds":7,"min_spawn_seconds":0.8,"spawn_acceleration":0.25,"boss_every":5,"round_break_seconds":4,"attack_cost":75,"max_upgrade":10,"monster_unlock_cost":250,"elite_sprite_scale":1.05,"tower_range_cap":425,"boss_sprite_scale":1.4,"first_elite_round":3,"first_boss_round":10,"normal_sprite_scale":0.7,"fortress_start_x":156,"fortress_goal_x":1705,"fortress_move_speed":8,"fortress_stop_distance":185,"fortress_world_width":1920,"ally_advance_distance":420,"ranked_encounter_distance":340,"fortress_extended_stage":11,"fortress_extended_world_width":2880,"fortress_extended_goal_x":2665},"rank_bonus_pct":{"normal":{"hp":0,"damage":0,"skill_power":0,"attack_speed":0},"elite":{"hp":50,"damage":50,"skill_power":50,"attack_speed":20},"boss":{"hp":200,"damage":100,"skill_power":100,"attack_speed":40}},"round_growth_pct":{"ally":12,"enemy":12},"dark_night_bonus_pct":{"hp":10,"damage":15,"attack_speed":10},"summoner":{"max_level":100,"base_power":100,"power_per_level":1,"xp_base":100,"xp_growth":20,"xp_normal":10,"xp_elite":30,"xp_boss":80,"xp_round":50,"elite_unlock_level":10,"boss_unlock_level":20,"surge_unlock_level":5,"surge_speed_pct":30,"surge_duration":8,"surge_cooldown":60,"characters":[{"id":"s001","name":"Aether Voss","passive":"summoner_power","active":"summoning_surge","available":true,"element":"neutral","art":{"sheet":"assets/characters/s001/aether-voss-sheet.png","columns":4,"rows":1,"frames":{"ready":0,"idle":1,"summon":2,"skill":3}}}],"equipment":{"slots":["headgear","amulet","weapon","armour","ring","relic"],"rarities":[{"id":"common","name":"Common","color":"#929292"},{"id":"uncommon","name":"Uncommon","color":"#40b85c"},{"id":"rare","name":"Rare","color":"#408de0"},{"id":"epic","name":"Epic","color":"#e53935"},{"id":"legendary","name":"Legendary","color":"#e5b539"}],"attributes":["summoner_power","skill_power_pct","skill_cooldown_reduction_pct","summoned_damage_pct","curse_max_hp_pct_per_second","curse_resistance_pct","dark_damage_resistance_pct","night_damage_bonus_pct"],"items":[],"loot_enabled":false,"elements":["neutral","nature","fire","water","earth","metal","lightning","light","dark"],"specializations":{"water":["ice"]},"item_fields":["id","name","slot","level","rarity","element","attributes","sell_gold","sprite"],"attribute_limits":{"curse_resistance_pct":[0,100],"dark_damage_resistance_pct":[0,100],"skill_cooldown_reduction_pct":[0,100]},"effects_enabled":false},"power_regen_per_second":1,"surge_regen_pct":25},"testing_mode":true};
+let progression={"schema_version":"1.0.0","team":{"starting_slots":8,"max_slots":12,"slot_unlock_costs":[250,500,900,1400]},"coins":{"kill_base":20,"elite_multiplier":3,"boss_multiplier":8,"round_clear_battle_base":80,"round_clear_battle_growth":10,"round_clear_menu_base":50,"round_clear_menu_growth":6,"elite_kill_gold":2,"boss_kill_gold":8,"starting_battle_coins":100},"defence":{"first_count":12,"count_per_round":1,"max_count":45,"initial_spawn_seconds":7,"min_spawn_seconds":0.8,"spawn_acceleration":0.25,"boss_every":5,"round_break_seconds":4,"attack_cost":75,"max_upgrade":10,"monster_unlock_cost":250,"elite_sprite_scale":1.05,"tower_range_cap":425,"boss_sprite_scale":1.4,"first_elite_round":3,"first_boss_round":10,"normal_sprite_scale":0.7,"fortress_start_x":156,"fortress_goal_x":1705,"fortress_move_speed":8,"fortress_stop_distance":185,"fortress_world_width":1920,"ally_advance_distance":420,"fortress_extended_stage":11,"fortress_extended_world_width":2880,"fortress_extended_goal_x":2665,"final_encounter_progress":0.85,"final_minions_short":4,"final_minions_extended":6},"rank_bonus_pct":{"normal":{"hp":0,"damage":0,"skill_power":0,"attack_speed":0},"elite":{"hp":50,"damage":50,"skill_power":50,"attack_speed":20},"boss":{"hp":200,"damage":100,"skill_power":100,"attack_speed":40}},"round_growth_pct":{"ally":12,"enemy":12},"dark_night_bonus_pct":{"hp":10,"damage":15,"attack_speed":10},"summoner":{"max_level":100,"base_power":100,"power_per_level":1,"xp_base":100,"xp_growth":20,"xp_normal":10,"xp_elite":30,"xp_boss":80,"xp_round":50,"elite_unlock_level":10,"boss_unlock_level":20,"surge_unlock_level":5,"surge_speed_pct":30,"surge_duration":8,"surge_cooldown":60,"characters":[{"id":"s001","name":"Aether Voss","passive":"summoner_power","active":"summoning_surge","available":true,"element":"neutral","art":{"sheet":"assets/characters/s001/aether-voss-sheet.png","columns":4,"rows":1,"frames":{"ready":0,"idle":1,"summon":2,"skill":3}}}],"equipment":{"slots":["headgear","amulet","weapon","armour","ring","relic"],"rarities":[{"id":"common","name":"Common","color":"#929292"},{"id":"uncommon","name":"Uncommon","color":"#40b85c"},{"id":"rare","name":"Rare","color":"#408de0"},{"id":"epic","name":"Epic","color":"#e53935"},{"id":"legendary","name":"Legendary","color":"#e5b539"}],"attributes":["summoner_power","skill_power_pct","skill_cooldown_reduction_pct","summoned_damage_pct","curse_max_hp_pct_per_second","curse_resistance_pct","dark_damage_resistance_pct","night_damage_bonus_pct"],"items":[],"loot_enabled":false,"elements":["neutral","nature","fire","water","earth","metal","lightning","light","dark"],"specializations":{"water":["ice"]},"item_fields":["id","name","slot","level","rarity","element","attributes","sell_gold","sprite"],"attribute_limits":{"curse_resistance_pct":[0,100],"dark_damage_resistance_pct":[0,100],"skill_cooldown_reduction_pct":[0,100]},"effects_enabled":false},"power_regen_per_second":1,"surge_regen_pct":25},"testing_mode":true};
 function storeProfile(){try{let saved=profile;if(progression.testing_mode===true){const previous=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');saved={...profile};for(const key of ['tower','shield','drone','generator'])if(!profile[key+'s'].includes(profile[key]))saved[key]=previous?.[key]||profile[key+'s'][0];}localStorage.setItem(PROFILE_KEY,JSON.stringify(saved))}catch(e){}}
 function loadProfile(defaults){
  let saved=null;
@@ -794,7 +794,7 @@ function renderUpgrades(){
  b.disabled=state.ended||battleMenuOpen||level>=max||run.wallet<cost;
  }
  const journey=Math.max(0,Math.min(1,(towerLayout.x-progression.defence.fortress_start_x)/(progression.defence.fortress_goal_x-progression.defence.fortress_start_x)));$('journey-bar').value=journey;$('journey-label').textContent='Journey '+Math.floor(journey*100)+'%';
- const label='Stage '+run.battle+' · '+state.kills+' defeated'+(state.ended&&state.victory?' · Next in '+Math.ceil(state.breakLeft)+'s':'');
+ const label='Stage '+run.battle+' · '+state.kills+' defeated'+(state.finalPhase?' · Final encounter':'')+(state.ended&&state.victory?' · Next in '+Math.ceil(state.breakLeft)+'s':'');
  if($('run-progress').textContent!==label)$('run-progress').textContent=label;
  const wallet=(run.wallet||0).toLocaleString('en-US');if($('battle-wallet').textContent!==wallet)$('battle-wallet').textContent=wallet;
  const shield='Shield '+Math.ceil(state.towerShield.hp);
@@ -923,7 +923,7 @@ function reset(){
  towerLayout.x=progression.defence.fortress_start_x;TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;battleHeroFrame=-1;
  chooseRandomStage();
  const cfg=equipmentConfig;
- state={heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power,units:[],allyBase:towerConfigs.ally?.max_hp||1900,towerShield:TowerUpgrades.createShield(run,cfg),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
+ state={heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power,units:[],allyBase:towerConfigs.ally?.max_hp||1900,towerShield:TowerUpgrades.createShield(run,cfg),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
  refreshCoinDisplays();
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  towerCooldowns.ally=1;
@@ -985,12 +985,12 @@ function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
 // Tower collision is separate from the visual center of the castle.
 const TOWER_APPROACH={ally:235};
 const towerLayout={x:156,ground:402,height:160,width:136,hpY:213,shieldY:331,generatorX:78,generatorY:110,generatorHeight:78,droneX:270,droneSpacing:64,droneY:190};
-const TOWER_LANES=[350,373,396,419,441];
+const TOWER_LANES=[350,370,390,410,429];
 function towerSlotFor(u){
  const same=state.units.filter(a=>a.hp>0&&a.side===u.side&&a.assaultTower).sort((a,b)=>a.uid-b.uid);
  const index=Math.max(0,same.indexOf(u));
  const row=index%TOWER_LANES.length,rank=Math.floor(index/TOWER_LANES.length);
- const frontline=TOWER_APPROACH.ally;
+ const frontline=TOWER_APPROACH.ally+1;
  const x=frontline-u.side*rank*52;
  return {x,y:TOWER_LANES[row],rank};
 }
@@ -1121,16 +1121,15 @@ function step(dt){
  refreshSummoner();
  enemyTimer-=dt;
  const cfg=progression.defence;
- const rankedDue=state.finalRank&&!state.finalSpawned&&towerLayout.x>=cfg.fortress_goal_x-cfg.ranked_encounter_distance;
- if(rankedDue&&roster.length&&teamCount(-1)<maxTeamUnits()){
- const m=roster[Math.floor(Math.random()*roster.length)];
- if(spawn(m,-1,state.finalRank)){state.finalSpawned=true;state.spawned++;}
- }
- // Minions replenish throughout travel, preserving one slot for the destination encounter.
- const normalCap=Math.max(0,maxTeamUnits()-(state.finalRank&&!state.finalSpawned?1:0));
- if(enemyTimer<=0&&roster.length&&state.arrivalTime===null&&!rankedDue&&teamCount(-1)<normalCap){
- const m=roster[Math.floor(Math.random()*roster.length)];
- if(spawn(m,-1,'normal')){state.spawned++;enemyTimer=Math.max(cfg.min_spawn_seconds,cfg.initial_spawn_seconds-(run.battle-1)*cfg.spawn_acceleration);}
+ const journeyProgress=(towerLayout.x-cfg.fortress_start_x)/(cfg.fortress_goal_x-cfg.fortress_start_x);
+ if(!state.finalPhase&&journeyProgress>=cfg.final_encounter_progress){state.finalPhase=true;enemyTimer=0;}
+ // Continuous journey minions transition once to a finite final group.
+ if(enemyTimer<=0&&roster.length&&teamCount(-1)<maxTeamUnits()){
+   const rank=!state.finalPhase||state.finalMinionsRemaining>0?'normal':state.finalRank&&!state.finalSpawned?state.finalRank:null;
+   if(rank){
+     const m=roster[Math.floor(Math.random()*roster.length)];
+     if(spawn(m,-1,rank)){state.spawned++;if(state.finalPhase){if(rank==='normal')state.finalMinionsRemaining--;else state.finalSpawned=true;}enemyTimer=Math.max(cfg.min_spawn_seconds,cfg.initial_spawn_seconds-(run.battle-1)*cfg.spawn_acceleration);}
+   }
  }
  for(const u of state.units){
   if(u.hp<=0)continue;
@@ -1170,7 +1169,7 @@ function step(dt){
   const distance=Math.hypot(dx,dy*1.45);
   // A melee unit must reach the tower's near-side attack slot, not the visual center.
   const attackRange=target?(u.m.attack.range||32)+u.radius+target.radius:
-    (slot.rank===0?9:10);
+    (u.side<0&&slot.rank===0?Math.max(12,Number(u.m.attack.range)||32):10);
   const atTarget=distance<=attackRange;
   if(u.side>0&&!atTarget&&dx>0&&u.x>=advanceLimit-.01){u.walking=false;continue;}
   const canCharge=!rooted&&u.m.skill?.effect?.type==='dash_hit'&&u.skill<=0;
@@ -1216,7 +1215,7 @@ function step(dt){
  state.fortressMoving=state.allyBase>0&&!blocked&&towerLayout.x<goal;
  if(state.fortressMoving){towerLayout.x=Math.min(goal,towerLayout.x+cfg.fortress_move_speed*dt);TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;for(const u of state.units)u.x=Math.max(TOWER_APPROACH.ally+1,u.x);}
  if(towerLayout.x>=goal&&state.arrivalTime===null)state.arrivalTime=state.time;
- if(state.allyBase<=0||(state.arrivalTime!==null&&(!state.finalRank||state.finalSpawned)&&teamCount(-1)===0)){
+ if(state.allyBase<=0||(state.arrivalTime!==null&&state.finalPhase&&state.finalMinionsRemaining===0&&(!state.finalRank||state.finalSpawned)&&teamCount(-1)===0)){
   state.victory=state.allyBase>0;state.ended=true;run.totalSeconds+=state.time;settleBattle();soundEffect(state.victory?'victory':'defeat');
   $('status').textContent=state.victory?'Destination Reached':'Fortress Breached — Run Ended';showResult();
  }

@@ -46,10 +46,12 @@
     "fortress_stop_distance": 185,
     "fortress_world_width": 1920,
     "ally_advance_distance": 420,
-    "ranked_encounter_distance": 340,
     "fortress_extended_stage": 11,
     "fortress_extended_world_width": 2880,
-    "fortress_extended_goal_x": 2665
+    "fortress_extended_goal_x": 2665,
+    "final_encounter_progress": 0.85,
+    "final_minions_short": 4,
+    "final_minions_extended": 6
   },
   "rank_bonus_pct": {
     "normal": {
