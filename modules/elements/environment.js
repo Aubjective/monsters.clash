@@ -310,7 +310,29 @@ function render(ctx,layer='background',viewX=0,viewY=0,viewW=W,viewH=H){
  if(hazardsEnabled&&hazard?.type==='earth_tremor')for(const zone of hazardZones){
    const warning=zone.warning>0,wt=Math.max(.3,Number(hazard.warning_seconds)||1),dur=Math.max(.5,Number(hazard.active_seconds)||1);
    const p=warning?Math.max(0,1-zone.warning/wt):Math.min(1,1-zone.remaining/dur),r=zone.radius;
-   ctx.save();ctx.translate(zone.x,zone.y);ctx.save();ctx.scale(1,.48);
+   ctx.save();ctx.translate(zone.x,zone.y);
+   if(warning){
+     // Dry soil trembles and fractures locally before the impact; no glowing target.
+     ctx.save();ctx.scale(1,.48);
+     const soil=ctx.createRadialGradient(0,0,0,0,0,r);soil.addColorStop(0,'rgba(112,73,44,.28)');soil.addColorStop(.7,'rgba(146,105,69,.13)');soil.addColorStop(1,'rgba(146,105,69,0)');
+     ctx.globalAlpha=.4+.6*p;ctx.fillStyle=soil;ctx.fillRect(-r,-r,2*r,2*r);
+     for(let i=0;i<13;i++){
+       const a=i*2.399963+zone.phase,d=r*Math.sqrt((i+.5)/13)*.73,x=Math.cos(a)*d,y=Math.sin(a)*d,len=r*(.12+.08*(i%3))*Math.min(1,.2+p);
+       ctx.beginPath();ctx.moveTo(x-Math.cos(a)*len,y-Math.sin(a)*len);ctx.lineTo(x,y);ctx.lineTo(x+Math.cos(a+.65)*len,y+Math.sin(a+.65)*len);
+       ctx.globalAlpha=.35+.5*p;ctx.strokeStyle='#68442e';ctx.lineWidth=2.5;ctx.stroke();ctx.strokeStyle='#b38b60';ctx.lineWidth=.75;ctx.stroke();
+     }
+     ctx.restore();
+     for(let i=0;i<18;i++){
+       const a=i*2.399963+zone.phase,d=r*Math.sqrt((i+.5)/18)*.88,x=Math.cos(a)*d,y=Math.sin(a)*d*.44;
+       const shake=Math.sin(elapsed*29+i*3)*p*1.5,lift=Math.abs(Math.sin(elapsed*24+i))*p*4;
+       ctx.globalAlpha=.48+.42*p;ctx.fillStyle=i%2?'#9d7350':'#c39e75';ctx.strokeStyle='#77543a';ctx.lineWidth=.8;
+       ctx.beginPath();ctx.moveTo(x+shake-3,y-lift+1);ctx.lineTo(x+shake-1,y-lift-3);ctx.lineTo(x+shake+4,y-lift-1);ctx.lineTo(x+shake+3,y-lift+2);ctx.closePath();ctx.fill();ctx.stroke();
+       const q=(elapsed*1.4+i*.173)%1,rx=5+q*11,ry=2+q*5;
+       ctx.save();ctx.translate(x+q*8,y-q*(6+8*p));ctx.scale(rx,ry);const dust=ctx.createRadialGradient(0,0,0,0,0,1);dust.addColorStop(0,'rgba(194,159,119,.48)');dust.addColorStop(1,'rgba(194,159,119,0)');ctx.globalAlpha=Math.sin(q*Math.PI)*p*.65;ctx.fillStyle=dust;ctx.fillRect(-1,-1,2,2);ctx.restore();
+     }
+     ctx.restore();continue;
+   }
+   ctx.save();ctx.scale(1,.48);
    const g=ctx.createRadialGradient(0,0,0,0,0,r);g.addColorStop(0,'rgba(238,187,102,.45)');g.addColorStop(1,'rgba(156,96,44,0)');ctx.fillStyle=g;ctx.globalAlpha=warning?.5+p*.5:1-p;ctx.fillRect(-r,-r,2*r,2*r);
    // Broken sandstone plates and fissures communicate the affected ground without a target ring.
    for(let k=0;k<18;k++){const a=k*2.399963+zone.phase,dist=r*Math.sqrt((k+.5)/18)*.87,xx=Math.cos(a)*dist,yy=Math.sin(a)*dist;
@@ -428,7 +450,7 @@ function renderStatus(ctx,u){
  }
  if(s.staggerTime>0){
    ctx.save();const f=Math.min(1,s.staggerTime/.2);ctx.globalAlpha=f;ctx.strokeStyle='#ffe0a4';ctx.fillStyle='#e6bd83';ctx.lineWidth=2;
-   for(let i=0;i<5;i++){const a=elapsed*4+i*Math.PI*2/5,x=u.x+Math.cos(a)*22,y=u.y-62+Math.sin(a)*6;ctx.beginPath();ctx.moveTo(x-4,y);ctx.lineTo(x+4,y);ctx.moveTo(x,y-4);ctx.lineTo(x,y+4);ctx.stroke();const q=(elapsed*1.8+i*.2)%1;ctx.globalAlpha=f*(1-q)*.6;ctx.beginPath();ctx.ellipse(u.x+(i-2)*10,u.y-q*9,5+q*5,2+q*2,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=f;}
+   for(let i=0;i<5;i++){const a=elapsed*4+i*Math.PI*2/5,x=u.x+Math.cos(a)*22,y=u.y-62+Math.sin(a)*6;ctx.beginPath();for(let j=0;j<10;j++){const ang=j*Math.PI/5-Math.PI/2,rr=j%2?1.7:4.5,px=x+Math.cos(ang)*rr,py=y+Math.sin(ang)*rr;if(j===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.closePath();ctx.fill();const q=(elapsed*1.8+i*.2)%1;ctx.globalAlpha=f*(1-q)*.6;ctx.beginPath();ctx.ellipse(u.x+(i-2)*10,u.y-q*9,5+q*5,2+q*2,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=f;}
    ctx.restore();
  }
  if(s.rootTime>0||s.rootRelease>0){
@@ -510,7 +532,7 @@ function renderIndicators(ctx,u,barY){
    if(k==='burning'){ctx.beginPath();ctx.moveTo(0,-6);ctx.quadraticCurveTo(7,1,3,5);ctx.quadraticCurveTo(-7,7,-5,0);ctx.lineTo(-2,-3);ctx.quadraticCurveTo(-2,2,0,-6);ctx.fill();}
    else if(k==='bleeding'||k==='drenched'){ctx.beginPath();ctx.moveTo(0,-6);ctx.bezierCurveTo(-8,3,-4,6,0,6);ctx.bezierCurveTo(4,6,8,3,0,-6);ctx.fill();}
    else if(k==='rooted'){ctx.beginPath();ctx.moveTo(0,6);ctx.lineTo(0,-4);ctx.moveTo(0,0);ctx.lineTo(-5,-4);ctx.moveTo(0,2);ctx.lineTo(5,-2);ctx.moveTo(0,4);ctx.lineTo(-4,6);ctx.moveTo(0,4);ctx.lineTo(4,6);ctx.stroke();}
-   else if(k==='staggered'){ctx.beginPath();ctx.moveTo(1,-6);ctx.lineTo(-4,1);ctx.lineTo(0,1);ctx.lineTo(-1,6);ctx.lineTo(5,-2);ctx.lineTo(1,-2);ctx.closePath();ctx.fill();}
+   else if(k==='staggered'){ctx.beginPath();ctx.moveTo(-6,3);ctx.lineTo(-4,-4);ctx.lineTo(1,-6);ctx.lineTo(6,-2);ctx.lineTo(5,4);ctx.lineTo(-2,6);ctx.closePath();ctx.fill();ctx.strokeStyle='#77543a';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(1,-5);ctx.lineTo(-1,-1);ctx.lineTo(2,1);ctx.lineTo(0,5);ctx.moveTo(-1,-1);ctx.lineTo(-4,0);ctx.stroke();}
    else {for(let j=0;j<3;j++){const a=j*Math.PI/3;ctx.beginPath();ctx.moveTo(-Math.cos(a)*5,-Math.sin(a)*5);ctx.lineTo(Math.cos(a)*5,Math.sin(a)*5);ctx.stroke();}}
    ctx.restore();
  }
