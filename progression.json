@@ -81,6 +81,59 @@
     "surge_unlock_level": 5,
     "surge_speed_pct": 50,
     "surge_duration": 10,
-    "surge_cooldown": 60
+    "surge_cooldown": 60,
+    "characters": [
+      {
+        "id": "s001",
+        "name": "Summoner",
+        "passive": "summoner_power",
+        "active": "summoning_surge",
+        "available": true
+      }
+    ],
+    "equipment": {
+      "slots": [
+        "headgear",
+        "amulet",
+        "weapon",
+        "armour",
+        "ring",
+        "relic"
+      ],
+      "rarities": [
+        {
+          "id": "common",
+          "name": "Common",
+          "color": "#929292"
+        },
+        {
+          "id": "uncommon",
+          "name": "Uncommon",
+          "color": "#40b85c"
+        },
+        {
+          "id": "epic",
+          "name": "Epic",
+          "color": "#e53935"
+        },
+        {
+          "id": "evolved",
+          "name": "Evolved",
+          "color": "#292929"
+        },
+        {
+          "id": "legendary",
+          "name": "Legendary",
+          "color": "#e5b539"
+        }
+      ],
+      "attributes": [
+        "summoner_power",
+        "skill_power_pct",
+        "skill_cooldown_reduction_pct"
+      ],
+      "items": [],
+      "loot_enabled": false
+    }
   }
 }
