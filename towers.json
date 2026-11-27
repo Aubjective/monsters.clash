@@ -26,9 +26,10 @@
       "sheet_rows": 1,
       "unlock_cost": 0,
       "series": "Sentinel",
-      "description": "Crystal-powered fortress with automatic arrow volleys.",
+      "description": "Low-floating armoured castle-fortress with an open arrow firing port and arcane levitation.",
       "ability": "Arrow Volley",
-      "hp_bar": "assets/fortresses/f001/sentinel-hp-bar.png"
+      "hp_bar": "assets/fortresses/f001/sentinel-hp-bar.png",
+      "movement": "low_hover"
     },
     {
       "id": "t002",
@@ -97,7 +98,7 @@
     {
       "id": "d001",
       "name": "Sentinel Drone",
-      "description": "Patrolling aerial support unit firing at approaching enemies from the left-to-middle battlefield.",
+      "description": "Wingless floating arcane drone with an arrow firing port. Patrols ahead of the fortress.",
       "type": "projectile",
       "unlock_cost": 0,
       "deploy_cost": 80,
@@ -126,7 +127,13 @@
           "tracking",
           "special_effect"
         ]
-      }
+      },
+      "sheet_rows": 1,
+      "damage_thresholds_pct": [
+        70,
+        30,
+        0
+      ]
     },
     {
       "id": "d002",
@@ -152,7 +159,7 @@
       "id": "g001",
       "name": "Sentinel Generator",
       "series": "Sentinel",
-      "description": "Protected floating auxiliary structure producing Battle Coins during active combat.",
+      "description": "Small protected floating generator producing Battle Coins. Cannot be attacked.",
       "ability": "Coin Production",
       "sprite": "assets/generators/g001/sentinel-generator.png",
       "unlock_cost": 0,

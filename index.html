@@ -467,7 +467,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script src="modules/elements/environment.js?v=20261127-scrolling"></script>
 <script src="modules/day-night/engine.js?v=20261127-fixed-time"></script>
-<script src="modules/towers/upgrades.js?v=20261127-fortress-assets"></script>
+<script src="modules/towers/upgrades.js?v=20261127-low-hover-v2"></script>
 <script>
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=960,H=480,ground=325;
@@ -548,7 +548,7 @@ let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentC
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json?v=20261127-fortress-assets',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
+  fetch('towers.json?v=20261127-low-hover-v2',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json?v=20261127-sp',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json?v=20261127-deep-sfx',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('progression.json?v=20261127-stage-journey',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
@@ -592,7 +592,7 @@ function spriteFrame(img,frame,x,y,w,h,columns=4,rows=4){
  ctx.drawImage(img,(frame%columns)*sw,Math.floor(frame/columns)*sh,sw,sh,x,y,w,h);
 }
 function towerDamageFrame(hp,maxHp=1900){
- if(hp<=0)return 2;
+ if(hp<=0)return 3;
  const pct=hp/maxHp*100;
  return pct<30?2:pct<70?1:0;
 }
@@ -747,9 +747,9 @@ function selectEquipment(){
  const selectionProfile=progression.testing_mode===true?{...profile,...Object.fromEntries(['towers','shields','drones','generators'].map(group=>[group,towerRegistry[group].filter(x=>x.available!==false).map(x=>x.id)]))}:profile;
  const selected=TowerUpgrades.selectEquipment(towerRegistry,selectionProfile,progression.defence);
  towerConfigs.ally=selected.tower;equipmentConfig=selected.config;
- if(selected.tower.sheet)towerImages.ally.src=selected.tower.sheet+'?v=20261127-fortress-assets';
- if(selected.drone.sheet)droneImage.src=selected.drone.sheet+'?v=20261127-fortress-assets';else droneImage.removeAttribute('src');
- for(const [img,path] of [[generatorImage,selected.generator.sprite],[hpBarImage,selected.tower.hp_bar],[towerArrowImage,selected.tower.basic_attack.sprite],[droneArrowImage,selected.drone.projectile_sprite]]){if(path)img.src=path+'?v=20261127-fortress-assets';else img.removeAttribute('src');}
+ if(selected.tower.sheet)towerImages.ally.src=selected.tower.sheet+'?v=20261127-low-hover-v2';
+ if(selected.drone.sheet)droneImage.src=selected.drone.sheet+'?v=20261127-low-hover-v2';else droneImage.removeAttribute('src');
+ for(const [img,path] of [[generatorImage,selected.generator.sprite],[hpBarImage,selected.tower.hp_bar],[towerArrowImage,selected.tower.basic_attack.sprite],[droneArrowImage,selected.drone.projectile_sprite]]){if(path)img.src=path+'?v=20261127-low-hover-v2';else img.removeAttribute('src');}
  storeProfile();
 }
 function renderEquipment(){
@@ -767,14 +767,16 @@ function renderEquipment(){
  const pc=preview.getContext('2d'),cfg={shield_plate_min:item.plate_min,shield_plate_max:item.plate_max,shield_render_mode:item.render_mode};
  const shield={hp:item.hp_per_level,max:item.hp_per_level,phase:Math.PI/2,flash:0,broken:0,hitAngle:0};
  TowerUpgrades.renderShield(pc,shield,1,cfg,120,80,false);TowerUpgrades.renderShield(pc,shield,1,cfg,120,80,true);art.append(preview);
- }else if(item.sprite){art.style.backgroundImage='url("'+item.sprite+'")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}else if(item.sheet)art.style.backgroundImage='url("'+item.sheet+'")';else art.textContent='◇';
+ }else if(item.sprite){art.style.backgroundImage='url("'+item.sprite+'?v=20261127-low-hover-v2")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}else if(item.sheet){
+ const preview=document.createElement('canvas');preview.width=240;preview.height=180;preview.style.cssText='width:100%;height:100%;object-fit:contain';art.append(preview);const img=new Image();img.onload=()=>{const sw=img.naturalWidth/(item.sheet_columns||4),sh=img.naturalHeight/(item.sheet_rows||1),scale=Math.min(232/sw,172/sh);preview.getContext('2d').drawImage(img,0,0,sw,sh,(240-sw*scale)/2,(180-sh*scale)/2,sw*scale,sh*scale);};img.src=item.sheet+'?v=20261127-low-hover-v2';
+ }else art.textContent='◇';
  const copy=document.createElement('div');copy.className='equipment-copy';const name=document.createElement('strong'),detail=document.createElement('small'),description=document.createElement('small');
  name.textContent=item.name;description.textContent=[item.series?item.series+' Series':null,item.ability,item.description].filter(Boolean).join(' · ');
  detail.textContent=group==='towers'?item.max_hp+' HP · '+item.basic_attack.damage+' damage · Range '+item.basic_attack.range+' · '+item.basic_attack.cooldown_seconds+'s interval':group==='shields'?item.hp_per_level+' shield HP / level · '+item.upgrade_cost+' BC starting upgrade':group==='generators'?item.income_per_level+' BC / level every '+item.interval_seconds+'s · '+item.upgrade_cost+' BC starting upgrade':item.damage+' damage · '+item.interval_seconds+'s interval · '+item.deploy_cost+' BC starting deployment · Max '+item.max_active;
  if(pending){const status=document.createElement('small');status.textContent='Coming Soon · Planned stats';status.style.color='#d6b9ff';copy.append(name,status,detail,description);}else copy.append(name,detail,description);
  const button=document.createElement('button');button.type='button';button.textContent=pending?'Coming Soon':equipped?'Equipped':owned?'Equip':'Unlock · '+item.unlock_cost+' Gold';button.disabled=pending||equipped||(!owned&&profile.coins<item.unlock_cost);
  button.onclick=()=>{if(view!=='upgrades'||pending)return;if(progression.testing_mode===true){profile[key]=item.id;}else if(!TowerUpgrades.equip(towerRegistry,profile,group,item.id))return;selectEquipment();renderEquipment();$('equipment-message').textContent=item.name+' equipped.';};
- const info=document.createElement('button');info.type='button';info.textContent='View Info';info.onclick=()=>{const panel=$('equipment-info');panel.replaceChildren();const title=document.createElement('h3');title.textContent=item.name+' · '+item.id.toUpperCase();const summary=document.createElement('p');summary.textContent=[item.series+' Series',item.ability,item.description,detail.textContent,pending?'Coming Soon · Planned statistics, subject to balancing':null,item.unlock_cost==null?'Gold unlock cost: To be confirmed':'Unlock: '+item.unlock_cost+' Gold',item.planned_skill?'Planned ability: '+item.planned_skill:null].filter(Boolean).join(' · ');panel.append(title,summary);if(group==='towers'){const table=document.createElement('table');table.className='equipment-stats-table';const header=table.insertRow();for(const label of ['Level','Damage','Range','Interval','Attack']){const th=document.createElement('th');th.textContent=label;header.append(th);}for(let level=0;level<=progression.defence.max_upgrade;level++){const a=TowerUpgrades.attackStats(item,{attackLevel:level},equipmentConfig),row=table.insertRow();for(const value of [level,a.damage.toFixed(1),Math.round(a.range),a.interval.toFixed(2)+'s',a.type==='arrow'?a.arrows+' arrows':a.stun.toFixed(2)+'s stun'])row.insertCell().textContent=value;}panel.append(table);}else if(group==='generators'){const table=document.createElement('table');table.className='equipment-stats-table';const header=table.insertRow();for(const label of ['Level','BC / '+item.interval_seconds+'s','Upgrade cost (BC)']){const th=document.createElement('th');th.textContent=label;header.append(th);}for(let level=1;level<=item.max_level;level++){const q=TowerUpgrades.quote({generatorLevel:level-1},{generator_cost:item.upgrade_cost,generator_max:item.max_level},'generator'),row=table.insertRow();for(const value of [level,level*item.income_per_level,q.cost])row.insertCell().textContent=value;}panel.append(table);}else if(group==='shields'||group==='drones'){const table=document.createElement('table');table.className='equipment-stats-table';const head=table.insertRow();for(const label of group==='shields'?['Level','Shield HP','Upgrade cost (BC)']:['Count',item.type==='chain_lightning'?'Base damage / first targets':'Combined damage / volley','Deployment cost (BC)']){const th=document.createElement('th');th.textContent=label;head.append(th);}const config={...equipmentConfig,...(group==='shields'?{shield_cost:item.upgrade_cost,shield_hp:item.hp_per_level}:{drone_cost:item.deploy_cost,drone_max:item.max_active})};const max=group==='shields'?config.max_upgrade:config.drone_max;for(let level=1;level<=max;level++){const quote=TowerUpgrades.quote({shieldLevel:level-1,drones:level-1},config,group==='shields'?'shield':'drone'),row=table.insertRow();for(const value of [level,level*(group==='shields'?item.hp_per_level:item.damage),quote.cost])row.insertCell().textContent=value;}panel.append(table);}panel.hidden=false;panel.scrollIntoView({block:'nearest'});};card.append(art,copy,button,info);return card;
+ const info=document.createElement('button');info.type='button';info.textContent='View Info';info.onclick=()=>{const panel=$('equipment-info');panel.replaceChildren();const title=document.createElement('h3');title.textContent=item.name+' · '+item.id.toUpperCase();const summary=document.createElement('p');summary.textContent=[item.series+' Series',item.ability,item.description,detail.textContent,pending?'Coming Soon · Planned statistics, subject to balancing':null,item.unlock_cost==null?'Gold unlock cost: To be confirmed':'Unlock: '+item.unlock_cost+' Gold',item.planned_skill?'Planned ability: '+item.planned_skill:null].filter(Boolean).join(' · ');panel.append(title);const infoArt=art.cloneNode(true);infoArt.style.cssText+=';display:block;width:180px;height:135px;margin:8px auto;';const sourceCanvas=art.querySelector('canvas'),infoCanvas=infoArt.querySelector('canvas');if(sourceCanvas&&infoCanvas){infoCanvas.getContext('2d').drawImage(sourceCanvas,0,0);}panel.append(infoArt,summary);if(group==='towers'){const table=document.createElement('table');table.className='equipment-stats-table';const header=table.insertRow();for(const label of ['Level','Damage','Range','Interval','Attack']){const th=document.createElement('th');th.textContent=label;header.append(th);}for(let level=0;level<=progression.defence.max_upgrade;level++){const a=TowerUpgrades.attackStats(item,{attackLevel:level},equipmentConfig),row=table.insertRow();for(const value of [level,a.damage.toFixed(1),Math.round(a.range),a.interval.toFixed(2)+'s',a.type==='arrow'?a.arrows+' arrows':a.stun.toFixed(2)+'s stun'])row.insertCell().textContent=value;}panel.append(table);}else if(group==='generators'){const table=document.createElement('table');table.className='equipment-stats-table';const header=table.insertRow();for(const label of ['Level','BC / '+item.interval_seconds+'s','Upgrade cost (BC)']){const th=document.createElement('th');th.textContent=label;header.append(th);}for(let level=1;level<=item.max_level;level++){const q=TowerUpgrades.quote({generatorLevel:level-1},{generator_cost:item.upgrade_cost,generator_max:item.max_level},'generator'),row=table.insertRow();for(const value of [level,level*item.income_per_level,q.cost])row.insertCell().textContent=value;}panel.append(table);}else if(group==='shields'||group==='drones'){const table=document.createElement('table');table.className='equipment-stats-table';const head=table.insertRow();for(const label of group==='shields'?['Level','Shield HP','Upgrade cost (BC)']:['Count',item.type==='chain_lightning'?'Base damage / first targets':'Combined damage / volley','Deployment cost (BC)']){const th=document.createElement('th');th.textContent=label;head.append(th);}const config={...equipmentConfig,...(group==='shields'?{shield_cost:item.upgrade_cost,shield_hp:item.hp_per_level}:{drone_cost:item.deploy_cost,drone_max:item.max_active})};const max=group==='shields'?config.max_upgrade:config.drone_max;for(let level=1;level<=max;level++){const quote=TowerUpgrades.quote({shieldLevel:level-1,drones:level-1},config,group==='shields'?'shield':'drone'),row=table.insertRow();for(const value of [level,level*(group==='shields'?item.hp_per_level:item.damage),quote.cost])row.insertCell().textContent=value;}panel.append(table);}panel.hidden=false;panel.scrollIntoView({block:'nearest'});};card.append(art,copy,button,info);return card;
  }));
  $('upgrades-play').disabled=team.length===0;
 }
@@ -982,7 +984,7 @@ function activateShield(u){
 function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
 // Tower collision is separate from the visual center of the castle.
 const TOWER_APPROACH={ally:235};
-const towerLayout={x:156,ground:402,height:160,width:136,hpY:213,shieldY:331,generatorX:78,generatorY:110,generatorHeight:130,droneX:270,droneSpacing:64,droneY:190};
+const towerLayout={x:156,ground:402,height:160,width:136,hpY:213,shieldY:331,generatorX:78,generatorY:110,generatorHeight:78,droneX:270,droneSpacing:64,droneY:190};
 const TOWER_LANES=[350,373,396,419,441];
 function towerSlotFor(u){
  const same=state.units.filter(a=>a.hp>0&&a.side===u.side&&a.assaultTower).sort((a,b)=>a.uid-b.uid);
@@ -1088,7 +1090,7 @@ function stepTowerDefense(dt){
   for(const u of foes){dmg(u,damage,'magic');if(attack.stun>0){u.environmentStatus=u.environmentStatus||{slowTime:0,slowPct:0,freezeTime:0};u.environmentStatus.staggerTime=Math.max(u.environmentStatus.staggerTime||0,attack.stun);}}
   towerProjectiles.push({type:'electric_pulse',x:towerLayout.x-3,y:towerLayout.ground-towerLayout.height+42,age:0,duration:.6,range,width:attack.waveWidth});
  }else{
- const count=attack.arrows;for(let i=0;i<Math.min(count,foes.length);i++){const target=foes[i];dmg(target,damage,'physical');towerProjectiles.push({type:'arrow',x:towerLayout.x+40,y:towerLayout.ground-towerLayout.height+37,tx:target.x,ty:target.y-34,age:0,duration:.45});}
+ const count=attack.arrows;for(let i=0;i<Math.min(count,foes.length);i++){const target=foes[i];dmg(target,damage,'physical');towerProjectiles.push({type:'arrow',x:towerLayout.x+20,y:towerLayout.ground-towerLayout.height+74-12+Math.sin(state.time*2.2)*3,tx:target.x,ty:target.y-34,age:0,duration:.45});}
  }
  towerCooldowns.ally=attack.interval;
  }
@@ -1097,7 +1099,7 @@ function stepTowerDefense(dt){
  state.droneTimers[i]=Math.max(0,(state.droneTimers[i]||0)-dt);
  const patrol=equipmentConfig.drone_patrol||{min_x:270,max_x:525,period_seconds:9,vertical_amplitude:7},phase=(state.time/(patrol.period_seconds||9)+i/Math.max(1,equipmentConfig.drone_max||3))*Math.PI*2,x=Math.min(progression.defence.fortress_world_width-60,towerLayout.x-156+patrol.min_x+(patrol.max_x-patrol.min_x)*(.5-.5*Math.cos(phase))),y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*(patrol.vertical_amplitude||7);
  const target=state.units.filter(u=>u.hp>0&&u.side<0&&Math.abs(u.x-x)<=dc.drone_range).sort((a,b)=>a.x-b.x)[0];
- if(target&&state.droneTimers[i]<=0){soundEffect('arrow');dmg(target,attack.droneDamage,'physical');towerProjectiles.push({type:'arrow',drone:true,x:x+21,y:y+3,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=dc.drone_interval;}
+ if(target&&state.droneTimers[i]<=0){soundEffect('arrow');dmg(target,attack.droneDamage,'physical');towerProjectiles.push({type:'arrow',drone:true,x:x+15,y:y+2,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=dc.drone_interval;}
  }
 }
 function step(dt){
@@ -1217,10 +1219,10 @@ function step(dt){
 }
 function drawTower(side,x,hp){
  const img=towerImages[side],maxHp=towerConfigs.ally?.max_hp||1900,frame=towerDamageFrame(hp,maxHp);
- const y=towerLayout.ground-towerLayout.height+16;
+ const y=towerLayout.ground-towerLayout.height+16+(hp>0?-12+Math.sin(state.time*2.2)*3:0);
  if(readyImage(img)){
    const height=towerLayout.height,width=height*(img.naturalWidth/(towerConfigs[side]?.sheet_columns||4))/(img.naturalHeight/(towerConfigs[side]?.sheet_rows||1));
-   // Sprite art occupies a consistent cell; leave room for banners and rubble.
+   // Low hover keeps the fortress near the ground; destroyed artwork rests at ground level.
    spriteFrame(img,frame,x-width/2,y-16,width,height,
      towerConfigs[side]?.sheet_columns||4,towerConfigs[side]?.sheet_rows||1);
  }else{
@@ -1307,7 +1309,7 @@ function draw(){
  ctx.strokeStyle='#bfa168';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-55);ctx.stroke();
  ctx.fillStyle='#d9b76c';ctx.beginPath();ctx.moveTo(0,-55);ctx.lineTo(25,-47);ctx.lineTo(0,-39);ctx.closePath();ctx.fill();
  ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillStyle='#f2d9a7';ctx.fillText('GOAL',0,-62);ctx.restore();
- if(state.fortressMoving){ctx.save();ctx.fillStyle='rgba(161,130,98,.19)';for(let i=0;i<5;i++){const q=(state.time*.8+i*.2)%1;ctx.beginPath();ctx.ellipse(towerLayout.x-40-q*32,towerLayout.ground-q*4,6+q*11,2+q*4,0,0,Math.PI*2);ctx.fill();}ctx.restore();}
+ if(state.allyBase>0){ctx.save();ctx.translate(towerLayout.x,towerLayout.ground);ctx.scale(actorRatio,1);ctx.fillStyle='rgba(8,19,30,.24)';ctx.beginPath();ctx.ellipse(0,0,48,8,0,0,Math.PI*2);ctx.fill();ctx.restore();}
  const hero=progression.summoner.characters.find(c=>c.id===profile.summoner)||progression.summoner.characters[0],art=hero?.art,heroCanvas=$('battle-hero');
  if(art?.sheet&&battleHeroSource!==art.sheet){battleHeroSource=art.sheet;battleHeroBounds=null;battleHeroFrame=-1;battleHeroImage.src=art.sheet;$('battle-hero-name').textContent=hero.name;}
  if(readyImage(battleHeroImage)&&art){
@@ -1323,7 +1325,7 @@ function draw(){
    }
  }
  ctx.save();ctx.translate(towerLayout.x,0);ctx.scale(actorRatio,1);ctx.translate(-towerLayout.x,0);
- TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,false);ctx.restore();
+ TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY+(state.allyBase>0?-12+Math.sin(state.time*2.2)*3:0),false);ctx.restore();
  if(run.generatorLevel>0&&readyImage(generatorImage)){
  const hh=towerLayout.generatorHeight,ww=hh*generatorImage.naturalWidth/generatorImage.naturalHeight;
  const gx=towerLayout.generatorX,gy=towerLayout.generatorY+Math.sin(state.time*1.8)*5;
@@ -1338,8 +1340,8 @@ function draw(){
  }
  ctx.save();ctx.translate(towerLayout.x,0);ctx.scale(actorRatio,1);ctx.translate(-towerLayout.x,0);
  drawTower('ally',towerLayout.x,state.allyBase);
- TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,true);ctx.restore();
- for(let i=0;i<run.drones;i++){const patrol=equipmentConfig.drone_patrol||{min_x:270,max_x:525,period_seconds:9,vertical_amplitude:7},phase=(state.time/(patrol.period_seconds||9)+i/Math.max(1,equipmentConfig.drone_max||3))*Math.PI*2,x=Math.min(progression.defence.fortress_world_width-60,towerLayout.x-156+patrol.min_x+(patrol.max_x-patrol.min_x)*(.5-.5*Math.cos(phase))),y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*(patrol.vertical_amplitude||7);ctx.save();ctx.translate(x,y);ctx.scale(actorRatio,1);if(readyImage(droneImage)){spriteFrame(droneImage,0,-30,-30,60,60,equipmentConfig.drone_sheet_columns,1);ctx.restore();continue;}ctx.fillStyle='#627e91';ctx.fillRect(-22,-3,44,7);ctx.fillStyle='#a8bdca';ctx.beginPath();ctx.ellipse(0,0,15,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ce9ff';ctx.fillRect(-4,-3,8,6);ctx.restore();}
+ TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY+(state.allyBase>0?-12+Math.sin(state.time*2.2)*3:0),true);ctx.restore();
+ for(let i=0;i<run.drones;i++){const patrol=equipmentConfig.drone_patrol||{min_x:270,max_x:525,period_seconds:9,vertical_amplitude:7},phase=(state.time/(patrol.period_seconds||9)+i/Math.max(1,equipmentConfig.drone_max||3))*Math.PI*2,x=Math.min(progression.defence.fortress_world_width-60,towerLayout.x-156+patrol.min_x+(patrol.max_x-patrol.min_x)*(.5-.5*Math.cos(phase))),y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*(patrol.vertical_amplitude||7);ctx.save();ctx.translate(x,y);ctx.scale(actorRatio,1);if(readyImage(droneImage)){const dw=60,dh=dw*droneImage.naturalHeight/(droneImage.naturalWidth/equipmentConfig.drone_sheet_columns);spriteFrame(droneImage,0,-dw/2,-dh/2,dw,dh,equipmentConfig.drone_sheet_columns,1);ctx.restore();continue;}ctx.fillStyle='#627e91';ctx.fillRect(-22,-3,44,7);ctx.fillStyle='#a8bdca';ctx.beginPath();ctx.ellipse(0,0,15,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ce9ff';ctx.fillRect(-4,-3,8,6);ctx.restore();}
  drawTowerAttacks();
  for(const fx of chargeEffects){
   const fade=Math.max(0,fx.life/fx.maxLife);
