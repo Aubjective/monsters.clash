@@ -55,7 +55,7 @@ function status(u){
 }
 function movementMultiplier(u){const s=u?.environmentStatus;return (s?.freezeTime>0||s?.rootTime>0||s?.staggerTime>0)?0:(s?.slowTime>0?1-s.slowPct:1)}
 function canAct(u){return !(u?.environmentStatus?.freezeTime>0||u?.environmentStatus?.staggerTime>0)}
-function update(dt,units,applyDamage,playSound,frontline=236){
+function update(dt,units,applyDamage,playSound,frontline=236,worldRight=925){
  if(!stage||!enabled)return;
  dt=Math.max(0,Math.min(.06,Number(dt)||0));if(!dt)return;
  elapsed+=dt;gustClock+=dt;
@@ -151,7 +151,7 @@ function update(dt,units,applyDamage,playSound,frontline=236){
              st.staggerTime=Math.max(st.staggerTime||0,Number(hazard.stagger_duration_seconds)||.8);
              u.charge=null;u.walking=false;if(u.anim)u.anim=null;
              const vx=u.x-zone.x,vy=(u.y-zone.y)*1.45,len=Math.hypot(vx,vy),push=Math.max(0,Number(hazard.knockback_distance)||20);
-             u.x=Math.max(frontline,Math.min(925,u.x+(len>.001?vx/len:(u.side>0?-1:1))*push));
+             u.x=Math.max(frontline,Math.min(worldRight,u.x+(len>.001?vx/len:(u.side>0?-1:1))*push));
              u.y=Math.max(343,Math.min(429,u.y+(len>.001?vy/len:0)*push/1.45));
              if(typeof applyDamage==='function')applyDamage(u,u.maxhp*Math.max(0,Number(hazard.damage_max_hp_pct)||0),'true');
            }else if(hazard.type==='entangling_roots'){
@@ -177,7 +177,7 @@ function update(dt,units,applyDamage,playSound,frontline=236){
    for(let i=0;i<count;i++){
      const radius=Math.max(25,Math.min(120,Number(hazard.zone_radius)||73));
      // Positions stay on the continuous battle floor, away from both towers.
-     const left=Math.min(850,Math.max(300,frontline+35)),right=Math.max(left,850),span=right-left;
+     const right=Math.min(worldRight-75,frontline+614),left=Math.min(right,Math.max(300,frontline+35)),span=right-left;
      const x=count===1?rand(left,right):i===0?rand(left,left+span*.35):rand(left+span*.65,right);
      hazardZones.push({x,y:rand(362,408),radius,warning:Math.max(.3,Number(hazard.warning_seconds)||1),
        remaining:Math.max(.5,Number(hazard.active_seconds)||4),phase:rand(0,6),caught:new Set(),impacted:false});
@@ -209,7 +209,7 @@ function render(ctx,layer='background',viewX=0,viewY=0,viewW=W,viewH=H){
  ctx.globalAlpha=(ambient?.opacity||0)*(heavy?1.55:1);
  const visibleCount=ambient?.type==='rain'&&!heavy?ambient.count:particles.length;
  for(let i=0;i<visibleCount;i++){const p=particles[i];
-   ctx.save();if(ambient.type==='rain'){ctx.translate(viewX+(p.x/W)*viewW,viewY+(p.y/H)*viewH);}else ctx.translate(p.x,p.y);ctx.fillStyle=p.color;ctx.strokeStyle=p.color;
+   ctx.save();if(ambient.type==='rain'){ctx.translate(viewX+(p.x/W)*viewW,viewY+(p.y/H)*viewH);}else ctx.translate(viewX+p.x,p.y);ctx.fillStyle=p.color;ctx.strokeStyle=p.color;
    switch(ambient.type){
    case 'leaves':{
      ctx.rotate(p.rotation+Math.sin(elapsed+p.phase)*.6);const z=p.size;ctx.beginPath();ctx.moveTo(-z*1.6,0);ctx.quadraticCurveTo(0,-z*1.6,z*1.7,0);ctx.quadraticCurveTo(0,z*1.35,-z*1.6,0);ctx.fill();ctx.strokeStyle='#e4efab';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(-z,0);ctx.lineTo(z,0);ctx.stroke();break;
@@ -266,7 +266,7 @@ function render(ctx,layer='background',viewX=0,viewY=0,viewW=W,viewH=H){
  if(ambient?.type==='dust'&&ambient.sand_wind?.enabled){
    const sw=ambient.sand_wind,period=Math.max(3,Number(sw.gust_period_seconds)||9),pulse=Math.pow(Math.max(0,Math.sin(gustClock*Math.PI*2/period)),3);
    for(let i=0;i<5;i++){
-     const x=((elapsed*(32+i*4)+i*223)%(W+240))-120,y=315+i*29+Math.sin(elapsed*.7+i)*5;
+     const x=viewX+((elapsed*(32+i*4)+i*223)%(W+240))-120,y=315+i*29+Math.sin(elapsed*.7+i)*5;
      const rx=70+i*9+35*pulse;
      ctx.save();ctx.translate(x,y);ctx.scale(1,.11);const haze=ctx.createRadialGradient(0,0,0,0,0,rx);haze.addColorStop(0,'rgba(235,188,121,.32)');haze.addColorStop(.5,'rgba(224,174,106,.14)');haze.addColorStop(1,'rgba(224,174,106,0)');ctx.globalAlpha=.18+.35*pulse;ctx.fillStyle=haze;ctx.fillRect(-rx,-rx,rx*2,rx*2);ctx.restore();
    }
@@ -278,7 +278,7 @@ function render(ctx,layer='background',viewX=0,viewY=0,viewW=W,viewH=H){
    const r=Math.max(5,Math.min(16,Number(sd.radius)||12)),height=Math.max(15,Math.min(45,Number(sd.height)||34)),speed=Math.max(1,Math.min(30,Number(sd.speed)||10)),opacity=Math.max(0,Math.min(.5,Number(sd.opacity)||.28));
    for(let i=0;i<maxCount;i++){
      const cycle=(elapsed/(12+i*2)+i*.37)%1,fade=Math.min(1,cycle*7,(1-cycle)*7)*(i<count?1:pulse*pulse);
-     const x=220+((elapsed*speed*(1+i*.16)+i*193)%520),y=365+i*24+Math.sin(elapsed*.45+i*2)*8;
+     const x=viewX+220+((elapsed*speed*(1+i*.16)+i*193)%520),y=365+i*24+Math.sin(elapsed*.45+i*2)*8;
      ctx.save();ctx.translate(x,y);
      const dust=ctx.createRadialGradient(0,0,0,0,0,r*1.5);dust.addColorStop(0,'rgba(213,164,98,.38)');dust.addColorStop(1,'rgba(213,164,98,0)');ctx.save();ctx.scale(1,.23);ctx.globalAlpha=fade*opacity;ctx.fillStyle=dust;ctx.fillRect(-r*1.5,-r*1.5,r*3,r*3);ctx.restore();
      for(let n=0;n<48;n++){
