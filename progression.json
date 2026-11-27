@@ -34,11 +34,12 @@
     "attack_cost": 75,
     "max_upgrade": 10,
     "monster_unlock_cost": 250,
-    "elite_sprite_scale": 2,
+    "elite_sprite_scale": 1,
     "tower_range_cap": 425,
-    "boss_sprite_scale": 2.15,
+    "boss_sprite_scale": 1.29,
     "first_elite_round": 3,
-    "first_boss_round": 10
+    "first_boss_round": 10,
+    "normal_sprite_scale": 0.7
   },
   "rank_bonus_pct": {
     "normal": {
