@@ -442,7 +442,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <button id="battle-menu-home">Main Menu</button>
  </nav>
 </main>
-<script src="modules/elements/environment.js?v=20261126-metal-traps"></script>
+<script src="modules/elements/environment.js?v=20261127-full-rain"></script>
 <script src="modules/day-night/engine.js?v=20261127-30s"></script>
 <script src="modules/towers/upgrades.js?v=20261127-barrier-ring"></script>
 <script>
@@ -1210,7 +1210,7 @@ function draw(){
  if(readyImage(backdrop))drawCover(backdrop,-viewOffsetX,-viewOffsetY,cv.width,cv.height);
  else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(-viewOffsetX,-viewOffsetY,cv.width,cv.height);ctx.fillStyle=colors[2];ctx.fillRect(-viewOffsetX,ground,cv.width,Math.max(0,cv.height-ground));ctx.fillStyle='#446b48';ctx.fillRect(-viewOffsetX,ground,cv.width,5)}
  window.MonstersClashDayNight?.render(ctx,-viewOffsetX,-viewOffsetY,cv.width,cv.height);
- window.MonstersClashEnvironment?.render(ctx,'background');
+ window.MonstersClashEnvironment?.render(ctx,'background',-viewOffsetX,-viewOffsetY,cv.width,cv.height);
  TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY,false);
  if(run.generatorLevel>0&&readyImage(generatorImage)){
  const hh=towerLayout.generatorHeight,ww=hh*generatorImage.naturalWidth/generatorImage.naturalHeight;

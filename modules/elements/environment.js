@@ -197,16 +197,16 @@ function update(dt,units,applyDamage){
    }
  }
 }
-function render(ctx,layer='background'){
+function render(ctx,layer='background',viewX=0,viewY=0,viewW=W,viewH=H){
  if(!stage||!enabled||layer!=='background')return;
  ctx.save();
  const heavy=ambient?.type==='rain'&&heavyRainTime>0;
  // Subtle overcast tint during heavy rain; never change permanent base-map artwork.
- if(heavy){ctx.fillStyle='rgba(13,38,65,0.14)';ctx.fillRect(0,0,W,H);}
+ if(heavy){const haze=ctx.createLinearGradient(0,viewY,0,viewY+viewH);haze.addColorStop(0,'rgba(18,40,62,.20)');haze.addColorStop(.65,'rgba(18,40,62,.12)');haze.addColorStop(1,'rgba(18,40,62,.05)');ctx.fillStyle=haze;ctx.fillRect(viewX,viewY,viewW,viewH);}
  ctx.globalAlpha=(ambient?.opacity||0)*(heavy?1.55:1);
  const visibleCount=ambient?.type==='rain'&&!heavy?ambient.count:particles.length;
  for(let i=0;i<visibleCount;i++){const p=particles[i];
-   ctx.save();ctx.translate(p.x,p.y);ctx.fillStyle=p.color;ctx.strokeStyle=p.color;
+   ctx.save();if(ambient.type==='rain'){ctx.translate(viewX+(p.x/W)*viewW,viewY+(p.y/H)*viewH);}else ctx.translate(p.x,p.y);ctx.fillStyle=p.color;ctx.strokeStyle=p.color;
    switch(ambient.type){
    case 'leaves':{
      ctx.rotate(p.rotation+Math.sin(elapsed+p.phase)*.6);const z=p.size;ctx.beginPath();ctx.moveTo(-z*1.6,0);ctx.quadraticCurveTo(0,-z*1.6,z*1.7,0);ctx.quadraticCurveTo(0,z*1.35,-z*1.6,0);ctx.fill();ctx.strokeStyle='#e4efab';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(-z,0);ctx.lineTo(z,0);ctx.stroke();break;
@@ -233,9 +233,9 @@ function render(ctx,layer='background'){
      }else{ctx.globalAlpha*=.45;ctx.beginPath();ctx.ellipse(0,0,p.size*1.6,p.size*.65,0,0,Math.PI*2);ctx.fill();}break;
    }
    case 'rain':{
-     const length=p.size*(heavy?8:4);
-     ctx.lineWidth=heavy?1.35:.9;
-     ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-length*.24,length);ctx.stroke();
+     const length=p.size*(heavy?7:4)*(.85+.2*Math.sin(p.phase));
+     ctx.globalAlpha*=.45+.5*Math.sin(p.phase+1)**2;ctx.lineWidth=(heavy?1.15:.75)*(.8+.35*Math.sin(p.phase)**2);
+     ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo((ambient.drift/Math.max(1,p.speed))*length,length);ctx.stroke();
      break;
    }
    case 'metal':{
@@ -253,7 +253,7 @@ function render(ctx,layer='background'){
    for(let i=0;i<(heavy?26:12);i++){
      const p=particles[i*3%particles.length];
      const phase=(elapsed*(heavy?2.7:1.8)+p.phase)%1;
-     const x=((p.x+i*113)%W+W)%W,y=327+(i*37)%108;
+     const x=viewX+(((p.x+i*113)%W+W)%W)/W*viewW,y=327+(i*37)%108;
      ctx.globalAlpha=(heavy?.24:.15)*(1-phase);
      ctx.beginPath();ctx.ellipse(x,y,(3+8*phase),1+2*phase,0,0,Math.PI*2);ctx.stroke();
      if(heavy&&phase<.35){ctx.globalAlpha=.36*(1-phase/.35);ctx.beginPath();ctx.moveTo(x-3,y-4);ctx.lineTo(x,y);ctx.lineTo(x+4,y-6);ctx.stroke();}
