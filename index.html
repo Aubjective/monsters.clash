@@ -398,7 +398,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <div class="page-head"><div><div class="eyebrow">Permanent Equipment</div><h2>Upgrades</h2></div><span class="coin-wallet"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> Gold <span id="upgrade-wallet">0</span></span></div>
   <p class="page-sub">Unlock equipment with Gold and choose your loadout before battle. Use Battle Coins during a run to upgrade your equipped tower and shield, or deploy your equipped drone.</p>
   <nav class="equipment-tabs" aria-label="Equipment categories">
-   <button type="button" data-equipment="towers" aria-pressed="true">Towers</button><button type="button" data-equipment="shields" aria-pressed="false">Shields</button><button type="button" data-equipment="drones" aria-pressed="false">Drones</button><button type="button" data-equipment="generators" aria-pressed="false">Generators</button>
+   <button type="button" data-equipment="towers" aria-pressed="true">Fortresses</button><button type="button" data-equipment="shields" aria-pressed="false">Shields</button><button type="button" data-equipment="drones" aria-pressed="false">Drones</button><button type="button" data-equipment="generators" aria-pressed="false">Generators</button>
   </nav>
   <div id="equipment-loadout" class="equipment-loadout"></div>
   <div id="equipment-list" class="app-grid"></div>
@@ -467,7 +467,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script src="modules/elements/environment.js?v=20261127-scrolling"></script>
 <script src="modules/day-night/engine.js?v=20261127-fixed-time"></script>
-<script src="modules/towers/upgrades.js?v=20261127-drone-patrol"></script>
+<script src="modules/towers/upgrades.js?v=20261127-fortress-assets"></script>
 <script>
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=960,H=480,ground=325;
@@ -548,7 +548,7 @@ let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentC
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json?v=20261127-drone-patrol',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
+  fetch('towers.json?v=20261127-fortress-assets',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json?v=20261127-sp',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json?v=20261127-deep-sfx',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('progression.json?v=20261127-stage-journey',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
@@ -626,7 +626,7 @@ function sheetPreview(id){const el=document.createElement('span');el.className='
 
 const PROFILE_KEY='monsters-clash-profile-v1';
 const AUDIO_KEY='monsters-clash-audio-v1';
-let profile={xp:0,owned:[],encountered:[],coins:0,teamSlots:8,team:[],towers:['t001'],tower:'t001'};
+let profile={xp:0,owned:[],encountered:[],coins:0,teamSlots:8,team:[],towers:['f001'],tower:'f001'};
 let run={active:false,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,generatorLevel:0,generatorElapsed:0,wallet:0,menuEarned:0,surgeTime:0,surgeCooldown:0};
 function startRun(){
  run={active:true,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,generatorLevel:0,generatorElapsed:0,wallet:progression.coins.starting_battle_coins,menuEarned:0,surgeTime:0,surgeCooldown:0};
@@ -678,7 +678,7 @@ function loadProfile(defaults){
   coins:Math.max(0,Math.floor(Number(saved?.coins)||0)),
   teamSlots:Math.min(progression.team.max_slots,Math.max(progression.team.starting_slots,Math.floor(Number(saved?.teamSlots)||progression.team.starting_slots))),
   team:Array.isArray(saved?.team)?[...new Set(saved.team)]:defaults.slice(),
-  towers:[...new Set(['t001',...(Array.isArray(saved?.towers)?saved.towers:[])])],tower:typeof saved?.tower==='string'?saved.tower:'t001',
+  towers:[...new Set(['f001',...(Array.isArray(saved?.towers)?saved.towers:[])])],tower:typeof saved?.tower==='string'?saved.tower:'f001',
   shields:[...new Set([towerRegistry.default_shield,...(Array.isArray(saved?.shields)?saved.shields:[])])],shield:typeof saved?.shield==='string'?saved.shield:towerRegistry.default_shield,
   drones:[...new Set([towerRegistry.default_drone,...(Array.isArray(saved?.drones)?saved.drones:[])])],drone:typeof saved?.drone==='string'?saved.drone:towerRegistry.default_drone,
  generators:[...new Set([towerRegistry.default_generator,...(Array.isArray(saved?.generators)?saved.generators:[])])],generator:typeof saved?.generator==='string'?saved.generator:towerRegistry.default_generator
@@ -747,15 +747,15 @@ function selectEquipment(){
  const selectionProfile=progression.testing_mode===true?{...profile,...Object.fromEntries(['towers','shields','drones','generators'].map(group=>[group,towerRegistry[group].filter(x=>x.available!==false).map(x=>x.id)]))}:profile;
  const selected=TowerUpgrades.selectEquipment(towerRegistry,selectionProfile,progression.defence);
  towerConfigs.ally=selected.tower;equipmentConfig=selected.config;
- if(selected.tower.sheet)towerImages.ally.src=selected.tower.sheet;
- if(selected.drone.sheet)droneImage.src=selected.drone.sheet;else droneImage.removeAttribute('src');
- for(const [img,path] of [[generatorImage,selected.generator.sprite],[hpBarImage,selected.tower.hp_bar],[towerArrowImage,selected.tower.basic_attack.sprite],[droneArrowImage,selected.drone.projectile_sprite]]){if(path)img.src=path;else img.removeAttribute('src');}
+ if(selected.tower.sheet)towerImages.ally.src=selected.tower.sheet+'?v=20261127-fortress-assets';
+ if(selected.drone.sheet)droneImage.src=selected.drone.sheet+'?v=20261127-fortress-assets';else droneImage.removeAttribute('src');
+ for(const [img,path] of [[generatorImage,selected.generator.sprite],[hpBarImage,selected.tower.hp_bar],[towerArrowImage,selected.tower.basic_attack.sprite],[droneArrowImage,selected.drone.projectile_sprite]]){if(path)img.src=path+'?v=20261127-fortress-assets';else img.removeAttribute('src');}
  storeProfile();
 }
 function renderEquipment(){
  $('equipment-info').hidden=true;refreshCoinDisplays();
  for(const button of document.querySelectorAll('[data-equipment]'))button.setAttribute('aria-pressed',String(button.dataset.equipment===equipmentTab));
- const names=[['towers','tower'],['shields','shield'],['drones','drone'],['generators','generator']].map(([group,key])=>{const item=towerRegistry[group].find(x=>x.id===profile[key]);const el=document.createElement('span');el.textContent=({tower:'Tower',shield:'Shield',drone:'Drone',generator:'Generator'}[key])+': '+(item?.name||'Not selected');return el;});
+ const names=[['towers','tower'],['shields','shield'],['drones','drone'],['generators','generator']].map(([group,key])=>{const item=towerRegistry[group].find(x=>x.id===profile[key]);const el=document.createElement('span');el.textContent=({tower:'Fortress',shield:'Shield',drone:'Drone',generator:'Generator'}[key])+': '+(item?.name||'Not selected');return el;});
  $('equipment-loadout').replaceChildren(...names);
  const group=equipmentTab,key=group.slice(0,-1);
  $('equipment-list').replaceChildren(...towerRegistry[group].map(item=>{
@@ -1088,7 +1088,7 @@ function stepTowerDefense(dt){
   for(const u of foes){dmg(u,damage,'magic');if(attack.stun>0){u.environmentStatus=u.environmentStatus||{slowTime:0,slowPct:0,freezeTime:0};u.environmentStatus.staggerTime=Math.max(u.environmentStatus.staggerTime||0,attack.stun);}}
   towerProjectiles.push({type:'electric_pulse',x:towerLayout.x-3,y:towerLayout.ground-towerLayout.height+42,age:0,duration:.6,range,width:attack.waveWidth});
  }else{
- const count=attack.arrows;for(let i=0;i<Math.min(count,foes.length);i++){const target=foes[i];dmg(target,damage,'physical');towerProjectiles.push({type:'arrow',x:towerLayout.x-1,y:towerLayout.ground-towerLayout.height+28,tx:target.x,ty:target.y-34,age:0,duration:.45});}
+ const count=attack.arrows;for(let i=0;i<Math.min(count,foes.length);i++){const target=foes[i];dmg(target,damage,'physical');towerProjectiles.push({type:'arrow',x:towerLayout.x+40,y:towerLayout.ground-towerLayout.height+37,tx:target.x,ty:target.y-34,age:0,duration:.45});}
  }
  towerCooldowns.ally=attack.interval;
  }
@@ -1097,7 +1097,7 @@ function stepTowerDefense(dt){
  state.droneTimers[i]=Math.max(0,(state.droneTimers[i]||0)-dt);
  const patrol=equipmentConfig.drone_patrol||{min_x:270,max_x:525,period_seconds:9,vertical_amplitude:7},phase=(state.time/(patrol.period_seconds||9)+i/Math.max(1,equipmentConfig.drone_max||3))*Math.PI*2,x=Math.min(progression.defence.fortress_world_width-60,towerLayout.x-156+patrol.min_x+(patrol.max_x-patrol.min_x)*(.5-.5*Math.cos(phase))),y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*(patrol.vertical_amplitude||7);
  const target=state.units.filter(u=>u.hp>0&&u.side<0&&Math.abs(u.x-x)<=dc.drone_range).sort((a,b)=>a.x-b.x)[0];
- if(target&&state.droneTimers[i]<=0){soundEffect('arrow');dmg(target,attack.droneDamage,'physical');towerProjectiles.push({type:'arrow',drone:true,x,y,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=dc.drone_interval;}
+ if(target&&state.droneTimers[i]<=0){soundEffect('arrow');dmg(target,attack.droneDamage,'physical');towerProjectiles.push({type:'arrow',drone:true,x:x+21,y:y+3,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=dc.drone_interval;}
  }
 }
 function step(dt){
@@ -1212,7 +1212,7 @@ function step(dt){
  if(towerLayout.x>=goal&&state.arrivalTime===null)state.arrivalTime=state.time;
  if(state.allyBase<=0||(state.arrivalTime!==null&&(!state.finalRank||state.finalSpawned)&&teamCount(-1)===0)){
   state.victory=state.allyBase>0;state.ended=true;run.totalSeconds+=state.time;settleBattle();soundEffect(state.victory?'victory':'defeat');
-  $('status').textContent=state.victory?'Destination Reached':'Tower Breached — Run Ended';showResult();
+  $('status').textContent=state.victory?'Destination Reached':'Fortress Breached — Run Ended';showResult();
  }
 }
 function drawTower(side,x,hp){

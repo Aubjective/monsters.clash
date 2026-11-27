@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0.0",
   "default_towers": {
-    "ally": "t001"
+    "ally": "f001"
   },
   "towers": [
     {
-      "id": "t001",
-      "name": "Sentinel Tower",
-      "sheet": "assets/towers/t001/sentinel-tower-sheet.png",
+      "id": "f001",
+      "name": "Sentinel Fortress",
+      "sheet": "assets/fortresses/f001/sentinel-fortress-sheet.png",
       "max_hp": 1900,
       "damage_thresholds_pct": [
         70,
@@ -28,11 +28,11 @@
       "series": "Sentinel",
       "description": "Crystal-powered fortress with automatic arrow volleys.",
       "ability": "Arrow Volley",
-      "hp_bar": "assets/towers/t001/sentinel-hp-bar.png"
+      "hp_bar": "assets/fortresses/f001/sentinel-hp-bar.png"
     },
     {
       "id": "t002",
-      "name": "Arcane Tower",
+      "name": "Arcane Fortress",
       "sheet": "assets/towers/t002/electric-tower-sheet.png",
       "max_hp": 2400,
       "damage_thresholds_pct": [
@@ -63,7 +63,7 @@
     {
       "id": "s001",
       "name": "Sentinel Shield",
-      "description": "Orbiting translucent blue energy plates absorb damage to the tower.",
+      "description": "Orbiting translucent blue energy plates absorb damage to the fortress.",
       "type": "mirror",
       "unlock_cost": 0,
       "upgrade_cost": 60,
@@ -82,7 +82,7 @@
       "series": "Arcane",
       "available": false,
       "type": "energy",
-      "description": "Orbiting magical energy plates protect the tower.",
+      "description": "Orbiting magical energy plates protect the fortress.",
       "ability": "Energy Absorption",
       "planned_skill": "Energy Burst — proposed area damage on total shield depletion.",
       "unlock_cost": null,
@@ -152,7 +152,7 @@
       "id": "g001",
       "name": "Sentinel Generator",
       "series": "Sentinel",
-      "description": "Protected auxiliary structure producing Battle Coins during active combat.",
+      "description": "Protected floating auxiliary structure producing Battle Coins during active combat.",
       "ability": "Coin Production",
       "sprite": "assets/generators/g001/sentinel-generator.png",
       "unlock_cost": 0,
