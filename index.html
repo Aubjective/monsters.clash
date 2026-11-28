@@ -123,7 +123,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 
 /* Main game lobby — scoped to the home screen; combat and team layouts remain unchanged. */
 #home-screen{padding:0!important;overflow:hidden;background:#0a182a}
-.lobby{position:relative;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;isolation:isolate;background:#84c66a url('assets/backgrounds/whisper-meadow.png') center 57%/cover no-repeat;overflow:hidden}
+.lobby{position:relative;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;isolation:isolate;background:#84c66a url('assets/menu/background.png') center 57%/cover no-repeat;overflow:hidden}
 .lobby:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#06182938 0%,transparent 30%,transparent 70%,#06182935 100%);z-index:1}
 .lobby-header{z-index:4;position:relative;display:flex;align-items:center;justify-content:flex-start;padding:clamp(11px,2.6vh,25px) max(25px,5vw);gap:20px;flex:0 0 auto;background:linear-gradient(180deg,#071a32c9,#071a3244 83%,transparent)}
 .lobby-brand{display:flex;align-items:center;gap:12px}
@@ -352,6 +352,20 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .battle-sidebar .battle-gear{position:relative}.battle-gear span{white-space:pre-line;font-size:12px;line-height:1.4;flex:1;min-width:0}.battle-sidebar #battle-upgrades .battle-gear{min-height:52px;padding:6px 9px;gap:7px}.battle-gear canvas{width:48px;height:40px}.battle-sidebar h3{font-size:13px}.battle-sidebar [aria-controls="gear-detail"]::after{content:"⌄";color:#a9c7df;margin-left:auto;flex:none}.battle-sidebar [aria-expanded="true"]::after{content:"⌃"}.battle-sidebar .can-upgrade{border-color:#e9c477;box-shadow:inset 0 0 10px #d8a94b30,0 0 7px #d8a94b38;color:#ffedbe}.battle-sidebar .can-upgrade::after{content:"↑";color:#ffdc87;font-weight:900}.battle-sidebar .can-upgrade[aria-expanded="true"]::after{content:"↑ ⌃"}.gear-detail{padding:9px;font-size:12px;margin:0 0 4px;text-align:left}.gear-detail dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 8px;margin:9px 0}.gear-detail dt,.gear-detail dd{margin:0;overflow-wrap:anywhere}.gear-detail dd{text-align:right}.battle-items>.gear-detail{grid-column:1/-1}.gear-detail #gear-upgrade-list button:not(:disabled),.gear-detail>button:not(:disabled){background:#d2a45e;color:#142333;border-color:#f6d38e;font-weight:700;text-align:center}.gear-detail #gear-upgrade-list button,.gear-detail>button{font-size:12px;padding:8px}.battle-items button[aria-controls="gear-detail"]{position:relative}.battle-items button[aria-controls="gear-detail"]::after{position:absolute;right:4px;top:2px;font-size:10px}.summoner-battle>.gear-detail{width:100%}
 @media(max-height:500px),(orientation:portrait) and (max-width:600px){.prep-banner-art{height:clamp(130px,42dvh,220px)}.prep-banner-copy{padding:10px}.prep-banner h3{font-size:16px}.prep-banner p{font-size:11px}.prep-grid{gap:7px;margin:7px 0}.prep-card{padding:8px}.prep-card h3{font-size:12px;margin-bottom:5px}.prep-details{font-size:10px}.prep-details .map-info-entry{padding:4px}.prep-enemy{min-width:60px;max-width:90px;padding:4px}.prep-enemy small{font-size:10px}.prep-budget{font-size:10px;padding:7px}.battle-sidebar #battle-upgrades .battle-gear{min-height:36px;padding:4px;gap:4px}.battle-gear canvas{width:31px;height:28px}.battle-gear span,.gear-detail{font-size:10px}.gear-detail{padding:5px}.gear-detail dl{gap:3px 4px}.gear-detail #gear-upgrade-list button,.gear-detail>button{font-size:10px;padding:5px}.battle-sidebar h3{font-size:10px}}
 @media(orientation:portrait) and (max-width:600px){.prep-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Menu-only face-off; independent of the live battlefield. */
+.lobby-world .lobby-monster{--size:min(17vw,34vh,230px);width:var(--size);height:var(--size);max-width:none;max-height:none;bottom:7%;right:auto;left:auto;animation:lobbyBreath 2.5s ease-in-out infinite}
+.lobby-world .lobby-moss{left:22%;bottom:4%;z-index:5}.lobby-world .lobby-cinder{left:34%;bottom:16%;z-index:4;transform:none}
+.lobby-world .lobby-elite,.lobby-world .lobby-boss,.lobby-world .lobby-minion-one,.lobby-world .lobby-minion-two{transform:scaleX(-1);animation:lobbyBreathMirror 2.6s ease-in-out infinite}
+.lobby-world .lobby-elite{--size:min(22vw,42vh,290px);right:30%;bottom:3%;z-index:5;filter:sepia(1) hue-rotate(-18deg) saturate(3) drop-shadow(0 0 8px #fd7429)}
+.lobby-world .lobby-boss{--size:min(24vw,46vh,320px);right:13%;bottom:15%;z-index:3;filter:grayscale(1) brightness(.58) contrast(1.25) drop-shadow(0 0 8px #130d26)}
+.lobby-world .lobby-minion-one{--size:min(12vw,25vh,160px);right:4%;bottom:4%;z-index:5}.lobby-world .lobby-minion-two{--size:min(12vw,25vh,160px);right:22%;bottom:0;z-index:6}
+.lobby-fortress,.lobby-drone,.lobby-generator,.lobby-shield{position:absolute;pointer-events:none;background-repeat:no-repeat;filter:drop-shadow(0 8px 8px #07162288)}
+.lobby-fortress{left:2%;bottom:12%;width:min(19vw,38vh,260px);aspect-ratio:1;background-image:url('assets/fortresses/f001/sentinel-fortress-sheet.png');background-size:400% 100%;background-position:left center;z-index:3}
+.lobby-drone{left:19%;bottom:61%;width:min(10vw,19vh,125px);aspect-ratio:1;background-image:url('assets/drones/d001/sentinel-drone-sheet.png');background-size:400% 100%;background-position:left center;z-index:3}
+.lobby-generator{left:2%;bottom:65%;width:min(9vw,17vh,110px);aspect-ratio:1;background:url('assets/generators/g001/sentinel-generator.png') center/contain no-repeat;z-index:2}
+.lobby-shield{left:1%;bottom:13%;width:min(21vw,40vh,280px);aspect-ratio:1.25;border:2px solid #89e5ff99;border-radius:50%;box-shadow:0 0 15px #56ceff55,inset 0 0 20px #56ceff33;z-index:4}
+@media(orientation:portrait) and (max-width:699px){.lobby-world .lobby-monster{--size:18vw}.lobby-world .lobby-elite{--size:23vw}.lobby-world .lobby-boss{--size:25vw}.lobby-world .lobby-minion-one,.lobby-world .lobby-minion-two{--size:13vw}}
+@media(prefers-reduced-motion:reduce){.lobby-world .lobby-monster{animation:none}}
 </style>
 </head>
 <body>
@@ -360,9 +374,9 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <div class="lobby-header">
    <div class="lobby-brand"><span class="lobby-emblem">⚔</span><div><div class="lobby-kicker">ELEMENTAL BATTLES</div><h1>MONSTERS <span>CLASH</span></h1></div></div><div class="lobby-utility"><span class="coin-wallet" id="coin-wallet" aria-label="Gold balance"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> <span>Gold</span> <span id="wallet-amount">0</span></span></div>
   </div>
-  <div class="lobby-world" aria-label="Whisper Meadow with Mossguard and Cinderhorn">
+  <div class="lobby-world" aria-label="Sentinel defenders facing elite Mossguard, dark Cinderhorn and minions">
     <div class="lobby-monster lobby-moss" role="img" aria-label="Mossguard, nature guardian"></div>
-    <div class="lobby-monster lobby-cinder" role="img" aria-label="Cinderhorn, fire bruiser"></div>
+    <div class="lobby-monster lobby-cinder" role="img" aria-label="Cinderhorn, fire bruiser"></div><div class="lobby-fortress" role="img" aria-label="Sentinel Fortress"></div><div class="lobby-shield" aria-hidden="true"></div><div class="lobby-drone" role="img" aria-label="Sentinel Drone"></div><div class="lobby-generator" role="img" aria-label="Sentinel Generator"></div><div class="lobby-monster lobby-elite" role="img" aria-label="Elite Mossguard"></div><div class="lobby-monster lobby-boss" role="img" aria-label="Dark Cinderhorn"></div><div class="lobby-monster lobby-minion-one" role="img" aria-label="Enemy Mossguard minion"></div><div class="lobby-monster lobby-minion-two" role="img" aria-label="Enemy Cinderhorn minion"></div>
   </div>
   <div class="lobby-controls"><div id="startup-message" role="status" style="color:#fff1bb;text-align:center;font-weight:700">Loading game…</div>
    <button id="home-start" class="lobby-play" disabled><span class="play-mark">▶</span><span>PLAY</span><small>START BATTLE</small></button>
@@ -586,7 +600,7 @@ async function loadGameCatalog(){
  if(team.length===0)team=roster.slice(0,progression.testing_mode===true?progression.team.max_slots:profile.teamSlots).filter(m=>owns(m.id)).map(m=>m.id);
  if(progression.testing_mode!==true){profile.team=team.slice();storeProfile();}refreshCoinDisplays();
  selectEquipment();
- for(const [id,selector] of [['m001','.lobby-moss'],['m002','.lobby-cinder']]){
+ for(const [id,selector] of [['m001','.lobby-moss'],['m002','.lobby-cinder'],['m001','.lobby-elite'],['m002','.lobby-boss'],['m001','.lobby-minion-one'],['m002','.lobby-minion-two']]){
   const m=catalog.find(entry=>entry.id===id);
   const el=document.querySelector(selector);
   if(el&&m?.art?.sheet)el.style.backgroundImage='url("'+m.art.sheet+'")';
