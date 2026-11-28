@@ -21,7 +21,8 @@
         "damage": 22,
         "cooldown_seconds": 2.6,
         "sprite": "assets/weapons/w001/sentinel-arrow.png",
-        "weapon_id": "w001"
+        "weapon_id": "w001",
+        "damage_type": "physical"
       },
       "sheet_columns": 4,
       "sheet_rows": 1,
@@ -79,7 +80,8 @@
         "type": "electric_pulse",
         "range": 260,
         "damage": 14,
-        "cooldown_seconds": 4.2
+        "cooldown_seconds": 4.2,
+        "damage_type": "magical"
       },
       "sheet_columns": 4,
       "sheet_rows": 1,
@@ -249,7 +251,8 @@
           "cost": 85
         }
       },
-      "weapon_id": "w001"
+      "weapon_id": "w001",
+      "damage_type": "physical"
     },
     {
       "id": "d002",
@@ -293,7 +296,8 @@
           "step": 5,
           "cost": 85
         }
-      }
+      },
+      "damage_type": "magical"
     }
   ],
   "default_generator": "g001",
