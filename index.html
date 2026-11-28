@@ -214,6 +214,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .arena-wrap{position:relative}
 .run-results{position:absolute;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(145deg,#112943f5,#081a2df7);border:2px solid #d8ac62;border-radius:20px;padding:clamp(15px,2vw,28px);width:min(540px,92%);max-height:96%;overflow-y:auto;box-shadow:0 12px 70px #000b;color:#fff4dd;text-align:center}
 .run-results[hidden]{display:none!important}
+.prep-enemies{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:8px 0}.prep-enemy{min-width:74px;max-width:110px;flex:1 1 74px;border:1px solid #58718b;border-radius:8px;padding:5px;background:#101e30}.prep-enemy .sheet-preview{display:block;margin:auto;width:72px;height:64px}.prep-enemy small{display:block;font-size:10px}.prep-enemy.unknown .sheet-preview{filter:brightness(0) drop-shadow(0 0 1px #9bb1c4)}.prep-enemy.elite:not(.unknown) .sheet-preview,.prep-enemy.boss:not(.unknown) .sheet-preview{filter:drop-shadow(0 0 5px #ff7838)}.prep-upgrades{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.prep-upgrades button{font-size:11px;padding:5px}.prep-details{font-size:12px;text-align:left}.prep-details .map-info-entry{display:flex;justify-content:space-between;gap:8px}.prep-panel h3{font-size:14px;margin:8px 0 4px}.prep-panel p{font-size:12px;margin:4px 0}.prep-panel[hidden]{display:none!important}
 .run-results h2{font:bold clamp(27px,4vw,46px) Georgia,serif;letter-spacing:.07em;color:#fff0b3;margin:0 0 5px;text-shadow:0 2px 10px #ba7c2a80}
 .run-results p{margin:8px auto 13px;color:#b9d1e5}
 .run-result-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}
@@ -442,6 +443,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
     </div>
     <p id="result-reward"><img class="coin-icon battle-coin-icon" src="assets/ui/coin.svg" alt=""> <strong id="result-coin-amount">+0</strong> Battle Coins this round</p>
     <p id="result-gold-reward" class="gold-currency"><img class="coin-icon" src="assets/ui/coin.svg" alt=""> <strong id="result-gold-amount">+0</strong> Gold this round</p><p id="result-run-coins"></p>
+    <div class="prep-panel" id="prep-panel" hidden><h3 id="prep-map"></h3><p id="prep-description"></p><div class="prep-details" id="prep-details"></div><h3>Expected enemies</h3><div class="prep-enemies" id="prep-enemies"></div><h3>Equipment preparation · <span id="prep-wallet"></span> BC</h3><div class="prep-upgrades"><button id="prep-attack">Attack</button><button id="prep-shield">Shield</button><button id="prep-drone">Drones</button><button id="prep-generator">Generator</button></div><p id="prep-status" role="status"></p></div>
     <div class="result-actions">
       <button class="primary" id="next-battle">Next Round</button>
       <button id="restart-run-result">Restart Run</button>
@@ -630,10 +632,12 @@ let profile={xp:0,owned:[],encountered:[],coins:0,teamSlots:8,team:[],towers:['f
 let run={active:false,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,generatorLevel:0,generatorElapsed:0,wallet:0,menuEarned:0,surgeTime:0,surgeCooldown:0};
 function startRun(){
  run={active:true,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,generatorLevel:0,generatorElapsed:0,wallet:progression.coins.starting_battle_coins,menuEarned:0,surgeTime:0,surgeCooldown:0};
- reset();openView('battle');launchLandscape();
+ nextStage=null;reset();openView('battle');launchLandscape();
 }
 function nextBattle(){
- if(!run.active||!state?.ended||!state.victory)return;
+ if(!run.active||!state)return;
+ if(state.preparing){const img=mapBackground(stageBackgroundPath(stage()));if(!readyImage(img)){if(img?.complete){backgroundImages.delete(stageBackgroundPath(stage()));mapBackground(stageBackgroundPath(stage()));}return;}if(state.countdown>0)return;state.countdown=3;return;}
+ if(!state.ended||!state.victory)return;
  run.battle+=1;reset();toggleBattleMenu(false);
 }
 function restartRun(){
@@ -648,7 +652,9 @@ function enemyScale(){return 1+Math.max(0,run.battle-1)*progression.round_growth
 function allyScale(){return 1+Math.max(0,run.battle-1)*progression.round_growth_pct.ally/100}
 function showResult(){
  const victory=state.victory;
- if(victory){const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;nextStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;if(nextStage)mapBackground(stageBackgroundPath(nextStage));}
+ if(victory&&!nextStage){const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;nextStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;if(nextStage)mapBackground(stageBackgroundPath(nextStage));}
+ $('prep-panel').hidden=true;$('next-battle').disabled=false;$('next-battle').textContent='Prepare Next Battle';
+ for(const id of ['result-reward','result-gold-reward','result-run-coins'])$(id).hidden=false;document.querySelector('.run-result-metrics').hidden=false;
  $('run-results').hidden=false;
  $('result-heading').textContent=victory?'Victory':'Defeat';
  $('result-stage').textContent=(stage()?.name||'Battlefield')+' · Battle '+run.battle;
@@ -783,7 +789,7 @@ function renderEquipment(){
  $('upgrades-play').disabled=team.length===0;
 }
 function buyUpgrade(kind){
- if(!run.active||state.ended||battleMenuOpen)return;
+ if(!run.active||state.ended||battleMenuOpen||state.countdown>0)return;
  if(TowerUpgrades.purchase(run,state.towerShield,equipmentConfig,kind)){refreshCoinDisplays();renderUpgrades();}
 }
 function renderUpgrades(){
@@ -793,12 +799,13 @@ function renderUpgrades(){
  const label=(kind==='attack'?(towerConfigs.ally?.basic_attack?.type==='electric_pulse'?'Wave':'Arrows'):kind==='shield'?'Shield':kind==='generator'?'Generator':'Drones');
  const text=label+' '+level+'/'+max+' · '+(level>=max?'MAX':cost+' Coins');
  if(b.textContent!==text)b.textContent=text;
- b.disabled=state.ended||battleMenuOpen||level>=max||run.wallet<cost;
+ b.disabled=state.ended||battleMenuOpen||state.countdown>0||level>=max||run.wallet<cost;
+ const prep=$('prep-'+kind);prep.textContent=text;prep.disabled=b.disabled;
  }
  const journey=Math.max(0,Math.min(1,(towerLayout.x-progression.defence.fortress_start_x)/(progression.defence.fortress_goal_x-progression.defence.fortress_start_x)));$('journey-bar').value=journey;$('journey-label').textContent='Journey '+Math.floor(journey*100)+'%';
- const label='Stage '+run.battle+' · '+state.kills+' defeated'+(state.portalUnlocked?' · Portal open':state.finalPhase?' · Final encounter':'')+(state.ended&&state.victory?' · Next in '+Math.ceil(state.breakLeft)+'s':'');
+ const label='Stage '+run.battle+' · '+state.kills+' defeated'+(state.portalUnlocked?' · Portal open':state.finalPhase?' · Final encounter':'')+(state.preparing?' · Preparation':state.ended&&state.victory?' · Victory':'');
  if($('run-progress').textContent!==label)$('run-progress').textContent=label;
- const wallet=(run.wallet||0).toLocaleString('en-US');if($('battle-wallet').textContent!==wallet)$('battle-wallet').textContent=wallet;
+ const wallet=(run.wallet||0).toLocaleString('en-US');$('prep-wallet').textContent=wallet;if($('battle-wallet').textContent!==wallet)$('battle-wallet').textContent=wallet;
  const shield='Shield '+Math.ceil(state.towerShield.hp);
  if($('tower-shield-label').textContent!==shield)$('tower-shield-label').textContent=shield;
 }
@@ -925,14 +932,20 @@ function reset(){
  towerLayout.x=progression.defence.fortress_start_x;TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;battleHeroFrame=-1;
  chooseRandomStage();
  const cfg=progression.defence;
- state={heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power,units:[],allyBase:towerConfigs.ally?.max_hp||1900,towerShield:TowerUpgrades.createShield(run,equipmentConfig),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,portalUnlocked:false,portalAge:0,portalExit:0,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
+ state={preparing:true,countdown:0,heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power,units:[],allyBase:towerConfigs.ally?.max_hp||1900,towerShield:TowerUpgrades.createShield(run,equipmentConfig),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,portalUnlocked:false,portalAge:0,portalExit:0,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
  refreshCoinDisplays();
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  towerCooldowns.ally=1;
  towerAttackAnims.ally=0;towerProjectiles=[];chargeEffects=[];unitSerial=0;
- $('run-results').hidden=true;
- renderUpgrades();
- $('status').textContent='Deploy monsters when ready.';
+ state.enemyRoster=roster.filter(m=>window.MonstersClashEnvironment?.matchesElement(m));if(!state.enemyRoster.length)state.enemyRoster=roster.slice();else{const other=roster.filter(m=>!state.enemyRoster.includes(m));if(other.length)state.enemyRoster.push(other[Math.floor(Math.random()*other.length)]);}
+ state.finalMonster=state.finalRank?state.enemyRoster[Math.floor(Math.random()*state.enemyRoster.length)]:null;
+ $('run-results').hidden=false;$('prep-panel').hidden=false;$('result-heading').textContent='Battle Preparation';$('result-stage').textContent='Stage '+run.battle;
+ for(const id of ['result-reward','result-gold-reward','result-run-coins'])$(id).hidden=true;document.querySelector('.run-result-metrics').hidden=true;
+ $('restart-run-result').hidden=true;$('next-battle').hidden=false;$('next-battle').disabled=true;$('next-battle').textContent='Loading battlefield…';
+ $('prep-map').textContent=(stage()?.name||'Battlefield')+' · '+$('stage-info-kind').textContent;$('prep-description').textContent=$('stage-info-desc').textContent;$('prep-details').replaceChildren(...Array.from($('stage-info-details').children,n=>n.cloneNode(true)));
+ const list=$('prep-enemies');list.replaceChildren();const previews=state.enemyRoster.map(m=>({m,rank:'normal'}));if(state.finalMonster)previews.push({m:state.finalMonster,rank:state.finalRank});
+ for(const {m,rank} of previews){const key=rank==='elite'?'eliteEncountered':rank==='boss'?'bossEncountered':'encountered',known=(profile[key]||[]).includes(m.id),card=document.createElement('div');card.className='prep-enemy '+rank+(known?'':' unknown');const art=sheetPreview(m.id),name=document.createElement('small'),label=document.createElement('small');name.textContent=known?m.name:'???';label.textContent=rank[0].toUpperCase()+rank.slice(1);card.append(art,name,label);list.append(card);}
+ renderUpgrades();$('status').textContent='Prepare for battle.';
 }
 function teamCount(side){return state.units.filter(u=>u.hp>0&&u.side===side).length}
 function maxTeamUnits(){return Math.max(1,Number(battleRules.summoning?.max_active_per_team)||10)}
@@ -947,7 +960,7 @@ function deployedCount(side,id){return state.units.filter(u=>u.hp>0&&u.side===si
 function summonPowerCost(m){return Math.max(1,Number(m.deployment?.summon_power_cost)||10);}
 function canSummon(m,side){
  if(side<0)return !state.ended&&teamCount(side)<maxTeamUnits();
- if(view!=='battle'||battleMenuOpen||state.portalUnlocked)return false;
+ if(view!=='battle'||battleMenuOpen||state.portalUnlocked||state.preparing)return false;
  return !state.ended&&state.availablePower>=summonPowerCost(m)&&teamCount(side)<maxTeamUnits()&&deployedCount(side,m.id)<unitCap(m)&&!(cooldowns[side>0?'ally':'enemy'][m.id]>0);
 }
 function deployCooldown(m,side){cooldowns[side>0?'ally':'enemy'][m.id]=Math.max(0,Number(m.deployment?.cooldown_seconds)||0)}
@@ -1109,7 +1122,8 @@ function stepTowerDefense(dt){
  }
 }
 function step(dt){
- if(state.ended){if(state.victory){state.breakLeft=Math.max(0,state.breakLeft-dt);if(state.breakLeft<=0)nextBattle();}return;}
+ if(state.ended)return;
+ if(state.preparing){const img=mapBackground(stageBackgroundPath(stage())),ready=readyImage(img),failed=img?.complete&&!ready;const btn=$('next-battle');if(state.countdown>0){state.countdown=Math.max(0,state.countdown-dt);btn.disabled=true;btn.textContent='Starting in '+Math.ceil(state.countdown);$('prep-status').textContent='Battle starting…';if(state.countdown<=0){state.preparing=false;$('run-results').hidden=true;$('prep-panel').hidden=true;$('status').textContent='Deploy monsters when ready.';} }else{btn.disabled=!ready&&!failed;btn.textContent=ready?'Start Battle':failed?'Retry Map':'Loading battlefield…';$('prep-status').textContent=ready?'Battlefield ready':failed?'Map failed to load. Retry to continue.':'Preparing battlefield…';}return;}
  if(state.portalUnlocked){const cfg=progression.defence;state.time+=dt;state.portalAge+=dt;state.fortressMoving=false;const goal=cfg.fortress_goal_x;if(state.portalAge>=cfg.portal_activation_seconds){state.fortressMoving=towerLayout.x<goal;towerLayout.x=Math.min(goal,towerLayout.x+Math.max(cfg.fortress_move_speed,(goal-state.portalStartX)/3)*dt);TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;if(towerLayout.x>=goal){state.portalExit=Math.min(1,state.portalExit+dt/cfg.portal_exit_seconds);}}if(state.portalExit>=1){state.victory=true;state.ended=true;run.totalSeconds+=state.time;settleBattle();soundEffect('victory');$('status').textContent='Destination Reached';showResult();}return;}
  state.time+=dt;state.generatorPulse=Math.max(0,state.generatorPulse-dt);if(run.generatorLevel>0&&state.allyBase>0){run.generatorElapsed+=dt;while(run.generatorElapsed>=equipmentConfig.generator_interval){run.generatorElapsed-=equipmentConfig.generator_interval;state.generatorPulse=.85;const coins=run.generatorLevel*equipmentConfig.generator_income;run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.earnings.push({x:towerLayout.generatorX,y:towerLayout.generatorY-towerLayout.generatorHeight/2-5,value:coins,life:1.35});refreshCoinDisplays();}}state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig);
  window.MonstersClashDayNight?.update(dt);
@@ -1125,12 +1139,12 @@ function step(dt){
  enemyTimer-=dt;
  const cfg=progression.defence;
  const journeyProgress=(towerLayout.x-cfg.fortress_start_x)/(cfg.fortress_goal_x-cfg.fortress_start_x);
- if(!state.finalPhase&&cfg.fortress_goal_x-towerLayout.x<=cfg.final_encounter_distance){state.finalPhase=true;enemyTimer=0;}
+ if(!state.finalPhase&&cfg.fortress_goal_x-towerLayout.x<=cfg.final_encounter_distance){state.finalPhase=true;enemyTimer=0;const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;nextStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;if(nextStage)mapBackground(stageBackgroundPath(nextStage));}
  // Continuous journey minions transition once to a finite final group.
  if(enemyTimer<=0&&roster.length&&teamCount(-1)<maxTeamUnits()){
    const rank=!state.finalPhase||state.finalMinionsRemaining>0?'normal':state.finalRank&&!state.finalSpawned?state.finalRank:null;
    if(rank){
-     const m=roster[Math.floor(Math.random()*roster.length)];
+     const m=rank==='normal'?state.enemyRoster[Math.floor(Math.random()*state.enemyRoster.length)]:state.finalMonster;
      if(spawn(m,-1,rank)){state.spawned++;if(state.finalPhase){if(rank==='normal')state.finalMinionsRemaining--;else state.finalSpawned=true;}enemyTimer=Math.max(cfg.min_spawn_seconds,(state.finalPhase?cfg.final_spawn_seconds:cfg.initial_spawn_seconds-(cfg.initial_spawn_seconds-cfg.final_spawn_seconds)*Math.max(0,Math.min(1,journeyProgress/0.8)))-(run.battle-1)*cfg.spawn_acceleration);}
    }
  }
@@ -1641,7 +1655,7 @@ function toggleQuickNav(force){
 }
 function bindMenu(){
  $('nav-summoner').onclick=()=>openView('summoner');$('nav-inventory').onclick=()=>openView('inventory');$('summoner-back').onclick=()=>openView('home');$('summoner-inventory').onclick=()=>openView('inventory');$('inventory-back').onclick=()=>openView('summoner');
- $('summoner-surge').onclick=()=>{const c=progression.summoner;if(view!=='battle'||!run.active||state?.ended||battleMenuOpen||(progression.testing_mode!==true&&summonerStats().level<c.surge_unlock_level)||run.surgeCooldown>0)return;run.surgeTime=c.surge_duration;run.surgeCooldown=c.surge_cooldown;soundEffect('surge');state.heroPose='skill';state.heroPoseUntil=state.time+.95;refreshSummoner();};
+ $('summoner-surge').onclick=()=>{const c=progression.summoner;if(view!=='battle'||!run.active||state?.ended||state?.preparing||battleMenuOpen||(progression.testing_mode!==true&&summonerStats().level<c.surge_unlock_level)||run.surgeCooldown>0)return;run.surgeTime=c.surge_duration;run.surgeCooldown=c.surge_cooldown;soundEffect('surge');state.heroPose='skill';state.heroPoseUntil=state.time+.95;refreshSummoner();};
  for(const b of document.querySelectorAll('[data-bestiary]'))b.onclick=()=>{bestiaryRank=b.dataset.bestiary;renderBestiary();updateRoute('bestiary',true);};
  $('menu-upgrades-home').onclick=()=>openView('upgrades');$('nav-upgrades').onclick=()=>openView('upgrades');$('upgrades-back').onclick=()=>openView('home');$('upgrades-play').onclick=startRun;
  for(const button of document.querySelectorAll('[data-equipment]'))button.onclick=()=>{equipmentTab=button.dataset.equipment;$('equipment-message').textContent='';renderEquipment();};
@@ -1655,6 +1669,7 @@ function bindMenu(){
 
  $('start-game').onclick=startRun;
  $('next-battle').onclick=nextBattle;
+ for(const kind of ['attack','shield','drone','generator'])$('prep-'+kind).onclick=()=>buyUpgrade(kind);
  $('restart-run-result').onclick=restartRun;
 
  $('nav-toggle').onclick=()=>toggleQuickNav();
