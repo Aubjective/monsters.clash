@@ -352,20 +352,24 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .battle-sidebar .battle-gear{position:relative}.battle-gear span{white-space:pre-line;font-size:12px;line-height:1.4;flex:1;min-width:0}.battle-sidebar #battle-upgrades .battle-gear{min-height:52px;padding:6px 9px;gap:7px}.battle-gear canvas{width:48px;height:40px}.battle-sidebar h3{font-size:13px}.battle-sidebar [aria-controls="gear-detail"]::after{content:"⌄";color:#a9c7df;margin-left:auto;flex:none}.battle-sidebar [aria-expanded="true"]::after{content:"⌃"}.battle-sidebar .can-upgrade{border-color:#e9c477;box-shadow:inset 0 0 10px #d8a94b30,0 0 7px #d8a94b38;color:#ffedbe}.battle-sidebar .can-upgrade::after{content:"↑";color:#ffdc87;font-weight:900}.battle-sidebar .can-upgrade[aria-expanded="true"]::after{content:"↑ ⌃"}.gear-detail{padding:9px;font-size:12px;margin:0 0 4px;text-align:left}.gear-detail dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 8px;margin:9px 0}.gear-detail dt,.gear-detail dd{margin:0;overflow-wrap:anywhere}.gear-detail dd{text-align:right}.battle-items>.gear-detail{grid-column:1/-1}.gear-detail #gear-upgrade-list button:not(:disabled),.gear-detail>button:not(:disabled){background:#d2a45e;color:#142333;border-color:#f6d38e;font-weight:700;text-align:center}.gear-detail #gear-upgrade-list button,.gear-detail>button{font-size:12px;padding:8px}.battle-items button[aria-controls="gear-detail"]{position:relative}.battle-items button[aria-controls="gear-detail"]::after{position:absolute;right:4px;top:2px;font-size:10px}.summoner-battle>.gear-detail{width:100%}
 @media(max-height:500px),(orientation:portrait) and (max-width:600px){.prep-banner-art{height:clamp(130px,42dvh,220px)}.prep-banner-copy{padding:10px}.prep-banner h3{font-size:16px}.prep-banner p{font-size:11px}.prep-grid{gap:7px;margin:7px 0}.prep-card{padding:8px}.prep-card h3{font-size:12px;margin-bottom:5px}.prep-details{font-size:10px}.prep-details .map-info-entry{padding:4px}.prep-enemy{min-width:60px;max-width:90px;padding:4px}.prep-enemy small{font-size:10px}.prep-budget{font-size:10px;padding:7px}.battle-sidebar #battle-upgrades .battle-gear{min-height:36px;padding:4px;gap:4px}.battle-gear canvas{width:31px;height:28px}.battle-gear span,.gear-detail{font-size:10px}.gear-detail{padding:5px}.gear-detail dl{gap:3px 4px}.gear-detail #gear-upgrade-list button,.gear-detail>button{font-size:10px;padding:5px}.battle-sidebar h3{font-size:10px}}
 @media(orientation:portrait) and (max-width:600px){.prep-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-/* Menu-only face-off; independent of the live battlefield. */
-.lobby-world .lobby-monster{--size:min(17vw,34vh,230px);width:var(--size);height:var(--size);max-width:none;max-height:none;bottom:7%;right:auto;left:auto;animation:lobbyBreath 2.5s ease-in-out infinite}
-.lobby-world .lobby-moss{left:22%;bottom:4%;z-index:5}.lobby-world .lobby-cinder{left:34%;bottom:16%;z-index:4;transform:none}
+/* Menu-only face-off, with shared combat artwork and visual rules. */
+.lobby-header{justify-content:center;min-height:clamp(76px,15vh,150px);padding:12px 16px;box-sizing:border-box}.lobby-brand{text-align:center;gap:12px}.lobby-brand h1{font-size:clamp(26px,5.5vw,76px);letter-spacing:.045em}.lobby-kicker{letter-spacing:.45em}.lobby-utility{position:absolute;right:60px;top:14px;margin:0}.lobby-world{isolation:isolate}.lobby-world:before{background:radial-gradient(ellipse at 50% 68%,transparent 30%,#071b3329 100%)}.lobby-world .lobby-monster{--size:min(19vw,39vh,260px);width:var(--size);height:var(--size);max-width:none;max-height:none;bottom:7%;right:auto;left:auto;animation:lobbyBreath 2.5s ease-in-out infinite;filter:drop-shadow(0 9px 5px #132516a0)}
+.lobby-world .lobby-moss{left:24%;bottom:7%;z-index:6}.lobby-world .lobby-cinder{left:33%;bottom:19%;z-index:4;transform:none}
 .lobby-world .lobby-elite,.lobby-world .lobby-boss,.lobby-world .lobby-minion-one,.lobby-world .lobby-minion-two{transform:scaleX(-1);animation:lobbyBreathMirror 2.6s ease-in-out infinite}
-.lobby-world .lobby-elite{--size:min(22vw,42vh,290px);right:30%;bottom:3%;z-index:5;filter:sepia(1) hue-rotate(-18deg) saturate(3) drop-shadow(0 0 8px #fd7429)}
-.lobby-world .lobby-boss{--size:min(24vw,46vh,320px);right:13%;bottom:15%;z-index:3;filter:grayscale(1) brightness(.58) contrast(1.25) drop-shadow(0 0 8px #130d26)}
-.lobby-world .lobby-minion-one{--size:min(12vw,25vh,160px);right:4%;bottom:4%;z-index:5}.lobby-world .lobby-minion-two{--size:min(12vw,25vh,160px);right:22%;bottom:0;z-index:6}
-.lobby-fortress,.lobby-drone,.lobby-generator,.lobby-shield{position:absolute;pointer-events:none;background-repeat:no-repeat;filter:drop-shadow(0 8px 8px #07162288)}
-.lobby-fortress{left:2%;bottom:12%;width:min(19vw,38vh,260px);aspect-ratio:1;background-image:url('assets/fortresses/f001/sentinel-fortress-sheet.png');background-size:400% 100%;background-position:left center;z-index:3}
-.lobby-drone{left:19%;bottom:61%;width:min(10vw,19vh,125px);aspect-ratio:1;background-image:url('assets/drones/d001/sentinel-drone-sheet.png');background-size:400% 100%;background-position:left center;z-index:3}
-.lobby-generator{left:2%;bottom:65%;width:min(9vw,17vh,110px);aspect-ratio:1;background:url('assets/generators/g001/sentinel-generator.png') center/contain no-repeat;z-index:2}
-.lobby-shield{left:1%;bottom:13%;width:min(21vw,40vh,280px);aspect-ratio:1.25;border:2px solid #89e5ff99;border-radius:50%;box-shadow:0 0 15px #56ceff55,inset 0 0 20px #56ceff33;z-index:4}
-@media(orientation:portrait) and (max-width:699px){.lobby-world .lobby-monster{--size:18vw}.lobby-world .lobby-elite{--size:23vw}.lobby-world .lobby-boss{--size:25vw}.lobby-world .lobby-minion-one,.lobby-world .lobby-minion-two{--size:13vw}}
-@media(prefers-reduced-motion:reduce){.lobby-world .lobby-monster{animation:none}}
+.lobby-world .lobby-elite{--size:min(22vw,45vh,310px);right:27%;bottom:6%;z-index:6}.lobby-world .lobby-boss{--size:min(27vw,51vh,365px);right:9%;bottom:20%;z-index:3}
+.lobby-world .lobby-minion-one{--size:min(12vw,25vh,165px);right:5%;bottom:7%;z-index:6}.lobby-world .lobby-minion-two{--size:min(12vw,25vh,165px);right:17%;bottom:1%;z-index:7}
+.lobby-sentinel{position:absolute;left:6%;bottom:11%;width:min(23vw,46vh,320px);aspect-ratio:1;z-index:4;animation:lobbyFloat 4s ease-in-out infinite;pointer-events:none}.lobby-fortress,.lobby-drone,.lobby-generator{position:absolute;pointer-events:none;background-repeat:no-repeat;filter:drop-shadow(0 10px 6px #11251f8c)}
+.lobby-fortress{inset:0;background-image:url('assets/fortresses/f001/sentinel-fortress-sheet.png');background-size:400% 100%;background-position:left center;z-index:2}
+.lobby-shield{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.lobby-shield-rear{z-index:1}.lobby-shield-front{z-index:3}
+.lobby-drone{left:18%;bottom:55%;width:min(11vw,22vh,145px);aspect-ratio:1;background-image:url('assets/drones/d001/sentinel-drone-sheet.png');background-size:400% 100%;background-position:left center;z-index:3;animation:lobbyPatrol 6s ease-in-out infinite}
+.lobby-generator{left:5%;bottom:60%;width:min(9vw,17vh,110px);aspect-ratio:1;background:url('assets/generators/g001/sentinel-generator.png') center/contain no-repeat;z-index:2;animation:lobbyFloat 3.6s ease-in-out infinite}
+.lobby-shadow{position:absolute;z-index:1;pointer-events:none;background:radial-gradient(ellipse,#162b1c73 0%,#15281a38 40%,transparent 72%);height:5%;border-radius:50%}.lobby-shadow.sentinel{left:7%;width:20%;bottom:12%}.lobby-shadow.moss{left:25%;width:16%;bottom:8%}.lobby-shadow.cinder{left:34%;width:16%;bottom:20%}.lobby-shadow.elite{right:28%;width:20%;bottom:7%}.lobby-shadow.boss{right:10%;width:24%;bottom:21%}.lobby-shadow.minion-one{right:6%;width:10%;bottom:8%}.lobby-shadow.minion-two{right:18%;width:10%;bottom:2%}
+.lobby-atmosphere{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
+@keyframes lobbyFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}@keyframes lobbyPatrol{0%,100%{transform:translate(0,0)}50%{transform:translate(15px,-8px)}}
+@media(max-width:850px){.lobby-utility{top:8px;right:48px}.lobby-header{padding-top:44px;min-height:0}.lobby-brand h1{font-size:clamp(22px,5.5vw,46px)}.lobby-emblem{font-size:clamp(19px,4vw,34px)}}
+@media(max-height:500px){.lobby-header{padding:8px 12px;min-height:48px}.lobby-brand h1{font-size:clamp(20px,4.5vw,40px)}.lobby-kicker{font-size:8px}.lobby-utility{right:44px;top:8px}.lobby-utility .coin-wallet{font-size:10px;padding:4px}.lobby-brand{max-width:65%}}
+@media(orientation:portrait) and (max-width:699px){.lobby-world .lobby-monster{--size:19vw}.lobby-world .lobby-elite{--size:23vw}.lobby-world .lobby-boss{--size:27vw}.lobby-world .lobby-minion-one,.lobby-world .lobby-minion-two{--size:13vw}.lobby-sentinel{width:24vw}.lobby-drone{bottom:30%}.lobby-generator{bottom:34%}}
+@media(prefers-reduced-motion:reduce){.lobby-world .lobby-monster,.lobby-sentinel,.lobby-drone,.lobby-generator{animation:none}}
 </style>
 </head>
 <body>
@@ -376,7 +380,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   </div>
   <div class="lobby-world" aria-label="Sentinel defenders facing elite Mossguard, dark Cinderhorn and minions">
     <div class="lobby-monster lobby-moss" role="img" aria-label="Mossguard, nature guardian"></div>
-    <div class="lobby-monster lobby-cinder" role="img" aria-label="Cinderhorn, fire bruiser"></div><div class="lobby-fortress" role="img" aria-label="Sentinel Fortress"></div><div class="lobby-shield" aria-hidden="true"></div><div class="lobby-drone" role="img" aria-label="Sentinel Drone"></div><div class="lobby-generator" role="img" aria-label="Sentinel Generator"></div><div class="lobby-monster lobby-elite" role="img" aria-label="Elite Mossguard"></div><div class="lobby-monster lobby-boss" role="img" aria-label="Dark Cinderhorn"></div><div class="lobby-monster lobby-minion-one" role="img" aria-label="Enemy Mossguard minion"></div><div class="lobby-monster lobby-minion-two" role="img" aria-label="Enemy Cinderhorn minion"></div>
+    <div class="lobby-monster lobby-cinder" role="img" aria-label="Cinderhorn, fire bruiser"></div><div class="lobby-sentinel"><canvas class="lobby-shield lobby-shield-rear" width="320" height="320" aria-hidden="true"></canvas><div class="lobby-fortress" role="img" aria-label="Sentinel Fortress"></div><canvas class="lobby-shield lobby-shield-front" width="320" height="320" aria-hidden="true"></canvas></div><div class="lobby-drone" role="img" aria-label="Sentinel Drone"></div><div class="lobby-generator" role="img" aria-label="Sentinel Generator"></div><div class="lobby-monster lobby-elite" role="img" aria-label="Elite Mossguard"></div><div class="lobby-monster lobby-boss" role="img" aria-label="Dark Cinderhorn"></div><div class="lobby-monster lobby-minion-one" role="img" aria-label="Enemy Mossguard minion"></div><div class="lobby-monster lobby-minion-two" role="img" aria-label="Enemy Cinderhorn minion"></div><div class="lobby-shadow sentinel"></div><div class="lobby-shadow moss"></div><div class="lobby-shadow cinder"></div><div class="lobby-shadow elite"></div><div class="lobby-shadow boss"></div><div class="lobby-shadow minion-one"></div><div class="lobby-shadow minion-two"></div><canvas class="lobby-atmosphere" id="lobby-atmosphere" aria-hidden="true"></canvas>
   </div>
   <div class="lobby-controls"><div id="startup-message" role="status" style="color:#fff1bb;text-align:center;font-weight:700">Loading game…</div>
    <button id="home-start" class="lobby-play" disabled><span class="play-mark">▶</span><span>PLAY</span><small>START BATTLE</small></button>
@@ -1773,5 +1777,27 @@ function bindMenu(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view==='battle'){if(!$('stage-info-panel').hidden){toggleStageInfo(false);return;}if(!document.fullscreenElement)toggleBattleMenu()}});
 }
 
-function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){if(!battleMenuOpen)step(dt);draw()}requestAnimationFrame(frame)}init().catch(e=>{console.error('Monsters Clash startup failed',e);$('status').textContent='Loading failed: '+e.message;const msg=$('startup-message');msg.hidden=false;msg.textContent='Loading failed: '+e.message+' ';const retry=document.createElement('button');retry.textContent='Reload Game';retry.onclick=()=>location.reload();msg.append(retry);});
+let lobbyPaintAt=-Infinity;
+function drawLobby(t){
+ if(!towerRegistry||t-lobbyPaintAt<1000/24)return;
+ if(reducedRankMotion?.matches&&lobbyPaintAt!==-Infinity)return;
+ lobbyPaintAt=t;const time=t/1000,still=reducedRankMotion?.matches,clock=still?0:time;
+ const world=document.querySelector('.lobby-world'),elite=world.querySelector('.lobby-elite'),boss=world.querySelector('.lobby-boss');
+ for(const [el,rank] of [[elite,'elite'],[boss,'boss']])el.style.filter=rankFilter(rank,clock)+' drop-shadow(0 9px 5px #132516a0)';
+ for(const el of world.querySelectorAll('.lobby-monster'))el.style.backgroundPosition=''+(Math.floor(clock*1.4)%2)*33.333333+'% 33.333333%';
+ const shield=towerRegistry.shields.find(s=>s.id==='s001'),cfg={shield_plate_min:shield.plate_min,shield_plate_max:shield.plate_max,shield_render_mode:shield.render_mode},s={hp:160,max:160,phase:clock*(shield.orbit_speed||.85),flash:0,broken:0,hitAngle:0};
+ for(const front of [false,true]){const canvas=world.querySelector(front?'.lobby-shield-front':'.lobby-shield-rear'),g=canvas.getContext('2d');g.clearRect(0,0,320,320);g.save();g.translate(160,215);g.scale(1.45,1.45);TowerUpgrades.renderShield(g,s,4,cfg,0,0,front);g.restore();}
+ const canvas=$('lobby-atmosphere'),w=world.clientWidth,h=world.clientHeight;if(!w||!h)return;
+ if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
+ const g=canvas.getContext('2d');g.clearRect(0,0,w,h);
+ if(still)return;
+ for(const [el,isElite,count] of [[elite,true,18],[boss,false,12]]){
+  const x=el.offsetLeft+el.offsetWidth*.5,y=el.offsetTop+el.offsetHeight*.76,size=el.offsetWidth;
+  for(let i=0;i<count;i++){const q=(clock*(isElite?.52:.32)+i*.618)%1,px=x+Math.sin(i*2.399963+q*1.5)*size*.3,py=y-q*size*.65,r=isElite?1+Math.sin(i*2.3)**2: size*(.04+.04*q),alpha=Math.sin(Math.PI*q)*(isElite?.75:.27);
+   if(isElite){g.fillStyle='rgba(255,112,34,'+alpha+')';g.beginPath();g.arc(px,py,r,0,Math.PI*2);g.fill();}
+   else{const grad=g.createRadialGradient(px,py,0,px,py,r);grad.addColorStop(0,'rgba(12,12,19,'+alpha+')');grad.addColorStop(1,'rgba(12,12,19,0)');g.fillStyle=grad;g.fillRect(px-r,py-r,r*2,r*2);}
+  }
+ }
+}
+function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){if(!battleMenuOpen)step(dt);draw()}else if(view==='home')drawLobby(t);requestAnimationFrame(frame)}init().catch(e=>{console.error('Monsters Clash startup failed',e);$('status').textContent='Loading failed: '+e.message;const msg=$('startup-message');msg.hidden=false;msg.textContent='Loading failed: '+e.message+' ';const retry=document.createElement('button');retry.textContent='Reload Game';retry.onclick=()=>location.reload();msg.append(retry);});
 </script></body></html>
