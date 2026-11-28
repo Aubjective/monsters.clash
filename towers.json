@@ -29,7 +29,45 @@
       "description": "Low-floating armoured castle-fortress with an open arrow firing port and arcane levitation.",
       "ability": "Arrow Volley",
       "hp_bar": "assets/fortresses/f001/sentinel-hp-bar.png",
-      "movement": "low_hover"
+      "movement": "low_hover",
+      "upgrades": {
+        "attack": {
+          "label": "Physical damage",
+          "step": 0.14,
+          "cost": 75,
+          "max": 10
+        },
+        "fortress_hp": {
+          "label": "Maximum HP",
+          "step": 150,
+          "cost": 80,
+          "max": 10
+        },
+        "fortress_speed": {
+          "label": "Attack speed",
+          "step": 0.15,
+          "cost": 65,
+          "max": 10
+        },
+        "fortress_range": {
+          "label": "Attack range",
+          "step": 15,
+          "cost": 60,
+          "max": 10
+        },
+        "fortress_penetration": {
+          "label": "Armour penetration",
+          "step": 5,
+          "cost": 90,
+          "max": 10
+        },
+        "fortress_projectiles": {
+          "label": "Projectiles",
+          "step": 1,
+          "cost": 150,
+          "max": 5
+        }
+      }
     },
     {
       "id": "t002",
@@ -55,7 +93,45 @@
       "description": "Area energy pulses and crowd control.",
       "ability": "Energy Wave",
       "available": false,
-      "planned_skill": "Arcane Storm — three energy waves with brief stun; proposed attack level 3, 30s cooldown."
+      "planned_skill": "Arcane Storm — three energy waves with brief stun; proposed attack level 3, 30s cooldown.",
+      "upgrades": {
+        "attack": {
+          "label": "Magic damage",
+          "step": 0.14,
+          "cost": 75,
+          "max": 10
+        },
+        "fortress_hp": {
+          "label": "Maximum HP",
+          "step": 150,
+          "cost": 80,
+          "max": 10
+        },
+        "fortress_speed": {
+          "label": "Attack speed",
+          "step": 0.15,
+          "cost": 65,
+          "max": 10
+        },
+        "fortress_range": {
+          "label": "Attack range",
+          "step": 15,
+          "cost": 60,
+          "max": 10
+        },
+        "fortress_penetration": {
+          "label": "Resistance penetration",
+          "step": 5,
+          "cost": 90,
+          "max": 10
+        },
+        "fortress_stun": {
+          "label": "Stun duration",
+          "step": 0.12,
+          "cost": 100,
+          "max": 10
+        }
+      }
     }
   ],
   "default_shield": "s001",
@@ -75,7 +151,27 @@
       "series": "Sentinel",
       "ability": "Mirror Barrier",
       "sprite": "assets/shields/s001/sentinel-shield.png",
-      "render_mode": "procedural"
+      "render_mode": "procedural",
+      "upgrades": {
+        "shield": {
+          "label": "Shield capacity",
+          "step": 160,
+          "cost": 60,
+          "max": 10
+        },
+        "shield_regen": {
+          "label": "Shield regeneration",
+          "step": 3,
+          "cost": 85,
+          "max": 10
+        },
+        "shield_recovery": {
+          "label": "Recovery delay reduction",
+          "step": 0.4,
+          "cost": 75,
+          "max": 10
+        }
+      }
     },
     {
       "id": "s002",
@@ -91,7 +187,27 @@
       "hp_per_level": 140,
       "plate_min": 3,
       "plate_max": 6,
-      "orbit_speed": 0.85
+      "orbit_speed": 0.85,
+      "upgrades": {
+        "shield": {
+          "label": "Shield capacity",
+          "step": 140,
+          "cost": 75,
+          "max": 10
+        },
+        "shield_regen": {
+          "label": "Shield regeneration",
+          "step": 3,
+          "cost": 85,
+          "max": 10
+        },
+        "shield_recovery": {
+          "label": "Recovery delay reduction",
+          "step": 0.4,
+          "cost": 75,
+          "max": 10
+        }
+      }
     }
   ],
   "drones": [
@@ -117,23 +233,44 @@
         "period_seconds": 9,
         "vertical_amplitude": 7
       },
-      "upgrade_plan": {
-        "enabled": false,
-        "attributes": [
-          "damage",
-          "attack_speed",
-          "range",
-          "max_active",
-          "tracking",
-          "special_effect"
-        ]
-      },
       "sheet_rows": 1,
       "damage_thresholds_pct": [
         70,
         30,
         0
-      ]
+      ],
+      "upgrades": {
+        "drone": {
+          "label": "Deploy drone",
+          "step": 1,
+          "cost": 80,
+          "max": 3
+        },
+        "drone_damage": {
+          "label": "Drone damage",
+          "step": 0.15,
+          "cost": 65,
+          "max": 10
+        },
+        "drone_speed": {
+          "label": "Drone attack speed",
+          "step": 0.15,
+          "cost": 70,
+          "max": 10
+        },
+        "drone_range": {
+          "label": "Drone range",
+          "step": 20,
+          "cost": 60,
+          "max": 10
+        },
+        "drone_penetration": {
+          "label": "Drone penetration",
+          "step": 5,
+          "cost": 85,
+          "max": 10
+        }
+      }
     },
     {
       "id": "d002",
@@ -150,7 +287,39 @@
       "damage": 10,
       "interval_seconds": 2.4,
       "range": 300,
-      "sheet_columns": 4
+      "sheet_columns": 4,
+      "upgrades": {
+        "drone": {
+          "label": "Deploy drone",
+          "step": 1,
+          "cost": 100,
+          "max": 3
+        },
+        "drone_damage": {
+          "label": "Drone damage",
+          "step": 0.15,
+          "cost": 65,
+          "max": 10
+        },
+        "drone_speed": {
+          "label": "Drone attack speed",
+          "step": 0.15,
+          "cost": 70,
+          "max": 10
+        },
+        "drone_range": {
+          "label": "Drone range",
+          "step": 20,
+          "cost": 60,
+          "max": 10
+        },
+        "drone_penetration": {
+          "label": "Drone penetration",
+          "step": 5,
+          "cost": 85,
+          "max": 10
+        }
+      }
     }
   ],
   "default_generator": "g001",
@@ -166,7 +335,21 @@
       "upgrade_cost": 100,
       "income_per_level": 8,
       "interval_seconds": 8,
-      "max_level": 10
+      "max_level": 10,
+      "upgrades": {
+        "generator": {
+          "label": "Coin production",
+          "step": 8,
+          "cost": 100,
+          "max": 10
+        },
+        "generator_speed": {
+          "label": "Production speed",
+          "step": 0.12,
+          "cost": 90,
+          "max": 10
+        }
+      }
     },
     {
       "id": "g002",
@@ -179,7 +362,21 @@
       "upgrade_cost": 120,
       "income_per_level": 8,
       "interval_seconds": 15,
-      "max_level": 10
+      "max_level": 10,
+      "upgrades": {
+        "generator": {
+          "label": "Coin production",
+          "step": 8,
+          "cost": 120,
+          "max": 10
+        },
+        "generator_speed": {
+          "label": "Production speed",
+          "step": 0.12,
+          "cost": 90,
+          "max": 10
+        }
+      }
     }
   ]
 }

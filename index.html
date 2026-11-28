@@ -335,7 +335,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .battle-middle{display:flex;flex:1;min-height:0;min-width:0;overflow:hidden}
 .battle-sidebar{box-sizing:border-box;width:clamp(112px,15%,205px);flex:none;min-height:0;max-height:100%;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;background:#14293c;border-right:1px solid #3a5871;padding:8px;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin}
 .battle-sidebar>*{flex-shrink:0;min-width:0}.battle-sidebar h3{font-size:12px;margin:4px 0;color:#f2d08a}
-.skill-slots,.battle-items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.skill-slots button,.battle-items button{min-width:0;padding:3px;font-size:15px;min-height:29px}.skill-slots small,.battle-items small{display:block;font-size:9px;overflow-wrap:anywhere}.battle-sidebar #battle-upgrades .battle-gear{display:flex;align-items:center;gap:4px;min-height:40px;padding:3px;text-align:left}.battle-gear canvas{width:42px;height:34px;object-fit:contain;flex:none}.battle-gear span{font-size:10px;overflow-wrap:anywhere}.gear-detail{background:#112236;border:1px solid #617b95;border-radius:7px;padding:5px;font-size:10px}.gear-heading{display:flex;align-items:center;justify-content:space-between;gap:3px}.gear-heading button{padding:2px 5px}.gear-detail dl{margin:5px 0}.gear-detail dt{color:#a9c6df}.gear-detail dd{margin:0 0 4px;color:#fff}.gear-detail>button{width:100%;font-size:10px;padding:4px}.gear-detail[hidden],.gear-detail button[hidden]{display:none!important}
+.skill-slots,.battle-items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.skill-slots button,.battle-items button{min-width:0;padding:3px;font-size:15px;min-height:29px}.skill-slots small,.battle-items small{display:block;font-size:9px;overflow-wrap:anywhere}.battle-sidebar #battle-upgrades .battle-gear{display:flex;align-items:center;gap:4px;min-height:40px;padding:3px;text-align:left}.battle-gear canvas{width:42px;height:34px;object-fit:contain;flex:none}.battle-gear span{font-size:10px;overflow-wrap:anywhere}.gear-detail{background:#112236;border:1px solid #617b95;border-radius:7px;padding:5px;font-size:10px}.gear-heading{display:flex;align-items:center;justify-content:space-between;gap:3px}.gear-heading button{padding:2px 5px}.gear-detail dl{margin:5px 0}.gear-detail dt{color:#a9c6df}.gear-detail dd{margin:0 0 4px;color:#fff}#gear-upgrade-list{display:grid;gap:4px}#gear-upgrade-list button{width:100%;font-size:10px;padding:5px;white-space:normal}.gear-detail>button{width:100%;font-size:10px;padding:4px}.gear-detail[hidden],.gear-detail button[hidden]{display:none!important}
 .battle-sidebar .summoner-battle{display:flex;flex-shrink:0;flex-direction:column;align-items:stretch;gap:4px;text-align:center;font-size:11px}
 #battle-hero{display:block;width:100%;height:clamp(65px,20vh,155px);object-fit:contain;background:radial-gradient(ellipse at 50% 65%,#304b60,#14293c 72%);border-radius:8px}
 .battle-sidebar #battle-upgrades{display:flex;flex-direction:column;align-items:stretch;flex-shrink:0;overflow:visible;white-space:normal;gap:5px}
@@ -438,7 +438,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
  </aside>
  <div class="battle-middle"><aside class="battle-sidebar" aria-label="Summoner and upgrades">
  <div class="summoner-panel summoner-battle"><canvas id="battle-hero" width="180" height="180" aria-label="Animated Summoner"></canvas><strong id="battle-hero-name">Summoner</strong><b id="summoner-battle-label">100 SP</b><progress id="summoner-battle-bar" max="1" value="0"></progress><div class="skill-slots"><button type="button" id="summoner-surge" disabled aria-label="Summoning Surge"><span>⚡</span><small id="surge-caption">Surge</small></button><button disabled title="Future skill slot">🔒</button><button disabled title="Future skill slot">🔒</button></div><button id="summoner-stats-toggle">Summoner stats</button></div>
- <h3>Fortress Equipment</h3><div id="battle-upgrades"><button class="battle-gear" id="gear-attack"><canvas width="88" height="68" id="gear-art-attack"></canvas><span id="gear-label-attack"></span></button><button class="battle-gear" id="gear-shield"><canvas width="88" height="68" id="gear-art-shield"></canvas><span id="gear-label-shield"></span></button><button class="battle-gear" id="gear-drone"><canvas width="88" height="68" id="gear-art-drone"></canvas><span id="gear-label-drone"></span></button><button class="battle-gear" id="gear-generator"><canvas width="88" height="68" id="gear-art-generator"></canvas><span id="gear-label-generator"></span></button></div><span id="tower-shield-label" hidden></span><h3>Summoner Items</h3><div id="battle-items" class="battle-items"></div><section id="gear-detail" class="gear-detail" hidden><div class="gear-heading"><strong id="gear-title"></strong><button id="gear-close" aria-label="Close statistics">×</button></div><div id="gear-stats"></div><button id="upgrade-attack" hidden></button><button id="upgrade-shield" hidden></button><button id="upgrade-drone" hidden></button><button id="upgrade-generator" hidden></button><button id="upgrade-sp" hidden></button></section>
+ <h3>Fortress Equipment</h3><div id="battle-upgrades"><button class="battle-gear" id="gear-attack"><canvas width="88" height="68" id="gear-art-attack"></canvas><span id="gear-label-attack"></span></button><button class="battle-gear" id="gear-shield"><canvas width="88" height="68" id="gear-art-shield"></canvas><span id="gear-label-shield"></span></button><button class="battle-gear" id="gear-drone"><canvas width="88" height="68" id="gear-art-drone"></canvas><span id="gear-label-drone"></span></button><button class="battle-gear" id="gear-generator"><canvas width="88" height="68" id="gear-art-generator"></canvas><span id="gear-label-generator"></span></button></div><span id="tower-shield-label" hidden></span><h3>Summoner Items</h3><div id="battle-items" class="battle-items"></div><section id="gear-detail" class="gear-detail" hidden><div class="gear-heading"><strong id="gear-title"></strong><button id="gear-close" aria-label="Close statistics">×</button></div><div id="gear-stats"></div><div id="gear-upgrade-list"></div><button id="upgrade-attack" hidden></button><button id="upgrade-shield" hidden></button><button id="upgrade-drone" hidden></button><button id="upgrade-generator" hidden></button><button id="upgrade-sp" hidden></button></section>
  </aside><div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas>
   <section class="run-results" id="run-results" hidden aria-live="polite" aria-label="Battle result">
     <h2 id="result-heading">Victory</h2>
@@ -476,7 +476,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script src="modules/elements/environment.js?v=20261128-ice-status"></script>
 <script src="modules/day-night/engine.js?v=20261127-fixed-time"></script>
-<script src="modules/towers/upgrades.js?v=20261127-low-hover-v2"></script>
+<script src="modules/towers/upgrades.js?v=20261128-stat-upgrades"></script>
 <script>
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=960,H=480,ground=325;
@@ -557,7 +557,7 @@ let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentC
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json?v=20261127-low-hover-v2',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
+  fetch('towers.json?v=20261128-stat-upgrades',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json?v=20261127-sp',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json?v=20261127-deep-sfx',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('progression.json?v=20261128-sidebar-sp',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
@@ -798,27 +798,28 @@ function renderEquipment(){
 function buyUpgrade(kind){
  if(!run.active||state.ended||battleMenuOpen||state.countdown>0)return;
  if(kind==='sp'){const c=progression.summoner,lv=run.spLevel||0,cost=Math.round(c.run_sp_upgrade_cost*(1+lv*.5));if(lv>=c.run_sp_max_level||run.wallet<cost)return;run.wallet-=cost;run.spLevel=lv+1;state.availablePower+=c.run_sp_per_level;refreshSummoner();refreshCoinDisplays();renderUpgrades();return;}
- if(TowerUpgrades.purchase(run,state.towerShield,equipmentConfig,kind)){refreshCoinDisplays();renderUpgrades();}
+ const oldHP=TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp;if(TowerUpgrades.purchase(run,state.towerShield,equipmentConfig,kind)){state.allyBase+=TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp-oldHP;refreshCoinDisplays();renderUpgrades();}
 }
 function renderUpgrades(){
  const cfg=equipmentConfig;if(!cfg||!state)return;
  const sc=progression.summoner,spLv=run.spLevel||0,spCost=Math.round(sc.run_sp_upgrade_cost*(1+spLv*.5));for(const id of ['upgrade-sp','prep-sp']){const b=$(id);b.textContent='SP +'+sc.run_sp_per_level+' · '+spLv+'/'+sc.run_sp_max_level+' · '+(spLv>=sc.run_sp_max_level?'MAX':spCost+' BC');b.disabled=state.ended||battleMenuOpen||state.countdown>0||spLv>=sc.run_sp_max_level||run.wallet<spCost;}
  for(const kind of ['attack','shield','drone','generator']){
  const {level,max,cost}=TowerUpgrades.quote(run,cfg,kind),b=$('upgrade-'+kind);
- const label=(kind==='attack'?(towerConfigs.ally?.basic_attack?.type==='electric_pulse'?'Wave':'Arrows'):kind==='shield'?'Shield':kind==='generator'?'Generator':'Drones');
+ const label=TowerUpgrades.quote(run,cfg,kind).label;
  const text=label+' '+level+'/'+max+' · '+(level>=max?'MAX':cost+' Coins');
  if(b.textContent!==text)b.textContent=text;
  b.disabled=state.ended||battleMenuOpen||state.countdown>0||level>=max||run.wallet<cost;
- const prep=$('prep-'+kind);prep.textContent=text;prep.disabled=b.disabled;
+ const prep=$('prep-'+kind);prep.textContent=({attack:'Fortress',shield:'Shield',drone:'Drones',generator:'Generator'})[kind]+' · View upgrades';prep.disabled=state.ended||battleMenuOpen||state.countdown>0;
  }
  const journey=Math.max(0,Math.min(1,(towerLayout.x-progression.defence.fortress_start_x)/(progression.defence.fortress_goal_x-progression.defence.fortress_start_x)));$('journey-bar').value=journey;$('journey-label').textContent='Journey '+Math.floor(journey*100)+'%';
  const label='Stage '+run.battle+' · '+state.kills+' defeated'+(state.portalUnlocked?' · Portal open':state.finalPhase?' · Final encounter':'')+(state.preparing?' · Preparation':state.ended&&state.victory?' · Victory':'');
  if($('run-progress').textContent!==label)$('run-progress').textContent=label;
  const wallet=(run.wallet||0).toLocaleString('en-US');$('prep-wallet').textContent=wallet;if($('battle-wallet').textContent!==wallet)$('battle-wallet').textContent=wallet;
- const attack=TowerUpgrades.attackStats(towerConfigs.ally,run,cfg),maxHP=towerConfigs.ally?.max_hp||1900;
- const entries={attack:[towerConfigs.ally?.name,Math.ceil(state.allyBase)+'/'+maxHP+' HP'],shield:[towerRegistry.shields.find(x=>x.id===profile.shield)?.name,state.towerShield.hp>0?'Active · '+Math.ceil(state.towerShield.hp)+' HP':'Inactive'],drone:[towerRegistry.drones.find(x=>x.id===profile.drone)?.name,run.drones+'/'+cfg.drone_max+' deployed'],generator:[towerRegistry.generators.find(x=>x.id===profile.generator)?.name,'+'+(run.generatorLevel*cfg.generator_income)+' BC / '+cfg.generator_interval+'s']};
+ const attack=TowerUpgrades.attackStats(towerConfigs.ally,run,cfg),maxHP=TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp;
+ const entries={attack:[towerConfigs.ally?.name,Math.ceil(state.allyBase)+'/'+maxHP+' HP'],shield:[towerRegistry.shields.find(x=>x.id===profile.shield)?.name,state.towerShield.hp>0?'Active · '+Math.ceil(state.towerShield.hp)+' HP':'Inactive'],drone:[towerRegistry.drones.find(x=>x.id===profile.drone)?.name,run.drones+'/'+cfg.drone_max+' deployed'],generator:[towerRegistry.generators.find(x=>x.id===profile.generator)?.name,'+'+(attack.generatorIncome)+' BC / '+attack.generatorInterval.toFixed(1)+'s']};
  for(const [kind,[name,status]] of Object.entries(entries)){const label=$('gear-label-'+kind),str=(name||kind)+' · '+status;if(label.textContent!==str)label.textContent=str;}
- const detail=$('gear-detail'),kind=detail.dataset.kind;if(!detail.hidden){let rows=[],name='';if(kind==='sp'){name='Summoner';rows=[['Level',summonerStats().level],['Permanent SP',summonerStats().power],['Run bonus SP',spLv*sc.run_sp_per_level],['Maximum SP',summonerStats().power+spLv*sc.run_sp_per_level],['SP regeneration',sc.power_regen_per_second+'/s'],['Surge duration',sc.surge_duration+'s'],['Surge cooldown',sc.surge_cooldown+'s']];}else if(kind==='attack'){name=entries.attack[0];rows=[['HP',entries.attack[1]],['Attack type',attack.type==='electric_pulse'?'Magic pulse':'Physical arrows'],['Damage',attack.damage.toFixed(1)],['Attack speed',(1/attack.interval).toFixed(2)+'/s'],['Range',attack.range.toFixed(0)],...(attack.type==='electric_pulse'?[['Stun',attack.stun.toFixed(2)+'s']]:[['Projectiles',attack.arrows]]),['Penetration','Not implemented']];}else if(kind==='shield'){name=entries.shield[0];rows=[['Status',entries.shield[1]],['Capacity',Math.ceil(state.towerShield.hp)+' / '+state.towerShield.max],['Capacity per upgrade',cfg.shield_hp]];}else if(kind==='drone'){name=entries.drone[0];rows=[['Deployed',entries.drone[1]],['Damage',attack.droneDamage.toFixed(1)],['Attack speed',(1/cfg.drone_interval).toFixed(2)+'/s'],['Range',cfg.drone_range]];}else if(kind==='generator'){name=entries.generator[0];rows=[['Production',entries.generator[1]],['Income per level',cfg.generator_income+' BC'],['Interval',cfg.generator_interval+'s']];}else if(kind?.startsWith('item:')){const slot=kind.slice(5),id=profile.summonerEquipment?.[slot],inst=profile.inventory.find(x=>x.id===id),item=sc.equipment.items.find(x=>x.id===inst?.item_id);name=slot;rows=item?[['Item',item.name||item.id],['Rarity',item.rarity||'—'],['Level',item.level||1],['Element',item.element||'neutral'],...Object.entries(item.attributes||{})]:[['Status','Empty slot']];}if($('gear-title').textContent!==name)$('gear-title').textContent=name||'';const sig=JSON.stringify(rows);if($('gear-stats').dataset.sig!==sig){$('gear-stats').dataset.sig=sig;const dl=document.createElement('dl');for(const [k,v] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=String(v);dl.append(dt,dd);}$('gear-stats').replaceChildren(dl);}for(const k of ['attack','shield','drone','generator','sp'])$('upgrade-'+k).hidden=k!==kind;}
+ const detail=$('gear-detail'),kind=detail.dataset.kind;if(!detail.hidden){let rows=[],name='';if(kind==='sp'){name='Summoner';rows=[['Level',summonerStats().level],['Permanent SP',summonerStats().power],['Run bonus SP',spLv*sc.run_sp_per_level],['Maximum SP',summonerStats().power+spLv*sc.run_sp_per_level],['SP regeneration',sc.power_regen_per_second+'/s'],['Surge duration',sc.surge_duration+'s'],['Surge cooldown',sc.surge_cooldown+'s']];}else if(kind==='attack'){name=entries.attack[0];rows=[['HP',entries.attack[1]],['Attack type',attack.type==='electric_pulse'?'Magic pulse':'Physical arrows'],['Damage',attack.damage.toFixed(1)],['Attack speed',(1/attack.interval).toFixed(2)+'/s'],['Range',attack.range.toFixed(0)],...(attack.type==='electric_pulse'?[['Stun',attack.stun.toFixed(2)+'s']]:[['Projectiles',attack.arrows]]),['Penetration',attack.penetration+'%']];}else if(kind==='shield'){name=entries.shield[0];rows=[['Status',entries.shield[1]],['Capacity',Math.ceil(state.towerShield.hp)+' / '+state.towerShield.max],['Regeneration',attack.shieldRegen+' HP/s'],['Recovery delay',attack.shieldDelay.toFixed(1)+'s']];}else if(kind==='drone'){name=entries.drone[0];rows=[['Deployed',entries.drone[1]],['Damage',attack.droneDamage.toFixed(1)],['Attack speed',(1/attack.droneInterval).toFixed(2)+'/s'],['Range',attack.droneRange],['Penetration',attack.dronePenetration+'%']];}else if(kind==='generator'){name=entries.generator[0];rows=[['Production',entries.generator[1]],['Income per level',cfg.generator_income+' BC'],['Interval',attack.generatorInterval.toFixed(1)+'s']];}else if(kind?.startsWith('item:')){const slot=kind.slice(5),id=profile.summonerEquipment?.[slot],inst=profile.inventory.find(x=>x.id===id),item=sc.equipment.items.find(x=>x.id===inst?.item_id);name=slot;rows=item?[['Item',item.name||item.id],['Rarity',item.rarity||'—'],['Level',item.level||1],['Element',item.element||'neutral'],...Object.entries(item.attributes||{})]:[['Status','Empty slot']];}if($('gear-title').textContent!==name)$('gear-title').textContent=name||'';const sig=JSON.stringify(rows);if($('gear-stats').dataset.sig!==sig){$('gear-stats').dataset.sig=sig;const dl=document.createElement('dl');for(const [k,v] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=String(v);dl.append(dt,dd);}$('gear-stats').replaceChildren(dl);}for(const k of ['attack','shield','drone','generator','sp'])$('upgrade-'+k).hidden=k!=='sp'||kind!=='sp';}
+ const list=$('gear-upgrade-list'),group=cfg.upgrade_groups?.[kind]||{};if(list.dataset.group!==String(kind)){list.dataset.group=String(kind);list.replaceChildren(...Object.keys(group).map(key=>{const b=document.createElement('button');b.dataset.upgrade=key;b.onclick=()=>buyUpgrade(key);return b;}));}for(const b of list.children){const q=TowerUpgrades.quote(run,cfg,b.dataset.upgrade);if(!q)continue;const text=q.label+' '+q.level+'/'+q.max+' · '+(q.level>=q.max?'MAX':q.cost+' BC');if(b.textContent!==text)b.textContent=text;b.disabled=state.ended||battleMenuOpen||state.countdown>0||q.level>=q.max||run.wallet<q.cost||q.kind.startsWith('shield_')&&!run.shieldLevel||q.kind.startsWith('drone_')&&!run.drones||q.kind==='generator_speed'&&!run.generatorLevel;}
  const shield='Shield '+Math.ceil(state.towerShield.hp);
  if($('tower-shield-label').textContent!==shield)$('tower-shield-label').textContent=shield;
 }
@@ -945,7 +946,7 @@ function reset(){
  towerLayout.x=progression.defence.fortress_start_x;TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;battleHeroFrame=-1;
  chooseRandomStage();
  const cfg=progression.defence;
- state={preparing:true,countdown:0,heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power+(run.spLevel||0)*progression.summoner.run_sp_per_level,units:[],allyBase:towerConfigs.ally?.max_hp||1900,towerShield:TowerUpgrades.createShield(run,equipmentConfig),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,portalUnlocked:false,portalAge:0,portalExit:0,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
+ state={preparing:true,countdown:0,heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power+(run.spLevel||0)*progression.summoner.run_sp_per_level,units:[],allyBase:TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp,towerShield:TowerUpgrades.createShield(run,equipmentConfig),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,portalUnlocked:false,portalAge:0,portalExit:0,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
  refreshCoinDisplays();
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  towerCooldowns.ally=1;
@@ -989,10 +990,10 @@ const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(
 const forward=side>0?1:-1;
 const x=side<0?spawnX:spawnX+forward*Math.min(54,Math.max(0,54-row.clearance));
 state.units.push({m,side,rank,scale,damageScale,skillScale,attackSpeed,rankStyle:specialBosses.includes(m)?'normal':rank,darkEvolved:rank==='boss'&&!specialBosses.includes(m),nightBoost:false,rankParticles:[],rankEmit:0,visualScale:rank==='boss'?cfg.boss_sprite_scale:rank==='elite'?cfg.elite_sprite_scale:cfg.normal_sprite_scale,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,shieldTime:0,shieldImpact:0,shieldStart:0,atk:.5/attackSpeed,skill:m.skill.cooldown_seconds,motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});if(side<0&&rank!=='normal'){soundEffect(rank+'_arrival');state.heartbeatRank=rank;state.heartbeatTimer=.85;}return true}
-function dmg(u,amount,damageType='physical'){
+function dmg(u,amount,damageType='physical',penetration=0){
  if(!Number.isFinite(amount)||amount<=0||u.hp<=0)return;
  // DEF and RES mitigate direct hits before existing map, passive and shield protection.
- if(damageType!=='true'){const magical=damageType==='magic'||damageType==='magical',stat=magical?u.m.stats?.res:u.m.stats?.def;amount*=100/(100+Math.max(0,Number(stat)||0));}
+ if(damageType!=='true'){const magical=damageType==='magic'||damageType==='magical',stat=magical?u.m.stats?.res:u.m.stats?.def;amount*=100/(100+Math.max(0,Number(stat)||0)*(1-Math.max(0,Math.min(100,penetration))/100));}
  const reduction=(u.mod.incoming_damage_reduction_pct||0);amount*=1-reduction;
  if(u.m.passive.id==='bark_shell'&&u.hp/u.maxhp>.5)amount*=.88;
  const shield=Math.min(u.shieldTime>0?u.shield:0,amount);
@@ -1027,7 +1028,7 @@ function hitTower(side,amount){
  const reduction=Math.max(0,Math.min(.9,Number(battleRules.towers?.common_passive?.direct_damage_reduction_pct)||0));
  const amountDone=Math.max(0,amount*(1-reduction));
  if(side>0)return;
- const before=state.towerShield.hp;const damage=TowerUpgrades.absorb(state.towerShield,amountDone);state.allyBase=Math.max(0,state.allyBase-damage);if(before>state.towerShield.hp)soundEffect(state.towerShield.hp<=0?'shield_break':'shield_hit');if(damage>0)soundEffect('tower_hit');
+ const before=state.towerShield.hp;const damage=TowerUpgrades.absorb(state.towerShield,amountDone,TowerUpgrades.equipmentStats(run,equipmentConfig).shieldDelay);state.allyBase=Math.max(0,state.allyBase-damage);if(before>state.towerShield.hp)soundEffect(state.towerShield.hp<=0?'shield_break':'shield_hit');if(damage>0)soundEffect('tower_hit');
 }
 function performCharge(u,dt){
  const c=u.charge;if(!c)return false;
@@ -1116,10 +1117,10 @@ function stepTowerDefense(dt){
  if(foes.length&&towerCooldowns.ally<=0){
  soundEffect(attack.type==='electric_pulse'?'lightning':'arrow');
  if(attack.type==='electric_pulse'){
-  for(const u of foes){dmg(u,damage,'magic');if(attack.stun>0){u.environmentStatus=u.environmentStatus||{slowTime:0,slowPct:0,freezeTime:0};u.environmentStatus.staggerTime=Math.max(u.environmentStatus.staggerTime||0,attack.stun);}}
+  for(const u of foes){dmg(u,damage,'magic',attack.penetration);if(attack.stun>0){u.environmentStatus=u.environmentStatus||{slowTime:0,slowPct:0,freezeTime:0};u.environmentStatus.staggerTime=Math.max(u.environmentStatus.staggerTime||0,attack.stun);}}
   towerProjectiles.push({type:'electric_pulse',x:towerLayout.x-3,y:towerLayout.ground-towerLayout.height+42,age:0,duration:.6,range,width:attack.waveWidth});
  }else{
- const count=attack.arrows;for(let i=0;i<Math.min(count,foes.length);i++){const target=foes[i];dmg(target,damage,'physical');towerProjectiles.push({type:'arrow',x:towerLayout.x+20,y:towerLayout.ground-towerLayout.height+74-12+Math.sin(state.time*2.2)*3,tx:target.x,ty:target.y-34,age:0,duration:.45});}
+ const count=attack.arrows;for(let i=0;i<Math.min(count,foes.length);i++){const target=foes[i];dmg(target,damage,'physical',attack.penetration);towerProjectiles.push({type:'arrow',x:towerLayout.x+20,y:towerLayout.ground-towerLayout.height+74-12+Math.sin(state.time*2.2)*3,tx:target.x,ty:target.y-34,age:0,duration:.45});}
  }
  towerCooldowns.ally=attack.interval;
  }
@@ -1127,19 +1128,19 @@ function stepTowerDefense(dt){
  for(let i=0;i<run.drones;i++){
  state.droneTimers[i]=Math.max(0,(state.droneTimers[i]||0)-dt);
  const patrol=equipmentConfig.drone_patrol||{min_x:270,max_x:525,period_seconds:9,vertical_amplitude:7},phase=(state.time/(patrol.period_seconds||9)+i/Math.max(1,equipmentConfig.drone_max||3))*Math.PI*2,x=Math.min(progression.defence.fortress_world_width-60,towerLayout.x-156+patrol.min_x+(patrol.max_x-patrol.min_x)*(.5-.5*Math.cos(phase))),y=towerLayout.droneY+(i%2)*20+Math.sin(state.time*2+i)*(patrol.vertical_amplitude||7);
- const target=state.units.filter(u=>u.hp>0&&u.side<0&&Math.abs(u.x-x)<=dc.drone_range).sort((a,b)=>Math.hypot(a.x-x,a.y-32-y)-Math.hypot(b.x-x,b.y-32-y))[0];
+ const target=state.units.filter(u=>u.hp>0&&u.side<0&&Math.abs(u.x-x)<=attack.droneRange).sort((a,b)=>Math.hypot(a.x-x,a.y-32-y)-Math.hypot(b.x-x,b.y-32-y))[0];
  const aim=state.droneAim[i]||(state.droneAim[i]={facing:1,tilt:0});
  const facing=target?(target.x<x?-1:1):Math.sin(phase)>=0?1:-1;
  const tilt=target?Math.max(-.42,Math.min(.42,Math.atan2(target.y-32-y,Math.max(1,Math.abs(target.x-x))))):0;
  aim.facing=facing;aim.tilt+=(tilt-aim.tilt)*Math.min(1,dt*12);
- if(target&&state.droneTimers[i]<=0){soundEffect('arrow');dmg(target,attack.droneDamage,'physical');const mx=16,my=2,ax=x+facing*(mx*Math.cos(aim.tilt)-my*Math.sin(aim.tilt)),ay=y+mx*Math.sin(aim.tilt)+my*Math.cos(aim.tilt);towerProjectiles.push({type:'arrow',drone:true,x:ax,y:ay,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=dc.drone_interval;}
+ if(target&&state.droneTimers[i]<=0){soundEffect('arrow');dmg(target,attack.droneDamage,'physical',attack.dronePenetration);const mx=16,my=2,ax=x+facing*(mx*Math.cos(aim.tilt)-my*Math.sin(aim.tilt)),ay=y+mx*Math.sin(aim.tilt)+my*Math.cos(aim.tilt);towerProjectiles.push({type:'arrow',drone:true,x:ax,y:ay,tx:target.x,ty:target.y-32,age:0,duration:.35});state.droneTimers[i]=attack.droneInterval;}
  }
 }
 function step(dt){
  if(state.ended)return;
  if(state.preparing){const img=mapBackground(stageBackgroundPath(stage())),ready=readyImage(img),failed=img?.complete&&!ready;const btn=$('next-battle');if(state.countdown>0){state.countdown=Math.max(0,state.countdown-dt);btn.disabled=true;btn.textContent='Start Battle';$('prep-status').textContent='Battle starting…';if(state.countdown<=0){state.preparing=false;$('run-results').classList.remove('preparing');$('run-results').hidden=true;$('prep-panel').hidden=true;$('status').textContent='Deploy monsters when ready.';} }else{btn.disabled=!ready&&!failed;btn.textContent=failed?'Retry Map':'Start Battle';$('prep-status').textContent=ready?'Battlefield ready':failed?'Map failed to load. Retry to continue.':'Preparing battlefield…';}return;}
  if(state.portalUnlocked){const cfg=progression.defence;state.time+=dt;state.portalAge+=dt;state.fortressMoving=false;const goal=cfg.fortress_goal_x;if(state.portalAge>=cfg.portal_activation_seconds){state.fortressMoving=towerLayout.x<goal;towerLayout.x=Math.min(goal,towerLayout.x+Math.max(cfg.fortress_move_speed,(goal-state.portalStartX)/3)*dt);TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;if(towerLayout.x>=goal){state.portalExit=Math.min(1,state.portalExit+dt/cfg.portal_exit_seconds);}}if(state.portalExit>=1){state.victory=true;state.ended=true;run.totalSeconds+=state.time;settleBattle();soundEffect('victory');$('status').textContent='Destination Reached';showResult();}return;}
- state.time+=dt;state.generatorPulse=Math.max(0,state.generatorPulse-dt);if(run.generatorLevel>0&&state.allyBase>0){run.generatorElapsed+=dt;while(run.generatorElapsed>=equipmentConfig.generator_interval){run.generatorElapsed-=equipmentConfig.generator_interval;state.generatorPulse=.85;const coins=run.generatorLevel*equipmentConfig.generator_income;run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.earnings.push({x:towerLayout.generatorX,y:towerLayout.generatorY-towerLayout.generatorHeight/2-5,value:coins,life:1.35});refreshCoinDisplays();}}state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig);
+ const gearStats=TowerUpgrades.equipmentStats(run,equipmentConfig);state.time+=dt;state.generatorPulse=Math.max(0,state.generatorPulse-dt);if(run.generatorLevel>0&&state.allyBase>0){run.generatorElapsed+=dt;while(run.generatorElapsed>=gearStats.generatorInterval){run.generatorElapsed-=gearStats.generatorInterval;state.generatorPulse=.85;const coins=gearStats.generatorIncome;run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.earnings.push({x:towerLayout.generatorX,y:towerLayout.generatorY-towerLayout.generatorHeight/2-5,value:coins,life:1.35});refreshCoinDisplays();}}state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig,run);
  window.MonstersClashDayNight?.update(dt);
  window.MonstersClashDayNight?.updateLabel($('day-night-label'));
  window.MonstersClashEnvironment?.update(dt,state.units,dmg,soundEffect,TOWER_APPROACH.ally+1,progression.defence.fortress_goal_x-progression.defence.portal_clearance);
@@ -1254,7 +1255,7 @@ function step(dt){
  }
 }
 function drawTower(side,x,hp){
- const img=towerImages[side],maxHp=towerConfigs.ally?.max_hp||1900,frame=towerDamageFrame(hp,maxHp);
+ const img=towerImages[side],maxHp=TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp,frame=towerDamageFrame(hp,maxHp);
  const y=towerLayout.ground-towerLayout.height+16+(hp>0?-12+Math.sin(state.time*2.2)*3:0);
  if(readyImage(img)){
    const height=towerLayout.height,width=height*(img.naturalWidth/(towerConfigs[side]?.sheet_columns||4))/(img.naturalHeight/(towerConfigs[side]?.sheet_rows||1));
@@ -1467,7 +1468,7 @@ function draw(){
    if(ranked){ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#101722';ctx.strokeText((u.nightBoost?'BOSS · DARK ↑':u.darkEvolved?'BOSS · DARK':u.rank.toUpperCase()),u.x,barY-25);ctx.fillStyle=edge;ctx.fillText((u.nightBoost?'BOSS · DARK ↑':u.darkEvolved?'BOSS · DARK':u.rank.toUpperCase()),u.x,barY-25);}
    ctx.restore();window.MonstersClashEnvironment?.renderIndicators(ctx,u,barY);ctx.restore();
  }
- ctx.save();ctx.translate(towerLayout.x,0);ctx.scale(actorRatio,1);ctx.translate(-towerLayout.x,0);TowerUpgrades.renderHealth(ctx,towerLayout.x,towerLayout.hpY,state.allyBase,towerConfigs.ally?.max_hp||1900,state.towerShield,hpBarImage);ctx.restore();
+ ctx.save();ctx.translate(towerLayout.x,0);ctx.scale(actorRatio,1);ctx.translate(-towerLayout.x,0);TowerUpgrades.renderHealth(ctx,towerLayout.x,towerLayout.hpY,state.allyBase,TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp,state.towerShield,hpBarImage);ctx.restore();
  for(const f of state.earnings){ctx.save();ctx.translate(f.x,0);ctx.scale(actorRatio,1);ctx.translate(-f.x,0);ctx.globalAlpha=Math.min(1,f.life/.35);ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#132131';const y=f.y-(1.35-f.life)*24;ctx.strokeText('+'+f.value+' BC',f.x,y);ctx.fillStyle='#a5e4ff';ctx.fillText('+'+f.value+' BC',f.x,y);ctx.restore();}
 
  if(state.ended){ctx.fillStyle='#06152578';ctx.fillRect(-viewOffsetX,-viewOffsetY,viewWidth,viewHeight)}
@@ -1701,7 +1702,7 @@ function bindMenu(){
 
  $('start-game').onclick=startRun;
  $('next-battle').onclick=nextBattle;
- for(const kind of ['attack','shield','drone','generator','sp'])$('prep-'+kind).onclick=()=>buyUpgrade(kind);
+ for(const kind of ['attack','shield','drone','generator','sp'])$('prep-'+kind).onclick=()=>{if(kind==='sp'){buyUpgrade(kind);return;}$('gear-detail').dataset.kind=kind;$('gear-detail').hidden=false;renderUpgrades();$('gear-detail').scrollIntoView({block:'nearest'});};
  $('restart-run-result').onclick=restartRun;
 
  $('nav-toggle').onclick=()=>toggleQuickNav();

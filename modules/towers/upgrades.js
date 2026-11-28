@@ -5,7 +5,7 @@ function selectEquipment(registry,profile,base){
  const pick=(group,key,def)=>{const list=registry[group];const entry=list.find(x=>x.available!==false&&x.id===profile[key]&&profile[group].includes(x.id))||list.find(x=>x.available!==false&&x.id===def);if(!entry)throw Error('No default '+key);profile[key]=entry.id;return entry;};
  const tower=pick('towers','tower',registry.default_towers.ally),shield=pick('shields','shield',registry.default_shield),drone=pick('drones','drone',registry.default_drone);
  const generator=pick('generators','generator',registry.default_generator);
- return {tower,shield,drone,generator,config:{...base,shield_cost:shield.upgrade_cost,shield_hp:shield.hp_per_level,shield_plate_min:shield.plate_min,shield_plate_max:shield.plate_max,shield_orbit_speed:shield.orbit_speed,shield_render_mode:shield.render_mode||'sprite',shield_sprite:shield.sprite,drone_cost:drone.deploy_cost,drone_max:drone.max_active,drone_damage:drone.damage,drone_interval:drone.interval_seconds,drone_range:drone.range,drone_sheet_columns:drone.sheet_columns,drone_patrol:drone.patrol,generator_cost:generator.upgrade_cost,generator_income:generator.income_per_level,generator_interval:generator.interval_seconds,generator_max:generator.max_level}};
+ return {tower,shield,drone,generator,config:{...base,fortress_max_hp:tower.max_hp,upgrade_groups:{attack:tower.upgrades||{},shield:shield.upgrades||{},drone:drone.upgrades||{},generator:generator.upgrades||{}},shield_cost:shield.upgrade_cost,shield_hp:shield.hp_per_level,shield_plate_min:shield.plate_min,shield_plate_max:shield.plate_max,shield_orbit_speed:shield.orbit_speed,shield_render_mode:shield.render_mode||'sprite',shield_sprite:shield.sprite,drone_cost:drone.deploy_cost,drone_max:drone.max_active,drone_damage:drone.damage,drone_interval:drone.interval_seconds,drone_range:drone.range,drone_sheet_columns:drone.sheet_columns,drone_patrol:drone.patrol,generator_cost:generator.upgrade_cost,generator_income:generator.income_per_level,generator_interval:generator.interval_seconds,generator_max:generator.max_level}};
 }
 function equip(registry,profile,group,id){
  if(!['towers','shields','drones','generators'].includes(group))return false;const key=group.slice(0,-1),item=registry[group].find(x=>x.id===id);if(!item||item.available===false)return false;
@@ -13,25 +13,28 @@ function equip(registry,profile,group,id){
  profile[key]=id;return true;
 }
 function quote(run,cfg,kind){
- if(!['attack','shield','drone','generator'].includes(kind))return null;
- const key=kind==='generator'?'generatorLevel':kind==='drone'?'drones':kind==='shield'?'shieldLevel':'attackLevel';
- const level=Number(run[key])||0,max=kind==='generator'?cfg.generator_max:kind==='drone'?cfg.drone_max:cfg.max_upgrade;
- const base=kind==='generator'?cfg.generator_cost:kind==='drone'?cfg.drone_cost:kind==='shield'?cfg.shield_cost:cfg.attack_cost;
- return {kind,key,level,max,cost:Math.round(base*(1+level*.5))};
+ const entry=Object.values(cfg.upgrade_groups||{}).map(g=>g[kind]).find(Boolean);if(!entry)return null;
+ const key={attack:'attackLevel',shield:'shieldLevel',drone:'drones',generator:'generatorLevel'}[kind]||kind;
+ const level=Number(run[key])||0;return {kind,key,level,max:entry.max,cost:Math.round(entry.cost*(1+level*.5)),label:entry.label,step:entry.step};
 }
-function createShield(run,cfg){const hp=run.shieldLevel*cfg.shield_hp;return {hp,max:hp,phase:0,flash:0,broken:0,hitAngle:0};}
+function equipmentStats(run,cfg){
+ const value=k=>{const q=quote(run,cfg,k);return q?q.level*q.step:0;};
+ return {maxHp:cfg.fortress_max_hp+value('fortress_hp'),shieldMax:value('shield'),shieldRegen:value('shield_regen'),shieldDelay:Math.max(2,6-value('shield_recovery')),droneDamage:cfg.drone_damage*(1+value('drone_damage')),droneInterval:Math.max(.35,cfg.drone_interval/(1+value('drone_speed'))),droneRange:cfg.drone_range+value('drone_range'),dronePenetration:value('drone_penetration'),generatorIncome:value('generator'),generatorInterval:Math.max(2,cfg.generator_interval/(1+value('generator_speed')))};
+}
+function createShield(run,cfg){const hp=equipmentStats(run,cfg).shieldMax;return {hp,max:hp,phase:0,flash:0,broken:0,hitAngle:0,recovery:0};}
 function purchase(run,shield,cfg,kind){
  const q=quote(run,cfg,kind);if(!q||q.level>=q.max||run.wallet<q.cost)return false;
- run.wallet-=q.cost;run[q.key]++;
- if(kind==='shield'){shield.max+=cfg.shield_hp;shield.hp=Math.min(shield.max,shield.hp+cfg.shield_hp);shield.flash=.35;shield.broken=0;}
+ if(kind.startsWith('shield_')&&!run.shieldLevel||kind.startsWith('drone_')&&!run.drones||kind==='generator_speed'&&!run.generatorLevel)return false;
+ run.wallet-=q.cost;run[q.key]=q.level+1;
+ if(kind==='shield'){shield.max=equipmentStats(run,cfg).shieldMax;shield.hp=Math.min(shield.max,shield.hp+q.step);shield.flash=.35;shield.broken=0;}
  return true;
 }
 function attackStats(tower,run,cfg){
- const a=tower?.basic_attack;if(!a)return null;const lv=run.attackLevel;
- return {type:a.type,range:Math.min(cfg.tower_range_cap,(Number(a.range)||190)*(1+lv*.12)),damage:(Number(a.damage)||15)*(1+lv*.14),interval:Math.max(.35,a.cooldown_seconds/(1+lv*.15)),arrows:1+Math.floor(lv/2),stun:lv>=2?Math.min(1.2,.2+lv*.08):0,waveWidth:5+lv*1.4,droneDamage:cfg.drone_damage*(1+lv*.08)};
+ const a=tower?.basic_attack;if(!a)return null;const value=k=>{const q=quote(run,cfg,k);return q?q.level*q.step:0;};
+ return {type:a.type,range:(Number(a.range)||190)+value('fortress_range'),damage:(Number(a.damage)||15)*(1+value('attack')),interval:Math.max(.35,a.cooldown_seconds/(1+value('fortress_speed'))),arrows:1+value('fortress_projectiles'),penetration:value('fortress_penetration'),stun:value('fortress_stun'),waveWidth:5+value('fortress_range')*.04,...equipmentStats(run,cfg)};
 }
-function update(shield,dt,cfg){shield.phase=(shield.phase+dt*(cfg.shield_orbit_speed||.85))%(Math.PI*2);shield.flash=Math.max(0,shield.flash-dt);shield.broken=Math.max(0,shield.broken-dt);}
-function absorb(shield,damage){const used=Math.min(shield.hp,Math.max(0,damage));shield.hp-=used;if(used){shield.flash=.35;shield.hitAngle=shield.phase;if(shield.hp===0)shield.broken=.65;}return Math.max(0,damage-used);}
+function update(shield,dt,cfg,run){shield.phase=(shield.phase+dt*(cfg.shield_orbit_speed||.85))%(Math.PI*2);shield.flash=Math.max(0,shield.flash-dt);shield.broken=Math.max(0,shield.broken-dt);if(run){const stats=equipmentStats(run,cfg);shield.recovery=Math.max(0,(shield.recovery||0)-dt);if(shield.recovery<=0)shield.hp=Math.min(shield.max,shield.hp+stats.shieldRegen*dt);}}
+function absorb(shield,damage,delay=6){const used=Math.min(shield.hp,Math.max(0,damage));shield.hp-=used;if(used){shield.recovery=delay;shield.flash=.35;shield.hitAngle=shield.phase;if(shield.hp===0)shield.broken=.65;}return Math.max(0,damage-used);}
 const shieldImages=new Map();
 function renderShield(ctx,s,level,cfg,x,y,front){
  if(!s)return;
@@ -102,5 +105,5 @@ function renderHealth(ctx,x,y,hp,maxHp,shield,art){
  if(shield?.max>0){ctx.font='bold 9px sans-serif';ctx.textBaseline='top';ctx.fillStyle='#b0ebff';ctx.strokeText('Shield '+Math.ceil(shield.hp)+' / '+Math.ceil(shield.max),0,24);ctx.fillText('Shield '+Math.ceil(shield.hp)+' / '+Math.ceil(shield.max),0,24);}
  ctx.restore();
 }
-global.MonstersClashTowerUpgrades=Object.freeze({selectEquipment,equip,quote,createShield,purchase,attackStats,update,absorb,renderShield,renderHealth});
+global.MonstersClashTowerUpgrades=Object.freeze({selectEquipment,equip,quote,equipmentStats,createShield,purchase,attackStats,update,absorb,renderShield,renderHealth});
 })(window);
