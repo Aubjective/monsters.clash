@@ -60,7 +60,7 @@ function renderShield(ctx,s,level,cfg,x,y,front){
  for(let i=0;i<count;i++){
  const a=s.phase+i*Math.PI*2/count,depth=Math.sin(a);if((depth>=0)!==front)continue;
  const px=x+Math.cos(a)*rx,py=y+depth*orbitY;
- const depthScale=.92+.08*depth,width=19.4*depthScale*plateScale,height=24*depthScale*plateScale;
+ const depthScale=.85+.15*depth,width=19.4*depthScale*plateScale,height=24*depthScale*plateScale;
  const glow=Math.max(0,flash*Math.cos(a-s.hitAngle));
  ctx.save();ctx.translate(px,py);
  ctx.globalAlpha=(front?.98:.70)*(.8+.2*ratio);ctx.shadowColor='#72dfff';ctx.shadowBlur=6+level*.9+glow*18;
