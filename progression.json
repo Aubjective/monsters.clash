@@ -32,7 +32,6 @@
     "boss_every": 5,
     "round_break_seconds": 8,
     "attack_cost": 75,
-    "max_upgrade": 10,
     "monster_unlock_cost": 250,
     "elite_sprite_scale": 1.05,
     "tower_range_cap": 425,
