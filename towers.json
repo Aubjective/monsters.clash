@@ -6,36 +6,30 @@
   "towers": [
     {
       "id": "f001",
-      "name": "Sentinel Fortress",
-      "sheet": "assets/fortresses/f001/sentinel-fortress-sheet.png",
+      "name": "Sentinel Guardian",
+      "sheet": "assets/fortresses/f001/sentinel-guardian.png",
       "max_hp": 1900,
-      "damage_thresholds_pct": [
-        70,
-        30,
-        0
-      ],
       "abilities": [],
       "basic_attack": {
-        "type": "arrow",
+        "type": "laser",
         "range": 280,
-        "damage": 22,
-        "cooldown_seconds": 2.6,
-        "sprite": "assets/weapons/w001/sentinel-arrow.png",
-        "weapon_id": "w001",
+        "damage": 4.5,
+        "cooldown_seconds": 0.2,
+        "minimum_interval_seconds": 0.075,
         "damage_type": "physical"
       },
-      "sheet_columns": 4,
+      "sheet_columns": 1,
       "sheet_rows": 1,
       "unlock_cost": 0,
       "series": "Sentinel",
-      "description": "Low-floating armoured castle-fortress with an open arrow firing port and arcane levitation.",
-      "ability": "Arrow Volley",
+      "description": "Floating assault guardian with a rapid laser and five-second flame cone.",
+      "ability": "Flamethrower",
       "hp_bar": "assets/fortresses/f001/sentinel-hp-bar.png",
       "movement": "low_hover",
       "upgrades": {
         "attack": {
-          "label": "Physical damage",
-          "step": 0.14,
+          "label": "Laser damage",
+          "step": 0.07,
           "cost": 75
         },
         "fortress_hp": {
@@ -45,7 +39,7 @@
         },
         "fortress_speed": {
           "label": "Attack speed",
-          "step": 0.15,
+          "step": 0.22,
           "cost": 65
         },
         "fortress_range": {
@@ -58,11 +52,71 @@
           "step": 5,
           "cost": 90
         },
-        "fortress_projectiles": {
-          "label": "Projectiles",
-          "step": 1,
-          "cost": 150
+        "fortress_def": {
+          "label": "Physical defence",
+          "step": 2,
+          "cost": 80
+        },
+        "fortress_res": {
+          "label": "Magical defence",
+          "step": 2,
+          "cost": 80
+        },
+        "fortress_skill_damage": {
+          "label": "Flame and burn damage",
+          "step": 0.14,
+          "cost": 90
+        },
+        "fortress_skill_cooldown": {
+          "label": "Skill cooldown reduction",
+          "step": 0.5,
+          "cost": 100
+        },
+        "fortress_skill_range": {
+          "label": "Flame range",
+          "step": 5,
+          "cost": 80
         }
+      },
+      "def": 10,
+      "res": 5,
+      "render_mode": "guardian",
+      "muzzles": {
+        "laser": [
+          0.475,
+          0.71
+        ],
+        "flame": [
+          0.728,
+          0.48
+        ]
+      },
+      "lights": {
+        "visor": [
+          0.522,
+          0.302,
+          0.057,
+          0.024
+        ],
+        "core": [
+          0.491,
+          0.528,
+          0.038,
+          0.06
+        ]
+      },
+      "skill": {
+        "name": "Flamethrower",
+        "damage_type": "magical",
+        "duration_seconds": 5,
+        "cooldown_seconds": 16,
+        "minimum_cooldown_seconds": 8,
+        "range": 165,
+        "maximum_range": 245,
+        "cone_half_angle": 0.48,
+        "damage_per_second": 12,
+        "burn_duration_seconds": 3,
+        "burn_damage_per_second": 3
       }
     },
     {
