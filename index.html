@@ -656,7 +656,7 @@ function endRun(){
  run.active=false;openView('home');
 }
 function enemyScale(){return Math.pow(1+progression.round_growth_pct.enemy/100,Math.max(0,run.battle-1))}
-function allyScale(){return 1+Math.max(0,run.battle-1)*progression.round_growth_pct.ally/100}
+function allyScale(){return Math.pow(1+progression.round_growth_pct.ally/100,Math.max(0,run.battle-1))}
 function showResult(){
  const victory=state.victory;
  if(victory&&!nextStage){const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;nextStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;if(nextStage)mapBackground(stageBackgroundPath(nextStage));}
