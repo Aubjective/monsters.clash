@@ -528,13 +528,7 @@ function renderStatus(ctx,u){
      ctx.beginPath();ctx.moveTo(px,py-chip*1.5);ctx.lineTo(px+chip*.7,py);
      ctx.lineTo(px,py+chip*1.5);ctx.lineTo(px-chip*.7,py);ctx.closePath();ctx.fill();
    }
-   // Snowflake at shoulder height: clear status indicator at small sizes.
-   const fx=x,fy=y-56;
-   ctx.globalAlpha=freeze?1:.82;ctx.strokeStyle='#e7fcff';ctx.lineWidth=2;
-   for(let i=0;i<3;i++){
-     const a=i*Math.PI/3,dx=Math.cos(a)*7,dy=Math.sin(a)*7;
-     ctx.beginPath();ctx.moveTo(fx-dx,fy-dy);ctx.lineTo(fx+dx,fy+dy);ctx.stroke();
-   }
+
  }
  ctx.restore();
 }
@@ -543,7 +537,8 @@ function renderIndicators(ctx,u,barY){
  const s=u?.environmentStatus;if(!enabled||!hazardsEnabled||!s||!s.feedback)return;
  const active={burning:s.fireVisual>0,bleeding:s.bleedTime>0,rooted:s.rootTime>0,staggered:s.staggerTime>0,frozen:s.freezeTime>0,chilled:s.slowTime>0&&s.source==='ice'&&s.freezeTime<=0,drenched:s.slowTime>0&&s.source==='rain'};
  const colors={burning:'#ff9948',bleeding:'#fa5965',rooted:'#a8d86c',staggered:'#f5d27a',frozen:'#9ceaff',chilled:'#9ceaff',drenched:'#65c9ff'};
- const keys=Object.keys(colors).filter(k=>active[k]||s.feedback[k]>0).filter(k=>k!=='chilled'||!active.frozen);
+ const iceKey=active.frozen?'frozen':active.chilled?'chilled':s.feedback.frozen>0&&s.feedback.frozen>=(s.feedback.chilled||0)?'frozen':s.feedback.chilled>0?'chilled':null;
+ const keys=Object.keys(colors).filter(k=>k==='chilled'||k==='frozen'?k===iceKey:active[k]||s.feedback[k]>0);
  for(let i=0;i<keys.length;i++){
    const k=keys[i],x=u.x+(i-(keys.length-1)/2)*18,y=barY-10,c=colors[k];
    ctx.save();ctx.translate(x,y);ctx.globalAlpha=active[k]?1:.55;ctx.fillStyle='#172431';ctx.strokeStyle=c;ctx.lineWidth=1.3;ctx.beginPath();ctx.roundRect(-8,-8,16,16,4);ctx.fill();ctx.stroke();ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineWidth=1.6;ctx.lineCap='round';ctx.lineJoin='round';
@@ -551,6 +546,7 @@ function renderIndicators(ctx,u,barY){
    else if(k==='bleeding'||k==='drenched'){ctx.beginPath();ctx.moveTo(0,-6);ctx.bezierCurveTo(-8,3,-4,6,0,6);ctx.bezierCurveTo(4,6,8,3,0,-6);ctx.fill();}
    else if(k==='rooted'){ctx.beginPath();ctx.moveTo(0,6);ctx.lineTo(0,-4);ctx.moveTo(0,0);ctx.lineTo(-5,-4);ctx.moveTo(0,2);ctx.lineTo(5,-2);ctx.moveTo(0,4);ctx.lineTo(-4,6);ctx.moveTo(0,4);ctx.lineTo(4,6);ctx.stroke();}
    else if(k==='staggered'){ctx.beginPath();ctx.moveTo(-6,3);ctx.lineTo(-4,-4);ctx.lineTo(1,-6);ctx.lineTo(6,-2);ctx.lineTo(5,4);ctx.lineTo(-2,6);ctx.closePath();ctx.fill();ctx.strokeStyle='#77543a';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(1,-5);ctx.lineTo(-1,-1);ctx.lineTo(2,1);ctx.lineTo(0,5);ctx.moveTo(-1,-1);ctx.lineTo(-4,0);ctx.stroke();}
+   else if(k==='frozen'){ctx.fillStyle='#54acd0';ctx.strokeStyle='#d9faff';ctx.beginPath();ctx.moveTo(0,-6);ctx.lineTo(5,-2);ctx.lineTo(4,4);ctx.lineTo(-1,6);ctx.lineTo(-5,1);ctx.lineTo(-4,-3);ctx.closePath();ctx.fill();ctx.stroke();ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(0,-6);ctx.lineTo(-1,6);ctx.moveTo(-4,-3);ctx.lineTo(4,4);ctx.stroke();}
    else {for(let j=0;j<3;j++){const a=j*Math.PI/3;ctx.beginPath();ctx.moveTo(-Math.cos(a)*5,-Math.sin(a)*5);ctx.lineTo(Math.cos(a)*5,Math.sin(a)*5);ctx.stroke();}}
    ctx.restore();
  }
