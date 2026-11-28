@@ -1118,7 +1118,7 @@ function separateGroundUnits(){
       else{nx=dx/dist;ny=dy/dist}
       const ar=a.environmentStatus?.rootTime>0,br=b.environmentStatus?.rootTime>0;
       if(ar&&br)continue;
-      const push=minimum-Math.max(dist,.001),ap=ar?0:br?push:push*.5,bp=br?0:ar?push:push*.5;
+      const push=minimum-Math.max(dist,.001);if(a.side===b.side&&a.waiting&&b.waiting&&push<3)continue;const ap=ar?0:br?push:push*.5,bp=br?0:ar?push:push*.5;
       a.x-=nx*ap;b.x+=nx*bp;
       a.y-=ny*ap/1.45;b.y+=ny*bp/1.45;
       for(const u of [a,b]){u.x=Math.max(TOWER_APPROACH.ally+1,Math.min(progression.defence.fortress_goal_x-progression.defence.portal_clearance,u.x));u.y=Math.max(343,Math.min(429,u.y))}
@@ -1201,7 +1201,7 @@ function step(dt){
   }
   if(window.MonstersClashEnvironment&&!window.MonstersClashEnvironment.canAct(u)){u.walking=false;continue;}
   const rooted=u.environmentStatus?.rootTime>0;
-  if(rooted&&u.charge){u.charge=null;if(u.anim?.type==='skill')u.anim=null;}
+  if(u.charge&&(rooted||(u.side>0&&u.charge.target&&u.charge.target.hp<=0&&u.charge.phase!=='recover'))){u.charge=null;if(u.anim?.type==='skill')u.anim=null;}
   if(u.charge&&performCharge(u,dt))continue;
   if(u.skill<=0&&u.m.skill?.effect?.type==='shield_self'){
     activateShield(u);continue;
@@ -1210,8 +1210,24 @@ function step(dt){
       .sort((a,b)=>unitDistance(u,a)-unitDistance(u,b))[0];
   u.assaultTower=!target&&u.side<0;
   const advanceLimit=Math.min(cfg.fortress_goal_x-cfg.portal_clearance,towerLayout.x+cfg.ally_advance_distance);
-  if(!target&&u.side>0&&u.x>=advanceLimit-10){u.walking=false;u.facing=1;continue;}
-  const slot=target?null:u.side>0?{x:advanceLimit,y:u.y,rank:1}:towerSlotFor(u);
+  if(u.side>0&&!target){
+    // Regroup behind the moving forward boundary, then hold with hysteresis.
+    // Collision separation may nudge a waiting unit; do not chase every small displacement.
+    const waitingX=Math.max(TOWER_APPROACH.ally+1,advanceLimit-45);
+    const dx=waitingX-u.x;
+    u.motion=0;if(u.anim?.type==='attack')u.anim=null;
+    if(!u.waiting){u.waiting=true;u.regrouping=false;u.waitUntil=state.time+.3;}
+    if(rooted||state.time<u.waitUntil){u.walking=false;continue;}
+    if(!u.regrouping&&Math.abs(dx)>32)u.regrouping=true;
+    if(u.regrouping&&Math.abs(dx)<=10)u.regrouping=false;
+    if(!u.regrouping){u.walking=false;u.facing=1;continue;}
+    const agility=Number(u.m.stats.agi)||12,speed=(Number(u.m.stats.move_speed)||28)*(1+Math.max(-.08,Math.min(.24,(agility-12)*.008)));
+    const travel=Math.min(Math.max(0,Math.abs(dx)-10),speed*dt*(window.MonstersClashEnvironment?.movementMultiplier(u)??1));
+    u.walking=travel>0; if(travel>0){u.facing=dx>0?1:-1;u.x+=Math.sign(dx)*travel;}
+    continue;
+  }
+  u.waiting=false;u.regrouping=false;
+  const slot=target?null:towerSlotFor(u);
   const point=target?{x:target.x,y:target.y}:slot;
   const dx=point.x-u.x,dy=point.y-u.y;
   u.facing=target?(Math.abs(dx)>8?(dx>0?1:-1):u.facing):u.side;
