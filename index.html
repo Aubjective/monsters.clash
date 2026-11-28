@@ -1339,15 +1339,31 @@ function draw(){
  else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(-viewOffsetX,-viewOffsetY,viewWidth,viewHeight);ctx.fillStyle=colors[2];ctx.fillRect(-viewOffsetX,ground,viewWidth,Math.max(0,viewHeight-viewOffsetY-ground));ctx.fillStyle='#446b48';ctx.fillRect(-viewOffsetX,ground,viewWidth,5)}
  window.MonstersClashDayNight?.render(ctx,-viewOffsetX,-viewOffsetY,viewWidth,viewHeight);
  window.MonstersClashEnvironment?.render(ctx,'background',-viewOffsetX,-viewOffsetY,viewWidth,viewHeight);
- // Procedural exit: appears only after the entire final encounter is cleared.
+ // Procedural liquid exit: all energy is drawn in Canvas, with no portal artwork.
  if(state.portalUnlocked&&!state.ended){
  ctx.save();ctx.translate(progression.defence.fortress_goal_x,towerLayout.ground);ctx.scale(actorRatio,1);
- const t=state.portalAge,alpha=Math.min(1,t/progression.defence.portal_activation_seconds),hue=t*85%360;ctx.globalAlpha=alpha*(1-state.portalExit*.25);
- const glow=ctx.createRadialGradient(0,-5,0,0,-5,95);glow.addColorStop(0,'hsla('+hue+',95%,70%,.32)');glow.addColorStop(1,'hsla('+hue+',95%,60%,0)');ctx.save();ctx.scale(1,.38);ctx.fillStyle=glow;ctx.fillRect(-95,-100,190,200);ctx.restore();
- ctx.save();ctx.scale(1,.32);for(let i=0;i<5;i++){const q=(t*.55+i/5)%1;ctx.strokeStyle='hsla('+((hue+i*65)%360)+',100%,72%,'+(.9*(1-q))+')';ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(0,0,18+q*73,0,Math.PI*2);ctx.stroke();}
- for(let i=0;i<4;i++){ctx.beginPath();for(let k=0;k<=60;k++){const q=k/60,r=5+q*72,a=t*2+i*Math.PI/2+q*5.5,x=Math.cos(a)*r,y=Math.sin(a)*r;if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle='hsla('+((hue+i*90)%360)+',100%,73%,.8)';ctx.lineWidth=3;ctx.stroke();}ctx.restore();
- for(let i=0;i<8;i++){const q=(t*.7+i/8)%1,x=Math.cos(i*2.4+t)*65;const ray=ctx.createLinearGradient(x,0,x,-105);ray.addColorStop(0,'hsla('+((hue+i*45)%360)+',100%,70%,'+(.28*Math.sin(q*Math.PI))+')');ray.addColorStop(1,'transparent');ctx.fillStyle=ray;ctx.beginPath();ctx.moveTo(x-6,0);ctx.lineTo(x+6,0);ctx.lineTo(x*.6,-105);ctx.closePath();ctx.fill();}
- for(let i=0;i<28;i++){const q=(t*.42+i/28)%1,a=i*2.399+t*1.4,r=70*(1-q*.8);ctx.fillStyle='hsla('+((hue+i*37)%360)+',100%,80%,'+(.85*Math.sin(q*Math.PI))+')';ctx.beginPath();ctx.arc(Math.cos(a)*r,Math.sin(a)*r*.32-q*90,1.3+i%3*.45,0,Math.PI*2);ctx.fill();}
+ const t=state.portalAge,alpha=Math.min(1,t/progression.defence.portal_activation_seconds),hue=t*65%360,radius=94,pulse=1+.025*Math.sin(t*4);
+ ctx.globalAlpha=alpha*(1-state.portalExit*.15);
+ ctx.save();ctx.scale(pulse,pulse*.36);
+ const halo=ctx.createRadialGradient(0,0,25,0,0,125);halo.addColorStop(0,'hsla('+hue+',100%,70%,.22)');halo.addColorStop(.65,'hsla('+((hue+45)%360)+',95%,65%,.30)');halo.addColorStop(1,'hsla('+hue+',100%,65%,0)');ctx.fillStyle=halo;ctx.fillRect(-125,-125,250,250);
+ ctx.save();ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.clip();
+ const water=ctx.createRadialGradient(-9,-8,2,0,0,radius);water.addColorStop(0,'hsla('+((hue+55)%360)+',100%,91%,.98)');water.addColorStop(.16,'hsla('+((hue+25)%360)+',95%,54%,.98)');water.addColorStop(.48,'hsla('+((hue+245)%360)+',78%,23%,.96)');water.addColorStop(.82,'hsla('+((hue+300)%360)+',92%,43%,.95)');water.addColorStop(1,'hsla('+hue+',100%,68%,.88)');ctx.fillStyle=water;ctx.fillRect(-radius,-radius,radius*2,radius*2);
+ // Broad, tapered fluid ribbons flow continuously into the bright central well.
+ for(let j=0;j<6;j++){
+ const offset=j*Math.PI/3+t*1.85,points=[];
+ for(let k=0;k<=48;k++){const q=k/48,r=3+q*93,ang=offset+q*5.7+.12*Math.sin(t*2+q*9+j),w=(2+16*Math.sin(q*Math.PI)+5*q)*(1+.15*Math.sin(q*10-t*3+j));points.push({x:Math.cos(ang)*r,y:Math.sin(ang)*r,ang,w});}
+ ctx.beginPath();for(let k=0;k<points.length;k++){const p=points[k],x=p.x+Math.cos(p.ang)*p.w,y=p.y+Math.sin(p.ang)*p.w;if(!k)ctx.moveTo(x,y);else ctx.lineTo(x,y);}for(let k=points.length-1;k>=0;k--){const p=points[k];ctx.lineTo(p.x-Math.cos(p.ang)*p.w,p.y-Math.sin(p.ang)*p.w);}ctx.closePath();
+ const color=(hue+j*58)%360,flow=ctx.createRadialGradient(0,0,2,0,0,100);flow.addColorStop(0,'hsla('+color+',100%,95%,.88)');flow.addColorStop(.32,'hsla('+color+',100%,72%,.76)');flow.addColorStop(.7,'hsla('+color+',92%,54%,.63)');flow.addColorStop(1,'hsla('+color+',100%,80%,.10)');ctx.fillStyle=flow;ctx.fill();
+ ctx.beginPath();for(let k=0;k<points.length;k++){const p=points[k],x=p.x+Math.cos(p.ang)*p.w*.62,y=p.y+Math.sin(p.ang)*p.w*.62;if(!k)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle='hsla('+color+',100%,90%,.62)';ctx.lineWidth=1.8;ctx.stroke();
+ }
+ // Small moving highlights imitate water caustics rather than a wireframe.
+ for(let j=0;j<22;j++){const q=(t*.31+j/22)%1,r=14+q*79,ang=j*2.399+t*1.4+q*3;ctx.save();ctx.translate(Math.cos(ang)*r,Math.sin(ang)*r);ctx.rotate(ang+Math.PI/2);ctx.fillStyle='hsla('+((hue+j*23)%360)+',100%,92%,'+(.55*Math.sin(q*Math.PI))+')';ctx.beginPath();ctx.ellipse(0,0,3+q*7,.7+q*1.6,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+ const core=ctx.createRadialGradient(0,0,0,0,0,25);core.addColorStop(0,'rgba(255,255,255,.92)');core.addColorStop(.3,'hsla('+((hue+40)%360)+',100%,85%,.65)');core.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=core;ctx.fillRect(-25,-25,50,50);ctx.restore();
+ // A softly broken luminous rim blends into the ground.
+ for(let j=0;j<12;j++){const ang=j*Math.PI/6+t*.65;ctx.strokeStyle='hsla('+((hue+j*30)%360)+',100%,83%,.68)';ctx.lineWidth=2.6;ctx.beginPath();ctx.arc(0,0,radius-1,ang,ang+.48);ctx.stroke();}ctx.restore();
+ // Rising mist and curved ribbons of energy with soft edges.
+ for(let j=0;j<6;j++){const q=(t*.42+j/6)%1,ang=j*2.4+t*1.1,x=Math.cos(ang)*57,y=Math.sin(ang)*19,top=50+q*66,color=(hue+j*57)%360;const mist=ctx.createLinearGradient(0,y,0,y-top);mist.addColorStop(0,'hsla('+color+',100%,75%,.02)');mist.addColorStop(.28,'hsla('+color+',100%,74%,'+(.22*Math.sin(q*Math.PI))+')');mist.addColorStop(.72,'hsla('+color+',95%,82%,.09)');mist.addColorStop(1,'hsla('+color+',100%,75%,0)');ctx.fillStyle=mist;ctx.beginPath();ctx.moveTo(x-12,y);ctx.bezierCurveTo(x+34,y-top*.35,x-38,y-top*.7,x*.35,y-top);ctx.bezierCurveTo(x-17,y-top*.7,x+48,y-top*.35,x+12,y);ctx.closePath();ctx.fill();}
+ for(let j=0;j<32;j++){const q=(t*(.28+j%4*.035)+j/32)%1,ang=j*2.399+t*.85+q*2,r=(28+j%5*12)*(1-q*.45),x=Math.cos(ang)*r,y=Math.sin(ang)*r*.35-q*(60+j%5*12),size=1.2+j%4*.55,color=(hue+j*37)%360,fade=Math.sin(q*Math.PI);const g=ctx.createRadialGradient(x,y,0,x,y,size*3.5);g.addColorStop(0,'hsla('+color+',100%,96%,'+(.95*fade)+')');g.addColorStop(.3,'hsla('+color+',100%,78%,'+(.75*fade)+')');g.addColorStop(1,'hsla('+color+',100%,65%,0)');ctx.fillStyle=g;ctx.fillRect(x-size*3.5,y-size*3.5,size*7,size*7);}
  ctx.restore();}
  if(state.allyBase>0&&!state.ended){ctx.save();ctx.translate(towerLayout.x,towerLayout.ground);ctx.scale(actorRatio,1);
  ctx.fillStyle='rgba(8,19,30,.24)';ctx.beginPath();ctx.ellipse(0,0,48,8,0,0,Math.PI*2);ctx.fill();
