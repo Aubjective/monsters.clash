@@ -615,7 +615,10 @@ function towerDamageFrame(hp,maxHp=1900){
 }
 function drawMapBackground(img,x,y,w,h){
  // Scenery alone fills the viewport; actors use a separate uniform world scale.
- ctx.drawImage(img,x,y,w,h);
+ // Extend only the artwork by one backing-buffer pixel on each edge.
+ // Mirrored adjacent tiles share edge colours; overlap prevents fractional-pixel seams.
+ const overlap=1/Math.max(.001,Math.abs(ctx.getTransform().a));
+ ctx.drawImage(img,x-overlap,y,w+overlap*2,h);
  window.MonstersClashEnvironment?.renderLava(ctx,img,x,y,w,h);
  window.MonstersClashEnvironment?.renderSmoke(ctx,x,y,w,h);
 }
