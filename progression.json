@@ -215,7 +215,10 @@
       "effects_enabled": false
     },
     "power_regen_per_second": 1,
-    "surge_regen_pct": 25
+    "surge_regen_pct": 25,
+    "run_sp_per_level": 3,
+    "run_sp_upgrade_cost": 70,
+    "run_sp_max_level": 10
   },
   "testing_mode": true
 }
