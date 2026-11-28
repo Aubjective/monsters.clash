@@ -20,7 +20,8 @@
         "range": 280,
         "damage": 22,
         "cooldown_seconds": 2.6,
-        "sprite": "assets/weapons/w001/sentinel-arrow.png"
+        "sprite": "assets/weapons/w001/sentinel-arrow.png",
+        "weapon_id": "w001"
       },
       "sheet_columns": 4,
       "sheet_rows": 1,
@@ -270,7 +271,8 @@
           "cost": 85,
           "max": 10
         }
-      }
+      },
+      "weapon_id": "w001"
     },
     {
       "id": "d002",
@@ -377,6 +379,16 @@
           "max": 10
         }
       }
+    }
+  ],
+  "weapons": [
+    {
+      "id": "w001",
+      "name": "Sentinel Arrow",
+      "damage_type": "physical",
+      "damage_bonus": 0,
+      "penetration_bonus": 0,
+      "sprite": "assets/weapons/w001/sentinel-arrow.png"
     }
   ]
 }
