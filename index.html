@@ -54,7 +54,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 #stage-info-toggle{display:inline-flex;align-items:center;gap:5px;max-width:min(36vw,320px);padding:5px 7px;border:1px solid transparent;background:transparent;color:#e6d19f;border-radius:7px;cursor:pointer;font-weight:600;min-width:0}
 #stage-info-toggle:hover,#stage-info-toggle:focus-visible,#stage-info-toggle[aria-expanded="true"]{border-color:#7098b5;background:#24415b}
 #stage-info-toggle .map-info-symbol{flex:none;font-size:12px;border:1px solid #b1cedd;border-radius:50%;width:17px;height:17px;line-height:15px;text-align:center}
-#stage-info-panel{position:absolute;top:calc(52px + env(safe-area-inset-top));right:57px;z-index:35;width:min(345px,calc(100vw - 24px));max-height:min(73vh,420px);overflow-y:auto;border:1px solid #7498b4;border-radius:12px;background:#10263bf5;color:#e8f3ff;box-shadow:0 12px 35px #000a;padding:14px 16px;font-size:13px}
+#stage-info-panel{position:absolute;top:calc(52px + env(safe-area-inset-top));right:57px;z-index:35;box-sizing:border-box;width:min(377px,calc(100% - 70px));max-height:min(450px,calc(100% - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-gutter:stable;border:1px solid #7498b4;border-radius:12px;background:#10263bf5;color:#e8f3ff;box-shadow:0 12px 35px #000a;padding:14px 16px;font-size:13px}
 #stage-info-panel[hidden]{display:none!important}
 #stage-info-panel h3{font-size:16px;color:#fff0b8;margin:0 28px 4px 0}
 #stage-info-panel .map-info-kind{font-size:11px;color:#a9d7ff;text-transform:capitalize;margin-bottom:9px}
@@ -63,20 +63,20 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 #stage-info-panel .map-info-entry{display:flex;justify-content:space-between;gap:15px;padding:7px 8px;border-radius:7px;background:#223d54}
 #stage-info-panel .map-info-entry strong{text-align:right;color:#d8f6ff}
 #stage-info-panel .map-info-subhead{font-size:12px;font-weight:800;color:#f1d99d;margin:12px 0 6px}
-#stage-info-close{position:absolute;right:9px;top:8px;font-size:20px;line-height:1;width:28px;height:28px;padding:0;border:0;background:transparent;color:#e6efff;cursor:pointer}
-@media(max-height:500px){#stage-info-panel{top:35px;max-height:calc(100vh - 74px);padding:9px 12px;font-size:11px}#stage-info-panel .map-info-entry{padding:5px 7px}#stage-info-panel h3{font-size:14px}}
+#stage-info-close{position:sticky;float:right;right:0;top:0;z-index:1;font-size:20px;line-height:1;width:28px;height:28px;padding:0;border:0;background:transparent;color:#e6efff;cursor:pointer}
+@media(max-height:500px){#stage-info-panel{top:35px;max-height:calc(100% - 43px);padding:9px 12px;font-size:11px}#stage-info-panel .map-info-entry{padding:5px 7px}#stage-info-panel h3{font-size:14px}}
 .battle-top select{font-size:13px;padding:5px 10px;max-width:230px}
 .arena-wrap{flex:1;min-height:0;min-width:0;display:grid;place-items:center;background:#0d2134;overflow:hidden}
 #game{display:block;width:100%;height:100%;object-fit:contain;max-width:100%;max-height:100%;touch-action:none}
 .battle-bottom{min-height:76px;max-height:110px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 16px;background:#13283e;border-top:1px solid #3a5871}
-.cards{display:flex;align-items:center;gap:9px;min-width:0;overflow-x:auto;max-width:70%;scrollbar-width:thin}
+.cards{display:flex;align-items:center;gap:9px;min-width:0;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;max-width:70%;scrollbar-width:thin}
 .cards button{display:flex;align-items:center;gap:7px;flex:0 0 auto;min-width:120px;font-size:13px;padding:5px 9px}
 .cards img{width:42px;height:42px;object-fit:contain}
 .battle-stats{display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:14px}
 .battle-stats button{font-size:12px;padding:8px 11px}
 #status{font-size:12px;color:#f0d88b;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #battle-menu-toggle{position:absolute;top:5px;right:12px;z-index:32;width:36px;height:36px;font-size:25px;padding:0}
-#battle-menu{position:absolute;top:47px;right:12px;z-index:33;min-width:185px;background:#152a43fb}
+#battle-menu{position:absolute;top:47px;right:12px;z-index:33;min-width:185px;background:#152a43fb;box-sizing:border-box;max-height:calc(100% - 55px);overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
 .battle-paused{font-size:14px;color:var(--gold);text-align:center;letter-spacing:.06em}
 @media(max-width:650px){
  .hero{min-height:0;gap:12px}.hero-art{flex-basis:25%;min-width:90px}
@@ -212,7 +212,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 .coin-wallet,#team-wallet{display:inline-flex;align-items:center;gap:5px}
 #run-progress{display:inline-block;color:#f4d589;font-size:.7em;margin-left:9px}
 .arena-wrap{position:relative}
-.run-results{position:absolute;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(145deg,#112943f5,#081a2df7);border:2px solid #d8ac62;border-radius:20px;padding:clamp(15px,2vw,28px);width:min(540px,92%);max-height:96%;overflow-y:auto;box-shadow:0 12px 70px #000b;color:#fff4dd;text-align:center}
+.run-results{position:absolute;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);box-sizing:border-box;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-gutter:stable;background:linear-gradient(145deg,#112943f5,#081a2df7);border:2px solid #d8ac62;border-radius:20px;padding:clamp(15px,2vw,28px);width:min(540px,92%);max-height:96%;overflow-y:auto;box-shadow:0 12px 70px #000b;color:#fff4dd;text-align:center}
 .run-results[hidden]{display:none!important}
 .run-results.preparing{inset:0;transform:none;width:100%;max-height:none;height:100%;box-sizing:border-box;border:0;border-radius:0;background:#11263a;box-shadow:none;padding:clamp(12px,2vw,26px);overflow-y:auto;z-index:20}
 .run-results.preparing>*{max-width:720px;margin-left:auto;margin-right:auto}
@@ -333,12 +333,12 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 
 /* Expedition: a persistent left control panel and a clear full-width deployment row. */
 .battle-middle{display:flex;flex:1;min-height:0;min-width:0;overflow:hidden}
-.battle-sidebar{box-sizing:border-box;width:clamp(112px,15%,205px);flex:none;min-height:0;overflow-y:auto;background:#14293c;border-right:1px solid #3a5871;padding:8px;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin}
-.battle-sidebar h3{font-size:12px;margin:4px 0;color:#f2d08a}
+.battle-sidebar{box-sizing:border-box;width:clamp(112px,15%,205px);flex:none;min-height:0;max-height:100%;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;background:#14293c;border-right:1px solid #3a5871;padding:8px;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin}
+.battle-sidebar>*{flex-shrink:0;min-width:0}.battle-sidebar h3{font-size:12px;margin:4px 0;color:#f2d08a}
 .skill-slots,.battle-items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.skill-slots button,.battle-items button{min-width:0;padding:3px;font-size:15px;min-height:29px}.skill-slots small,.battle-items small{display:block;font-size:9px;overflow-wrap:anywhere}.battle-sidebar #battle-upgrades .battle-gear{display:flex;align-items:center;gap:4px;min-height:40px;padding:3px;text-align:left}.battle-gear canvas{width:42px;height:34px;object-fit:contain;flex:none}.battle-gear span{font-size:10px;overflow-wrap:anywhere}.gear-detail{background:#112236;border:1px solid #617b95;border-radius:7px;padding:5px;font-size:10px}.gear-heading{display:flex;align-items:center;justify-content:space-between;gap:3px}.gear-heading button{padding:2px 5px}.gear-detail dl{margin:5px 0}.gear-detail dt{color:#a9c6df}.gear-detail dd{margin:0 0 4px;color:#fff}.gear-detail>button{width:100%;font-size:10px;padding:4px}.gear-detail[hidden],.gear-detail button[hidden]{display:none!important}
-.battle-sidebar .summoner-battle{display:flex;flex-direction:column;align-items:stretch;gap:4px;text-align:center;font-size:11px}
+.battle-sidebar .summoner-battle{display:flex;flex-shrink:0;flex-direction:column;align-items:stretch;gap:4px;text-align:center;font-size:11px}
 #battle-hero{display:block;width:100%;height:clamp(65px,20vh,155px);object-fit:contain;background:radial-gradient(ellipse at 50% 65%,#304b60,#14293c 72%);border-radius:8px}
-.battle-sidebar #battle-upgrades{display:flex;flex-direction:column;align-items:stretch;overflow:visible;white-space:normal;gap:5px}
+.battle-sidebar #battle-upgrades{display:flex;flex-direction:column;align-items:stretch;flex-shrink:0;overflow:visible;white-space:normal;gap:5px}
 .battle-sidebar #battle-upgrades button{white-space:normal;text-align:left;line-height:1.25;min-height:28px}
 .battle-upgrade-note{font-size:10px;color:#9cb3c7}
 .journey-progress{min-width:65px;width:clamp(70px,15vw,220px);text-align:center;color:#efdcad;font-size:10px}
@@ -662,7 +662,7 @@ function showResult(){
  if(victory&&!nextStage){const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;nextStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;if(nextStage)mapBackground(stageBackgroundPath(nextStage));}
  $('run-results').classList.remove('preparing');$('prep-panel').hidden=true;$('next-battle').disabled=false;$('next-battle').textContent='Prepare Next Battle';
  for(const id of ['result-reward','result-gold-reward','result-run-coins'])$(id).hidden=false;document.querySelector('.run-result-metrics').hidden=false;
- $('run-results').hidden=false;
+ $('run-results').hidden=false;$('run-results').scrollTop=0;
  $('result-heading').textContent=victory?'Victory':'Defeat';
  $('result-stage').textContent=(stage()?.name||'Battlefield')+' · Battle '+run.battle;
  $('result-battle').textContent=String(run.battle);
@@ -935,7 +935,7 @@ function toggleStageInfo(force){
  const open=typeof force==='boolean'?force:$('stage-info-panel').hidden;
  $('stage-info-panel').hidden=!open;
  $('stage-info-toggle').setAttribute('aria-expanded',String(open));
- if(open){renderStageInfo();if(battleMenuOpen)toggleBattleMenu(false);}
+ if(open){renderStageInfo();$('stage-info-panel').scrollTop=0;if(battleMenuOpen)toggleBattleMenu(false);}
 }
 function reset(){
  // Select journey dimensions once per stage; all combat and camera bounds share these values.
@@ -953,7 +953,7 @@ function reset(){
  state.enemyRoster=roster.filter(m=>window.MonstersClashEnvironment?.matchesElement(m));if(!state.enemyRoster.length)state.enemyRoster=roster.slice();else{const other=roster.filter(m=>!state.enemyRoster.includes(m));if(other.length)state.enemyRoster.push(other[Math.floor(Math.random()*other.length)]);}
  state.finalMonster=state.finalRank?state.enemyRoster[Math.floor(Math.random()*state.enemyRoster.length)]:null;
  $('gear-detail').hidden=true;$('battle-items').replaceChildren(...progression.summoner.equipment.slots.map((slot,i)=>{const b=document.createElement('button'),small=document.createElement('small'),id=profile.summonerEquipment?.[slot],inst=profile.inventory.find(x=>x.id===id),item=progression.summoner.equipment.items.find(x=>x.id===inst?.item_id);b.textContent=['♛','◇','⚔','▣','○','▤'][i];small.textContent=slot;b.append(small);b.title=item?.name||'Empty '+slot;b.onclick=()=>{$('gear-detail').dataset.kind='item:'+slot;$('gear-detail').hidden=false;renderUpgrades();};return b;}));
- $('run-results').classList.add('preparing');$('run-results').hidden=false;$('prep-panel').hidden=false;$('result-heading').textContent='Battle Preparation';$('result-stage').textContent='Stage '+run.battle;
+ $('run-results').classList.add('preparing');$('run-results').hidden=false;$('run-results').scrollTop=0;$('prep-panel').hidden=false;$('result-heading').textContent='Battle Preparation';$('result-stage').textContent='Stage '+run.battle;
  for(const id of ['result-reward','result-gold-reward','result-run-coins'])$(id).hidden=true;document.querySelector('.run-result-metrics').hidden=true;
  $('restart-run-result').hidden=true;$('next-battle').hidden=false;$('next-battle').disabled=true;$('next-battle').textContent='Start Battle';
  $('prep-map').textContent=(stage()?.name||'Battlefield')+' · '+$('stage-info-kind').textContent;$('prep-description').textContent=$('stage-info-desc').textContent;$('prep-details').replaceChildren(...Array.from($('stage-info-details').children,n=>n.cloneNode(true)));
