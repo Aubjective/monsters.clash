@@ -12,11 +12,12 @@
       "abilities": [],
       "basic_attack": {
         "type": "laser",
-        "range": 280,
+        "range": 720,
         "damage": 4.5,
         "cooldown_seconds": 0.2,
         "minimum_interval_seconds": 0.075,
-        "damage_type": "physical"
+        "damage_type": "physical",
+        "maximum_range": 720
       },
       "sheet_columns": 1,
       "sheet_rows": 1,
@@ -41,11 +42,6 @@
           "label": "Attack speed",
           "step": 0.22,
           "cost": 65
-        },
-        "fortress_range": {
-          "label": "Attack range",
-          "step": 15,
-          "cost": 60
         },
         "fortress_penetration": {
           "label": "Armour penetration",
@@ -111,12 +107,22 @@
         "duration_seconds": 5,
         "cooldown_seconds": 16,
         "minimum_cooldown_seconds": 8,
-        "range": 165,
-        "maximum_range": 245,
+        "range": 336,
+        "maximum_range": 432,
         "cone_half_angle": 0.48,
         "damage_per_second": 12,
         "burn_duration_seconds": 3,
         "burn_damage_per_second": 3
+      },
+      "visual_scale": 0.85,
+      "aim": {
+        "max_tilt_degrees": 12,
+        "tracking_speed": 7
+      },
+      "shield_orbit": {
+        "rx": 69,
+        "ry": 36,
+        "plate_scale": 0.85
       }
     },
     {
