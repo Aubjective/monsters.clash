@@ -35,38 +35,32 @@
         "attack": {
           "label": "Physical damage",
           "step": 0.14,
-          "cost": 75,
-          "max": 10
+          "cost": 75
         },
         "fortress_hp": {
           "label": "Maximum HP",
           "step": 150,
-          "cost": 80,
-          "max": 10
+          "cost": 80
         },
         "fortress_speed": {
           "label": "Attack speed",
           "step": 0.15,
-          "cost": 65,
-          "max": 10
+          "cost": 65
         },
         "fortress_range": {
           "label": "Attack range",
           "step": 15,
-          "cost": 60,
-          "max": 10
+          "cost": 60
         },
         "fortress_penetration": {
           "label": "Armour penetration",
           "step": 5,
-          "cost": 90,
-          "max": 10
+          "cost": 90
         },
         "fortress_projectiles": {
           "label": "Projectiles",
           "step": 1,
-          "cost": 150,
-          "max": 5
+          "cost": 150
         }
       }
     },
@@ -99,38 +93,32 @@
         "attack": {
           "label": "Magic damage",
           "step": 0.14,
-          "cost": 75,
-          "max": 10
+          "cost": 75
         },
         "fortress_hp": {
           "label": "Maximum HP",
           "step": 150,
-          "cost": 80,
-          "max": 10
+          "cost": 80
         },
         "fortress_speed": {
           "label": "Attack speed",
           "step": 0.15,
-          "cost": 65,
-          "max": 10
+          "cost": 65
         },
         "fortress_range": {
           "label": "Attack range",
           "step": 15,
-          "cost": 60,
-          "max": 10
+          "cost": 60
         },
         "fortress_penetration": {
           "label": "Resistance penetration",
           "step": 5,
-          "cost": 90,
-          "max": 10
+          "cost": 90
         },
         "fortress_stun": {
           "label": "Stun duration",
           "step": 0.12,
-          "cost": 100,
-          "max": 10
+          "cost": 100
         }
       }
     }
@@ -157,20 +145,17 @@
         "shield": {
           "label": "Shield capacity",
           "step": 160,
-          "cost": 60,
-          "max": 10
+          "cost": 60
         },
         "shield_regen": {
           "label": "Shield regeneration",
           "step": 3,
-          "cost": 85,
-          "max": 10
+          "cost": 85
         },
         "shield_recovery": {
           "label": "Recovery delay reduction",
           "step": 0.4,
-          "cost": 75,
-          "max": 10
+          "cost": 75
         }
       }
     },
@@ -193,20 +178,17 @@
         "shield": {
           "label": "Shield capacity",
           "step": 140,
-          "cost": 75,
-          "max": 10
+          "cost": 75
         },
         "shield_regen": {
           "label": "Shield regeneration",
           "step": 3,
-          "cost": 85,
-          "max": 10
+          "cost": 85
         },
         "shield_recovery": {
           "label": "Recovery delay reduction",
           "step": 0.4,
-          "cost": 75,
-          "max": 10
+          "cost": 75
         }
       }
     }
@@ -244,32 +226,27 @@
         "drone": {
           "label": "Deploy drone",
           "step": 1,
-          "cost": 80,
-          "max": 3
+          "cost": 80
         },
         "drone_damage": {
           "label": "Drone damage",
           "step": 0.15,
-          "cost": 65,
-          "max": 10
+          "cost": 65
         },
         "drone_speed": {
           "label": "Drone attack speed",
           "step": 0.15,
-          "cost": 70,
-          "max": 10
+          "cost": 70
         },
         "drone_range": {
           "label": "Drone range",
           "step": 20,
-          "cost": 60,
-          "max": 10
+          "cost": 60
         },
         "drone_penetration": {
           "label": "Drone penetration",
           "step": 5,
-          "cost": 85,
-          "max": 10
+          "cost": 85
         }
       },
       "weapon_id": "w001"
@@ -294,32 +271,27 @@
         "drone": {
           "label": "Deploy drone",
           "step": 1,
-          "cost": 100,
-          "max": 3
+          "cost": 100
         },
         "drone_damage": {
           "label": "Drone damage",
           "step": 0.15,
-          "cost": 65,
-          "max": 10
+          "cost": 65
         },
         "drone_speed": {
           "label": "Drone attack speed",
           "step": 0.15,
-          "cost": 70,
-          "max": 10
+          "cost": 70
         },
         "drone_range": {
           "label": "Drone range",
           "step": 20,
-          "cost": 60,
-          "max": 10
+          "cost": 60
         },
         "drone_penetration": {
           "label": "Drone penetration",
           "step": 5,
-          "cost": 85,
-          "max": 10
+          "cost": 85
         }
       }
     }
@@ -337,19 +309,16 @@
       "upgrade_cost": 100,
       "income_per_level": 8,
       "interval_seconds": 8,
-      "max_level": 10,
       "upgrades": {
         "generator": {
-          "label": "Coin production",
+          "label": "BP production",
           "step": 8,
-          "cost": 100,
-          "max": 10
+          "cost": 100
         },
         "generator_speed": {
           "label": "Production speed",
           "step": 0.12,
-          "cost": 90,
-          "max": 10
+          "cost": 90
         }
       }
     },
@@ -364,19 +333,16 @@
       "upgrade_cost": 120,
       "income_per_level": 8,
       "interval_seconds": 15,
-      "max_level": 10,
       "upgrades": {
         "generator": {
-          "label": "Coin production",
+          "label": "BP production",
           "step": 8,
-          "cost": 120,
-          "max": 10
+          "cost": 120
         },
         "generator_speed": {
           "label": "Production speed",
           "step": 0.12,
-          "cost": 90,
-          "max": 10
+          "cost": 90
         }
       }
     }
@@ -390,5 +356,13 @@
       "penetration_bonus": 0,
       "sprite": "assets/weapons/w001/sentinel-arrow.png"
     }
-  ]
+  ],
+  "mechanical_limits": {
+    "minimum_attack_interval_seconds": 0.35,
+    "maximum_penetration_pct": 50,
+    "maximum_fortress_projectiles": 5,
+    "maximum_stun_seconds": 1,
+    "minimum_shield_recovery_seconds": 2,
+    "minimum_generator_interval_seconds": 2
+  }
 }
