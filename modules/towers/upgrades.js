@@ -14,24 +14,24 @@ function equip(registry,profile,group,id){
 }
 function quote(run,cfg,kind){
  const entry=Object.values(cfg.upgrade_groups||{}).map(g=>g[kind]).find(Boolean);if(!entry)return null;
- const key={attack:'attackLevel',shield:'shieldLevel',drone:'drones',generator:'generatorLevel'}[kind]||kind;
- const level=Number(run[key])||0;return {kind,key,level,max:entry.max,cost:Math.round(entry.cost*(1+level*.5)),label:entry.label,step:entry.step};
+ const group=Object.keys(cfg.upgrade_groups).find(g=>cfg.upgrade_groups[g][kind]);const key={attack:'attackLevel',shield:'shieldLevel',drone:'droneLevel',generator:'generatorLevel'}[group];
+ const level=Number(run[key])||0;return {kind,key,level,max:Infinity,cost:Math.round((cfg.upgrade_groups[group][group]?.cost||entry.cost)*(1+level*.5)),label:entry.label,step:entry.step};
 }
 function equipmentStats(run,cfg){
  const value=k=>{const q=quote(run,cfg,k);return q?q.level*q.step:0;};
- return {maxHp:cfg.fortress_max_hp+value('fortress_hp'),shieldMax:value('shield'),shieldRegen:value('shield_regen'),shieldDelay:Math.max(2,6-value('shield_recovery')),droneDamage:cfg.drone_damage*(1+value('drone_damage')),droneInterval:Math.max(.35,cfg.drone_interval/(1+value('drone_speed'))),droneRange:cfg.drone_range+value('drone_range'),dronePenetration:value('drone_penetration'),generatorIncome:value('generator'),generatorInterval:Math.max(2,cfg.generator_interval/(1+value('generator_speed')))};
+ return {maxHp:cfg.fortress_max_hp+value('fortress_hp'),shieldMax:value('shield'),shieldRegen:value('shield_regen'),shieldDelay:Math.max(2,6-value('shield_recovery')),droneDamage:cfg.drone_damage*(1+value('drone_damage')),droneInterval:Math.max(.35,cfg.drone_interval/(1+value('drone_speed'))),droneRange:Math.min(cfg.tower_range_cap||425,cfg.drone_range+value('drone_range')),dronePenetration:Math.min(50,value('drone_penetration')),generatorIncome:value('generator'),generatorInterval:Math.max(2,cfg.generator_interval/(1+value('generator_speed')))};
 }
 function createShield(run,cfg){const hp=equipmentStats(run,cfg).shieldMax;return {hp,max:hp,phase:0,flash:0,broken:0,hitAngle:0,recovery:0};}
 function purchase(run,shield,cfg,kind){
  const q=quote(run,cfg,kind);if(!q||q.level>=q.max||run.wallet<q.cost)return false;
  if(kind.startsWith('shield_')&&!run.shieldLevel||kind.startsWith('drone_')&&!run.drones||kind==='generator_speed'&&!run.generatorLevel)return false;
- run.wallet-=q.cost;run[q.key]=q.level+1;
- if(kind==='shield'){shield.max=equipmentStats(run,cfg).shieldMax;shield.hp=Math.min(shield.max,shield.hp+q.step);shield.flash=.35;shield.broken=0;}
+ run.wallet-=q.cost;run[q.key]=q.level+1;if(q.key==='droneLevel')run.drones=Math.min(cfg.drone_max,run.droneLevel);
+ if(q.key==='shieldLevel'){const old=shield.max;shield.max=equipmentStats(run,cfg).shieldMax;shield.hp=Math.min(shield.max,shield.hp+shield.max-old);shield.flash=.35;shield.broken=0;}
  return true;
 }
 function attackStats(tower,run,cfg){
  const a=tower?.basic_attack;if(!a)return null;const value=k=>{const q=quote(run,cfg,k);return q?q.level*q.step:0;};
- return {type:a.type,range:(Number(a.range)||190)+value('fortress_range'),damage:(Number(a.damage)||15)*(1+value('attack')),interval:Math.max(.35,a.cooldown_seconds/(1+value('fortress_speed'))),arrows:1+value('fortress_projectiles'),penetration:value('fortress_penetration'),stun:value('fortress_stun'),waveWidth:5+value('fortress_range')*.04,...equipmentStats(run,cfg)};
+ return {type:a.type,range:Math.min(cfg.tower_range_cap||425,(Number(a.range)||190)+value('fortress_range')),damage:(Number(a.damage)||15)*(1+value('attack')),interval:Math.max(.35,a.cooldown_seconds/(1+value('fortress_speed'))),arrows:Math.min(5,1+value('fortress_projectiles')),penetration:Math.min(50,value('fortress_penetration')),stun:Math.min(1,value('fortress_stun')),waveWidth:5+value('fortress_range')*.04,...equipmentStats(run,cfg)};
 }
 function update(shield,dt,cfg,run){shield.phase=(shield.phase+dt*(cfg.shield_orbit_speed||.85))%(Math.PI*2);shield.flash=Math.max(0,shield.flash-dt);shield.broken=Math.max(0,shield.broken-dt);if(run){const stats=equipmentStats(run,cfg);shield.recovery=Math.max(0,(shield.recovery||0)-dt);if(shield.recovery<=0)shield.hp=Math.min(shield.max,shield.hp+stats.shieldRegen*dt);}}
 function absorb(shield,damage,delay=6){const used=Math.min(shield.hp,Math.max(0,damage));shield.hp-=used;if(used){shield.recovery=delay;shield.flash=.35;shield.hitAngle=shield.phase;if(shield.hp===0)shield.broken=.65;}return Math.max(0,damage-used);}
