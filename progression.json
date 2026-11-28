@@ -12,7 +12,7 @@
   },
   "coins": {
     "kill_base": 20,
-    "elite_multiplier": 3,
+    "elite_multiplier": 4,
     "boss_multiplier": 8,
     "round_clear_battle_base": 80,
     "round_clear_battle_growth": 10,
@@ -62,19 +62,25 @@
       "hp": 0,
       "damage": 0,
       "skill_power": 0,
-      "attack_speed": 0
+      "attack_speed": 0,
+      "defence": 0,
+      "skill_cdr": 0
     },
     "elite": {
-      "hp": 50,
-      "damage": 50,
+      "hp": 150,
+      "damage": 60,
       "skill_power": 50,
-      "attack_speed": 20
+      "attack_speed": 25,
+      "defence": 40,
+      "skill_cdr": 20
     },
     "boss": {
-      "hp": 200,
-      "damage": 100,
+      "hp": 400,
+      "damage": 120,
       "skill_power": 100,
-      "attack_speed": 40
+      "attack_speed": 50,
+      "defence": 80,
+      "skill_cdr": 35
     }
   },
   "round_growth_pct": {
