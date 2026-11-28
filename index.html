@@ -373,6 +373,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 @media(orientation:portrait) and (max-width:699px){.lobby-world .lobby-monster{--size:19vw}.lobby-world .lobby-elite{--size:23vw}.lobby-world .lobby-boss{--size:27vw}.lobby-sentinel{width:24vw}.lobby-generator{bottom:34%}}
 @media(prefers-reduced-motion:reduce){.lobby-world .lobby-monster,.lobby-sentinel,.lobby-drone,.lobby-generator{animation:none}}
 .fortress-controls{position:absolute;inset:auto 10px 8px;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:3}.fortress-controls button{pointer-events:auto;touch-action:none;user-select:none;min-width:34px;min-height:34px;background:#14293ddd;color:#ffe6af;border:1px solid #b49b64;border-radius:7px;padding:4px}.fortress-pad{display:grid;grid-template-columns:repeat(3,36px);gap:3px}.fortress-pad button:first-child{grid-column:2}.fortress-pad button:nth-child(2){grid-column:1;grid-row:2}.fortress-pad button:nth-child(3){grid-column:2;grid-row:2}.fortress-pad button:nth-child(4){grid-column:3;grid-row:2}.fortress-fire{display:flex;align-items:center;gap:6px}.fortress-fire [data-move=fire]{width:60px;height:60px;border-radius:50%;background:#965832dd;font-weight:800}.fortress-controls button:active{background:#bd9252;color:#102333}.arena-wrap:has(.run-results:not([hidden])) .fortress-controls{visibility:hidden}
+.battle-sidebar{overflow:hidden;gap:0;padding:0}.fortress-set-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;touch-action:pan-y;padding:8px;scrollbar-width:thin;display:flex;flex-direction:column;gap:5px}.fortress-set-scroll>*{flex-shrink:0}.fortress-overview{display:grid;gap:3px;text-align:center;font-size:11px}.fortress-overview strong{color:#f4d18a;font-size:14px}.fortress-overview progress{width:100%;height:8px;accent-color:#65a9ef}.fortress-overview #fortress-hp-bar{accent-color:#64c783}.fortress-overview #battle-hero{height:clamp(48px,12vh,105px)}.battle-sidebar .fortress-controls{position:relative;inset:auto;flex:0 0 auto;pointer-events:auto;flex-direction:column;align-items:center;gap:6px;padding:7px 4px;background:#102438;border-top:1px solid #4b657e}.battle-sidebar .fortress-pad{grid-template-columns:repeat(3,clamp(30px,4vw,44px));gap:3px}.battle-sidebar .fortress-fire{width:100%;justify-content:center;gap:5px}.battle-sidebar .fortress-fire [data-move=fire]{height:42px;width:52px;border-radius:8px}.battle-sidebar .fortress-fire #fortress-auto{font-size:10px}.battle-sidebar:has(+.arena-wrap .run-results:not([hidden])) .fortress-controls{opacity:.45;pointer-events:none}.battle-sidebar:has(+.arena-wrap .run-results:not([hidden])) .fortress-controls button{pointer-events:none}@media(max-height:500px){.fortress-set-scroll{padding:4px}.battle-sidebar .fortress-controls{padding:3px;gap:3px}.battle-sidebar .fortress-controls button{min-height:26px;min-width:26px}.battle-sidebar .fortress-fire [data-move=fire]{height:30px;width:44px}.fortress-overview #battle-hero{height:42px}}
 </style>
 </head>
 <body>
@@ -393,7 +394,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </section>
 <section class="app-screen" id="summoner-screen" hidden><div class="page-inner"><div class="page-head"><div><div class="eyebrow">Player Progression</div><h2>Summoner</h2></div><button id="summoner-back">← Home</button></div>
 <div class="summoner-detail"><div class="summoner-panel summoner-home"><span class="summoner-face" aria-label="Temporary Summoner portrait"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path d="M5 27L6 14Q8 4 16 3Q24 4 26 14L27 27L16 30Z" fill="#50749c" stroke="#c9a768"/><path d="M10 13Q16 8 22 13L21 22L16 25L11 22Z" fill="#d7b08e"/><path d="M10 13L16 7L22 13L16 11Z" fill="#263c59"/><path d="M12 17H14M18 17H20" stroke="#233246" stroke-width="2"/></svg></span><div style="flex:1;min-width:0"><strong id="summoner-home-label">Lv 1 · Power 100</strong><progress id="summoner-home-bar" max="1" value="0"></progress><small id="summoner-home-exp">0 / 100 EXP</small></div></div><div class="summoner-hero-art" id="summoner-hero-art" aria-label="Summoner portrait"><span id="summoner-hero-placeholder">Artwork pending</span><span id="summoner-hero-sprite" hidden></span></div><p id="summoner-character-name"></p><p id="summoner-power-breakdown"></p><div class="profile-stats"><div class="profile-stat"><strong>Summoner Power</strong><small>Passive · SP capacity and faster summoning</small></div><div class="profile-stat"><strong>Summoning Surge</strong><small id="summoner-skill-info"></small></div></div><h3>Summoner Collection</h3><div id="summoner-collection" class="app-grid"></div><h3>Equipment</h3><p class="page-sub">Equipment and loot are coming soon.</p><div id="summoner-equipment" class="summoner-slots"></div><button id="summoner-inventory">Inventory</button></div></div></section>
-<section class="app-screen" id="inventory-screen" hidden><div class="page-inner"><div class="page-head"><div><div class="eyebrow">Player Collection</div><h2>Inventory</h2></div><button id="inventory-back">← Summoner</button></div><p class="page-sub">Equipment and loot collection is not yet available.</p><h3>Rarity</h3><div id="inventory-rarities" class="inventory-rarities"></div><h3>Elements</h3><div id="inventory-elements" class="inventory-rarities"></div><div id="inventory-items" class="app-grid"></div></div></section>
+<section class="app-screen" id="inventory-screen" hidden><div class="page-inner"><div class="page-head"><div><div class="eyebrow">Player Collection</div><h2>Inventory</h2></div><button id="inventory-back">← Home</button></div><p class="page-sub">Equipment and loot collection is not yet available.</p><h3>Rarity</h3><div id="inventory-rarities" class="inventory-rarities"></div><h3>Elements</h3><div id="inventory-elements" class="inventory-rarities"></div><div id="inventory-items" class="app-grid"></div></div></section>
 <section class="app-screen" id="bestiary-screen" hidden>
  <div class="page-inner">
   <div class="page-head"><div><div class="eyebrow">Monster Collection</div><h2>Bestiary</h2></div></div>
@@ -445,7 +446,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <div id="site-navigation"><button class="floating-plus" id="nav-toggle" aria-label="Expand menu" aria-expanded="false">+</button>
 <nav class="pop-menu" id="quick-nav" hidden aria-label="Navigation">
  <button id="nav-home">⌂ Main Menu</button>
- <button id="nav-summoner">Summoner</button><button id="nav-inventory">Inventory</button><button id="nav-bestiary">Bestiary</button>
+ <button id="nav-inventory">Inventory</button><button id="nav-bestiary">Bestiary</button>
  <button id="nav-settings">Settings</button>
  <button id="nav-team">My Team</button><button id="nav-upgrades">Upgrades</button>
  <button id="nav-music">Music: On</button>
@@ -464,10 +465,10 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <p class="map-info-desc" id="stage-info-desc"></p>
   <div id="stage-info-details"></div>
  </aside>
- <div class="battle-middle"><aside class="battle-sidebar" aria-label="Summoner and upgrades">
- <div class="summoner-panel summoner-battle"><canvas id="battle-hero" width="180" height="180" aria-label="Animated Summoner"></canvas><strong id="battle-hero-name">Summoner</strong><b id="summoner-battle-label">100 SP</b><progress id="summoner-battle-bar" max="1" value="0"></progress><div class="skill-slots"><button type="button" id="summoner-surge" disabled aria-label="Summoning Surge"><span>⚡</span><small id="surge-caption">Surge</small></button><button disabled title="Future skill slot">🔒</button><button disabled title="Future skill slot">🔒</button></div><button id="summoner-stats-toggle">Summoner stats</button></div>
- <h3>Fortress Equipment</h3><div id="battle-upgrades"><button class="battle-gear" id="gear-attack"><canvas width="88" height="68" id="gear-art-attack"></canvas><span id="gear-label-attack"></span></button><button class="battle-gear" id="gear-shield"><canvas width="88" height="68" id="gear-art-shield"></canvas><span id="gear-label-shield"></span></button><button class="battle-gear" id="gear-drone"><canvas width="88" height="68" id="gear-art-drone"></canvas><span id="gear-label-drone"></span></button><button class="battle-gear" id="gear-generator"><canvas width="88" height="68" id="gear-art-generator"></canvas><span id="gear-label-generator"></span></button></div><span id="tower-shield-label" hidden></span><h3>Summoner Items</h3><div id="battle-items" class="battle-items"></div><section id="gear-detail" class="gear-detail" hidden><div class="gear-heading"><strong id="gear-title"></strong><button id="gear-close" aria-label="Close statistics">×</button></div><div id="gear-stats"></div><div id="gear-upgrade-list"></div><button id="upgrade-attack" hidden></button><button id="upgrade-shield" hidden></button><button id="upgrade-drone" hidden></button><button id="upgrade-generator" hidden></button><button id="upgrade-sp" hidden></button></section>
- </aside><div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas><div class="fortress-controls" aria-label="Fortress controls"><div class="fortress-pad"><button data-move="up" aria-label="Move up">▲</button><button data-move="left" aria-label="Move left">◀</button><button data-move="down" aria-label="Move down">▼</button><button data-move="right" aria-label="Move right">▶</button></div><div class="fortress-fire"><button id="fortress-auto" aria-pressed="true">AUTO ON</button><button data-move="fire" aria-label="Fire projectile">FIRE</button></div></div>
+ <div class="battle-middle"><aside class="battle-sidebar" aria-label="Fortress set and controls"><div class="fortress-set-scroll">
+ <section class="fortress-overview"><strong id="battle-hero-name">Fortress</strong><canvas id="battle-hero" width="180" height="120" aria-label="Fortress portrait"></canvas><b id="fortress-hp-label">HP</b><progress id="fortress-hp-bar" max="1" value="1"></progress><b id="summoner-battle-label">10 SP</b><progress id="summoner-battle-bar" max="1" value="1"></progress></section>
+ <h3>Fortress Set Upgrades</h3><div id="battle-upgrades"><button class="battle-gear" id="gear-attack"><canvas width="88" height="68" id="gear-art-attack"></canvas><span id="gear-label-attack"></span></button><button class="battle-gear" id="gear-shield"><canvas width="88" height="68" id="gear-art-shield"></canvas><span id="gear-label-shield"></span></button><button class="battle-gear" id="gear-drone"><canvas width="88" height="68" id="gear-art-drone"></canvas><span id="gear-label-drone"></span></button><button class="battle-gear" id="gear-generator"><canvas width="88" height="68" id="gear-art-generator"></canvas><span id="gear-label-generator"></span></button></div><span id="tower-shield-label" hidden></span><section id="gear-detail" class="gear-detail" hidden><div class="gear-heading"><strong id="gear-title"></strong><button id="gear-close" aria-label="Close statistics">×</button></div><div id="gear-stats"></div><div id="gear-upgrade-list"></div><button id="upgrade-attack" hidden></button><button id="upgrade-shield" hidden></button><button id="upgrade-drone" hidden></button><button id="upgrade-generator" hidden></button><button id="upgrade-sp" hidden></button></section>
+ </div><div class="fortress-controls" aria-label="Fortress controls"><div class="fortress-pad"><button data-move="up" aria-label="Move up">▲</button><button data-move="left" aria-label="Move left">◀</button><button data-move="down" aria-label="Move down">▼</button><button data-move="right" aria-label="Move right">▶</button></div><div class="fortress-fire"><button id="fortress-auto" aria-pressed="true">AUTO ON</button><button data-move="fire" aria-label="Fire projectile">FIRE</button></div></div> </aside><div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas>
   <section class="run-results" id="run-results" hidden aria-live="polite" aria-label="Battle result">
     <h2 id="result-heading">Victory</h2>
     <p id="result-stage"></p>
@@ -756,13 +757,9 @@ function summonerStats(){
 }
 function rankUnlockLevel(rank){if(progression.testing_mode===true)return 1;const c=progression.summoner;return rank==='elite'?c.elite_unlock_level:rank==='boss'?c.boss_unlock_level:1;}
 function refreshSummoner(){
- const s=summonerStats(),c=progression.summoner;
- const homeLabel=$('summoner-home-label'),homeBar=$('summoner-home-bar');homeLabel.textContent='Lv '+s.level+' · Max SP '+s.power;homeBar.value=s.max?1:s.xp/s.required;homeBar.title=s.max?'Maximum level':s.xp+' / '+s.required+' EXP';const battlePower=s.power+(run.active?(run.spLevel||0)*c.run_sp_per_level:0),available=Math.min(battlePower,state?.availablePower??battlePower),battleLabel=$('summoner-battle-label'),battleBar=$('summoner-battle-bar');battleLabel.textContent=Math.floor(available)+' / '+battlePower+' SP';battleBar.value=available/battlePower;battleBar.title='Summoner Power · +'+(c.power_regen_per_second*(run.surgeTime>0?1+c.surge_regen_pct/100:1))+' SP/s';
- $('summoner-home-exp').textContent=s.max?'Maximum level':s.xp+' / '+s.required+' EXP · Summoning speed +'+(s.power/c.base_power*100-100).toFixed(0)+'%';
- const button=$('summoner-surge');const locked=progression.testing_mode!==true&&s.level<c.surge_unlock_level,active=run.surgeTime>0,cd=run.surgeCooldown>0;
- const label=locked?'Surge · Lv '+c.surge_unlock_level:active?'Surge '+Math.ceil(run.surgeTime)+'s':cd?'Surge '+Math.ceil(run.surgeCooldown)+'s':'Surge';
- if($('surge-caption').textContent!==label)$('surge-caption').textContent=label;button.title='Summoning Surge · '+label;
- button.disabled=locked||active||cd||!run.active||!!state?.ended||!!state?.preparing||!!state?.portalUnlocked;
+ const battlePower=10,available=Math.min(battlePower,state?.availablePower??battlePower);
+ $('summoner-battle-label').textContent=Math.floor(available)+' / '+battlePower+' SP';$('summoner-battle-bar').value=available/battlePower;
+ $('summoner-battle-bar').title='Monster deployment · '+progression.summoner.power_regen_per_second+' SP/s';
 }
 function renderSummonerPage(){
  refreshSummoner();const c=progression.summoner,s=summonerStats(),selected=c.characters.find(m=>m.id===profile.summoner)||c.characters[0];
@@ -867,7 +864,7 @@ function renderUpgrades(){
  b.disabled=state.ended||battleMenuOpen||state.countdown>0||level>=max||run.wallet<cost;
  $('gear-'+kind).classList.toggle('can-upgrade',!b.disabled&&run.active);
  }
- $('summoner-stats-toggle').classList.toggle('can-upgrade',!$('upgrade-sp').disabled&&run.active);
+ $('fortress-hp-label').textContent='HP '+Math.ceil(state.allyBase)+' / '+Math.ceil(TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp);$('fortress-hp-bar').value=state.allyBase/TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp;
  const journey=Math.max(0,Math.min(1,(towerLayout.x-progression.defence.fortress_start_x)/(progression.defence.fortress_goal_x-progression.defence.fortress_start_x)));$('journey-bar').value=journey;$('journey-label').textContent='Journey '+Math.floor(journey*100)+'%';
  const label='Stage '+run.battle+' · '+state.kills+' defeated'+(state.portalUnlocked?' · Portal open':state.finalPhase?' · Final encounter':'')+(state.preparing?' · Preparation':state.ended&&state.victory?' · Victory':'');
  if($('run-progress').textContent!==label)$('run-progress').textContent=label;
@@ -1003,14 +1000,14 @@ function reset(){
  towerLayout.x=progression.defence.fortress_start_x;Object.assign(towerLayout,{ground:390,hpY:201,shieldY:319,generatorY:98,droneY:178});fortressKeys.clear();fortressTouch.clear();fortressTarget=null;TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;battleHeroFrame=-1;
  chooseRandomStage();
  const cfg=progression.defence;
- state={preparing:true,countdown:0,heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power+(run.spLevel||0)*progression.summoner.run_sp_per_level,units:[],allyBase:TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp,towerShield:TowerUpgrades.createShield(run,equipmentConfig),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,portalUnlocked:false,portalAge:0,portalExit:0,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
+ state={preparing:true,countdown:0,heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:10,units:[],allyBase:TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp,towerShield:TowerUpgrades.createShield(run,equipmentConfig),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,portalUnlocked:false,portalAge:0,portalExit:0,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
  refreshCoinDisplays();
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  towerCooldowns.ally=1;
  towerAttackAnims.ally=0;towerProjectiles=[];chargeEffects=[];unitSerial=0;
  state.enemyRoster=roster.filter(m=>window.MonstersClashEnvironment?.matchesElement(m));if(!state.enemyRoster.length)state.enemyRoster=roster.slice();else{const other=roster.filter(m=>!state.enemyRoster.includes(m));if(other.length)state.enemyRoster.push(other[Math.floor(Math.random()*other.length)]);}
  state.finalMonster=state.finalRank?state.enemyRoster[Math.floor(Math.random()*state.enemyRoster.length)]:null;
- $('gear-detail').hidden=true;document.querySelector('.battle-sidebar').append($('gear-detail'));$('gear-detail').dataset.kind='';document.querySelectorAll('.battle-sidebar [aria-controls="gear-detail"]').forEach(b=>b.setAttribute('aria-expanded','false'));$('battle-items').replaceChildren(...progression.summoner.equipment.slots.map((slot,i)=>{const b=document.createElement('button'),small=document.createElement('small'),id=profile.summonerEquipment?.[slot],inst=profile.inventory.find(x=>x.id===id),item=progression.summoner.equipment.items.find(x=>x.id===inst?.item_id);b.textContent=['♛','◇','⚔','▣','○','▤'][i];small.textContent=slot;b.append(small);b.title=item?.name||'Empty '+slot;b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','gear-detail');b.onclick=()=>toggleGearDetail(b,'item:'+slot);return b;}));
+ $('gear-detail').hidden=true;document.querySelector('.fortress-set-scroll').append($('gear-detail'));$('gear-detail').dataset.kind='';document.querySelectorAll('.battle-sidebar [aria-controls="gear-detail"]').forEach(b=>b.setAttribute('aria-expanded','false'));
  $('run-results').classList.add('preparing');$('run-results').hidden=false;$('run-results').scrollTop=0;$('prep-panel').hidden=false;$('result-heading').textContent='Battle Preparation';$('result-stage').textContent='Stage '+run.battle;
  for(const id of ['result-reward','result-gold-reward','result-run-coins'])$(id).hidden=true;document.querySelector('.run-result-metrics').hidden=true;
  $('restart-run-result').hidden=true;$('next-battle').hidden=false;$('next-battle').disabled=true;$('next-battle').textContent='Start Battle';
@@ -1205,8 +1202,8 @@ function step(dt){
  window.MonstersClashEnvironment?.update(dt,state.units,dmg,soundEffect,TOWER_APPROACH.ally+1,progression.defence.fortress_goal_x-progression.defence.portal_clearance);
  const heartbeatRank=state.units.some(u=>u.hp>0&&u.side<0&&u.rank==='boss')?'boss':state.units.some(u=>u.hp>0&&u.side<0&&u.rank==='elite')?'elite':null;
  if(heartbeatRank){if(state.heartbeatRank!==heartbeatRank){state.heartbeatRank=heartbeatRank;state.heartbeatTimer=0;}state.heartbeatTimer=(state.heartbeatTimer||0)-dt;if(state.heartbeatTimer<=0){soundEffect(heartbeatRank+'_heartbeat');state.heartbeatTimer=heartbeatRank==='boss'?1.05:1.5;}}else{state.heartbeatRank=null;state.heartbeatTimer=0;}
- const sp=progression.summoner,ss=summonerStats(),surgeSpan=Math.min(dt,run.surgeTime),allyTick=(dt+surgeSpan*sp.surge_speed_pct/100)*ss.power/sp.base_power;
- state.availablePower=Math.min(ss.power+(run.spLevel||0)*sp.run_sp_per_level,state.availablePower+sp.power_regen_per_second*(dt+surgeSpan*sp.surge_regen_pct/100));
+ const sp=progression.summoner,allyTick=dt;
+ state.availablePower=Math.min(10,state.availablePower+sp.power_regen_per_second*dt);
  run.surgeTime=Math.max(0,run.surgeTime-dt);run.surgeCooldown=Math.max(0,run.surgeCooldown-dt);
  for(const side of ['ally','enemy'])for(const k of Object.keys(cooldowns[side]))cooldowns[side][k]=Math.max(0,cooldowns[side][k]-(side==='ally'?allyTick:dt));
  refreshSummoner();
@@ -1446,20 +1443,10 @@ function draw(){
  for(let i=0;i<2;i++){const p=(state.time*.72+i*.5)%1;ctx.strokeStyle='rgba(95,211,255,'+(.32*(1-p))+')';ctx.lineWidth=1.15;ctx.beginPath();ctx.ellipse(0,-2,23+28*p,4+5*p,0,0,Math.PI*2);ctx.stroke();}
  ctx.restore();}
  for(const [kind,img,cols] of [['attack',towerImages.ally,towerConfigs.ally?.sheet_columns||4],['drone',droneImage,equipmentConfig.drone_sheet_columns],['generator',generatorImage,1]]){const c=$('gear-art-'+kind);if(readyImage(img)&&c.dataset.src!==img.src){c.dataset.src=img.src;const g=c.getContext('2d'),sw=img.naturalWidth/cols,sh=img.naturalHeight,k=Math.min(88/sw,68/sh);g.clearRect(0,0,88,68);g.drawImage(img,0,0,sw,sh,(88-sw*k)/2,(68-sh*k)/2,sw*k,sh*k);}}const sc=$('gear-art-shield');if(!sc.dataset.ready){sc.dataset.ready='1';const g=sc.getContext('2d');g.save();g.translate(44,34);g.scale(.45,.45);const shield={hp:160,max:160,phase:1.57,flash:0,broken:0};TowerUpgrades.renderShield(g,shield,1,equipmentConfig,0,0,false);TowerUpgrades.renderShield(g,shield,1,equipmentConfig,0,0,true);g.restore();}
- const hero=progression.summoner.characters.find(c=>c.id===profile.summoner)||progression.summoner.characters[0],art=hero?.art,heroCanvas=$('battle-hero');
- if(art?.sheet&&battleHeroSource!==art.sheet){battleHeroSource=art.sheet;battleHeroBounds=null;battleHeroFrame=-1;battleHeroImage.src=art.sheet;$('battle-hero-name').textContent=hero.name;}
- if(readyImage(battleHeroImage)&&art){
-   const pose=state.time<state.heroPoseUntil?state.heroPose:(!reducedRankMotion?.matches&&state.time%4>3.2?'idle':'ready'),frame=art.frames?.[pose]??0;
-   if(frame!==battleHeroFrame){
-     const hc=heroCanvas.getContext('2d'),iw=battleHeroImage.naturalWidth,ih=battleHeroImage.naturalHeight,cols=art.columns||4;
-     if(!battleHeroBounds){
-       battleHeroBounds=Array.from({length:cols+1},(_,i)=>Math.round(i*iw/cols));
-       try{const temp=document.createElement('canvas');temp.width=iw;temp.height=ih;const tc=temp.getContext('2d',{willReadFrequently:true});tc.drawImage(battleHeroImage,0,0);const data=tc.getImageData(0,0,iw,ih).data;const occupancy=new Uint32Array(iw);for(let y=0;y<ih;y++)for(let x=0;x<iw;x++)if(data[(y*iw+x)*4+3]>24)occupancy[x]++;for(let i=1;i<cols;i++){const expected=i*iw/cols;let best=Math.round(expected),score=Infinity;for(let x=Math.max(1,Math.round(expected-iw/cols*.20));x<Math.min(iw-1,expected+iw/cols*.20);x++){const s=occupancy[x]*10+Math.abs(x-expected)*.03;if(s<score){score=s;best=x;}}battleHeroBounds[i]=best;}}catch(err){}
-     }
-     const sx=battleHeroBounds[frame],sw=battleHeroBounds[frame+1]-sx,scale=Math.min(heroCanvas.width/sw,heroCanvas.height/ih);
-     hc.clearRect(0,0,heroCanvas.width,heroCanvas.height);hc.drawImage(battleHeroImage,sx,0,sw,ih,(heroCanvas.width-sw*scale)/2,(heroCanvas.height-ih*scale)/2,sw*scale,ih*scale);battleHeroFrame=frame;
-   }
- }
+ const heroCanvas=$('battle-hero'),fortressArt=towerImages.ally;
+ $('battle-hero-name').textContent=towerConfigs.ally?.name||'Fortress';
+ if(readyImage(fortressArt)){const hc=heroCanvas.getContext('2d'),sw=fortressArt.naturalWidth/(towerConfigs.ally?.sheet_columns||4),sh=fortressArt.naturalHeight/(towerConfigs.ally?.sheet_rows||1),scale=Math.min(heroCanvas.width/sw,heroCanvas.height/sh),frame=towerDamageFrame(state.allyBase,TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp);hc.clearRect(0,0,heroCanvas.width,heroCanvas.height);hc.drawImage(fortressArt,frame*sw,0,sw,sh,(heroCanvas.width-sw*scale)/2,(heroCanvas.height-sh*scale)/2,sw*scale,sh*scale);}
+
  ctx.save();ctx.translate(towerLayout.x,0);ctx.scale(actorRatio,1);ctx.translate(-towerLayout.x,0);
  TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY+(state.allyBase>0?-12+Math.sin(state.time*2.2)*3:0),false);ctx.restore();
  if(run.generatorLevel>0&&readyImage(generatorImage)){
@@ -1547,7 +1534,7 @@ function draw(){
  for(const m of roster){
   const btn=$('card_'+m.id);if(!btn)continue;
   btn.style.display=team.includes(m.id)?'flex':'none';
-  const remaining=(cooldowns.ally[m.id]||0)/(summonerStats().power/progression.summoner.base_power*(run.surgeTime>0?1+progression.summoner.surge_speed_pct/100:1)),active=deployedCount(1,m.id),cap=unitCap(m);
+  const remaining=(cooldowns.ally[m.id]||0),active=deployedCount(1,m.id),cap=unitCap(m);
   const info=$('cooldown_'+m.id);
   if(info)info.textContent=remaining>0?remaining.toFixed(1)+'s':active>=cap?active+'/'+cap+' Deployed':teamCount(1)>=maxTeamUnits()?'Battlefield Full':state.availablePower<summonPowerCost(m)?'Need '+summonPowerCost(m)+' SP':active+'/'+cap+' · '+summonPowerCost(m)+' SP';
   btn.disabled=!canSummon(m,1);
@@ -1559,7 +1546,7 @@ function openView(name,fromRoute=false){
    // Only the explicit pause-menu exit can leave a live match.
    return;
  }
- if(name==='summoner')renderSummonerPage();if(name==='inventory')renderInventory();if(name==='bestiary')renderBestiary();if(name==='settings')refreshSettings();if(name==='upgrades'){ $('equipment-message').textContent='';renderEquipment();}
+ if(name==='summoner')name='upgrades';if(name==='inventory')renderInventory();if(name==='bestiary')renderBestiary();if(name==='settings')refreshSettings();if(name==='upgrades'){ $('equipment-message').textContent='';renderEquipment();}
  if(!fromRoute&&name!=='monster-profile')updateRoute(name,true);
  if(view==='battle'&&name!=='battle')run.active=false;
  view=name;battleMenuOpen=false;navOpen=false;syncMusic();
@@ -1676,7 +1663,7 @@ function readBestiaryRoute(){
 function renderBestiary(){
  const rank=bestiaryRank,list=rank==='boss'?[...catalog,...specialBosses]:catalog,category=rank==='normal'?'Monsters':rank==='elite'?'Elites':'Bosses';
  for(const b of document.querySelectorAll('[data-bestiary]')){const required=rankUnlockLevel(b.dataset.bestiary),locked=summonerStats().level<required;b.setAttribute('aria-pressed',String(b.dataset.bestiary===rank));b.textContent=({normal:'Monsters',elite:'Elites',boss:'Bosses'})[b.dataset.bestiary]+(locked?' · 🔒 Lv '+required:'');}
- if(summonerStats().level<rankUnlockLevel(rank)){$('bestiary-progress').textContent=category+' unlock at Summoner Level '+rankUnlockLevel(rank)+'. Current level: '+summonerStats().level+'. Encounters are still recorded in battle.';$('bestiary-grid').replaceChildren();return;}
+ if(summonerStats().level<rankUnlockLevel(rank)){$('bestiary-progress').textContent=category+' unlock at Player Level '+rankUnlockLevel(rank)+'. Current level: '+summonerStats().level+'. Encounters are still recorded in battle.';$('bestiary-grid').replaceChildren();return;}
  const count=list.filter(m=>encountered(m.id,rank)).length;
  $('bestiary-progress').textContent=count+'/'+list.length+' '+category+' Discovered · Encounter this rank in battle.';
  $('bestiary-grid').replaceChildren(...list.map(m=>{
@@ -1755,13 +1742,13 @@ function toggleQuickNav(force){
  $('nav-toggle').setAttribute('aria-expanded',String(navOpen));
 }
 function bindMenu(){
- $('nav-summoner').onclick=()=>openView('summoner');$('nav-inventory').onclick=()=>openView('inventory');$('summoner-back').onclick=()=>openView('home');$('summoner-inventory').onclick=()=>openView('inventory');$('inventory-back').onclick=()=>openView('summoner');
- $('summoner-surge').onclick=()=>{const c=progression.summoner;if(view!=='battle'||!run.active||state?.ended||state?.preparing||battleMenuOpen||(progression.testing_mode!==true&&summonerStats().level<c.surge_unlock_level)||run.surgeCooldown>0)return;run.surgeTime=c.surge_duration;run.surgeCooldown=c.surge_cooldown;soundEffect('surge');state.heroPose='skill';state.heroPoseUntil=state.time+.95;refreshSummoner();};
+ $('nav-inventory').onclick=()=>openView('inventory');$('summoner-back').onclick=()=>openView('home');$('summoner-inventory').onclick=()=>openView('inventory');$('inventory-back').onclick=()=>openView('home');
+
  for(const b of document.querySelectorAll('[data-bestiary]'))b.onclick=()=>{bestiaryRank=b.dataset.bestiary;renderBestiary();updateRoute('bestiary',true);};
  $('menu-upgrades-home').onclick=()=>openView('upgrades');$('nav-upgrades').onclick=()=>openView('upgrades');$('upgrades-back').onclick=()=>openView('home');$('upgrades-play').onclick=startRun;
  for(const button of document.querySelectorAll('[data-equipment]'))button.onclick=()=>{equipmentTab=button.dataset.equipment;$('equipment-message').textContent='';renderEquipment();};
  for(const kind of ['attack','shield','drone','generator','sp'])$('upgrade-'+kind).onclick=()=>buyUpgrade(kind);
- for(const kind of ['attack','shield','drone','generator','sp']){const b=$(kind==='sp'?'summoner-stats-toggle':'gear-'+kind);b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','gear-detail');b.onclick=()=>toggleGearDetail(b,kind);}$('gear-close').onclick=()=>{const detail=$('gear-detail'),active=document.querySelector('.battle-sidebar [aria-controls="gear-detail"][aria-expanded="true"]');detail.hidden=true;if(active){active.setAttribute('aria-expanded','false');active.focus({preventScroll:true});}};
+ for(const kind of ['attack','shield','drone','generator']){const b=$('gear-'+kind);b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','gear-detail');b.onclick=()=>toggleGearDetail(b,kind);}$('gear-close').onclick=()=>{const detail=$('gear-detail'),active=document.querySelector('.battle-sidebar [aria-controls="gear-detail"][aria-expanded="true"]');detail.hidden=true;if(active){active.setAttribute('aria-expanded','false');active.focus({preventScroll:true});}};
  $('profile-back').onclick=()=>{if(profileReturnView==='team'){renderTeam();openView('team')}else openView('bestiary')};
  $('bgm-volume').oninput=e=>setAudioLevel('bgm',e.target.value);
  $('sfx-volume').oninput=e=>setAudioLevel('sfx',e.target.value);
