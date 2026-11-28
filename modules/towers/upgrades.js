@@ -18,8 +18,9 @@ function quote(run,cfg,kind){
  const level=Number(run[key])||0;return {kind,key,level,max:Infinity,cost:Math.round((cfg.upgrade_groups[group][group]?.cost||entry.cost)*(1+level*.5)),label:entry.label,step:entry.step};
 }
 function equipmentStats(run,cfg){
+ const combatScale=Math.pow(1+cfg.equipment_round_growth_pct/100,Math.max(0,run.battle-1));
  const value=k=>{const q=quote(run,cfg,k);return q?q.level*q.step:0;};
- return {maxHp:cfg.fortress_max_hp+value('fortress_hp'),shieldMax:value('shield'),shieldRegen:value('shield_regen'),shieldDelay:Math.max(cfg.mechanical_limits.minimum_shield_recovery_seconds,6-value('shield_recovery')),droneDamageType:cfg.drone_damage_type,droneDamage:cfg.drone_damage*(1+value('drone_damage'))+(Number(cfg.droneWeapon?.damage_bonus)||0),droneInterval:Math.max(cfg.mechanical_limits.minimum_attack_interval_seconds,cfg.drone_interval/(1+value('drone_speed'))),droneRange:Math.min(cfg.tower_range_cap||425,cfg.drone_range+value('drone_range')),dronePenetration:Math.min(cfg.mechanical_limits.maximum_penetration_pct,value('drone_penetration')+(Number(cfg.droneWeapon?.penetration_bonus)||0)),generatorIncome:value('generator'),generatorInterval:Math.max(cfg.mechanical_limits.minimum_generator_interval_seconds,cfg.generator_interval/(1+value('generator_speed')))};
+ return {combatScale,maxHp:Math.round((cfg.fortress_max_hp+value('fortress_hp'))*combatScale),shieldMax:Math.round(value('shield')*combatScale),shieldRegen:Math.round(value('shield_regen')*combatScale*100)/100,shieldDelay:Math.max(cfg.mechanical_limits.minimum_shield_recovery_seconds,6-value('shield_recovery')),droneDamageType:cfg.drone_damage_type,droneDamage:cfg.drone_damage*(1+value('drone_damage'))*combatScale+(Number(cfg.droneWeapon?.damage_bonus)||0),droneInterval:Math.max(cfg.mechanical_limits.minimum_attack_interval_seconds,cfg.drone_interval/(1+value('drone_speed'))),droneRange:Math.min(cfg.tower_range_cap||425,cfg.drone_range+value('drone_range')),dronePenetration:Math.min(cfg.mechanical_limits.maximum_penetration_pct,value('drone_penetration')+(Number(cfg.droneWeapon?.penetration_bonus)||0)),generatorIncome:value('generator'),generatorInterval:Math.max(cfg.mechanical_limits.minimum_generator_interval_seconds,cfg.generator_interval/(1+value('generator_speed')))};
 }
 function createShield(run,cfg){const hp=equipmentStats(run,cfg).shieldMax;return {hp,max:hp,phase:0,flash:0,broken:0,hitAngle:0,recovery:0};}
 function purchase(run,shield,cfg,kind){
@@ -30,14 +31,15 @@ function purchase(run,shield,cfg,kind){
  return true;
 }
 function attackStats(tower,run,cfg){
- const a=tower?.basic_attack;if(!a)return null;const value=k=>{const q=quote(run,cfg,k);return q?q.level*q.step:0;};
- return {type:a.type,damageType:a.damage_type,range:Math.min(cfg.tower_range_cap||425,(Number(a.range)||190)+value('fortress_range')),damage:(Number(a.damage)||15)*(1+value('attack'))+(Number(cfg.towerWeapon?.damage_bonus)||0),interval:Math.max(cfg.mechanical_limits.minimum_attack_interval_seconds,a.cooldown_seconds/(1+value('fortress_speed'))),arrows:Math.min(cfg.mechanical_limits.maximum_fortress_projectiles,1+value('fortress_projectiles')),penetration:Math.min(cfg.mechanical_limits.maximum_penetration_pct,value('fortress_penetration')+(Number(cfg.towerWeapon?.penetration_bonus)||0)),stun:Math.min(cfg.mechanical_limits.maximum_stun_seconds,value('fortress_stun')),waveWidth:5+value('fortress_range')*.04,...equipmentStats(run,cfg)};
+ const a=tower?.basic_attack;if(!a)return null;const stats=equipmentStats(run,cfg);const value=k=>{const q=quote(run,cfg,k);return q?q.level*q.step:0;};
+ return {type:a.type,damageType:a.damage_type,range:Math.min(cfg.tower_range_cap||425,(Number(a.range)||190)+value('fortress_range')),damage:(Number(a.damage)||15)*(1+value('attack'))*stats.combatScale+(Number(cfg.towerWeapon?.damage_bonus)||0),interval:Math.max(cfg.mechanical_limits.minimum_attack_interval_seconds,a.cooldown_seconds/(1+value('fortress_speed'))),arrows:Math.min(cfg.mechanical_limits.maximum_fortress_projectiles,1+value('fortress_projectiles')),penetration:Math.min(cfg.mechanical_limits.maximum_penetration_pct,value('fortress_penetration')+(Number(cfg.towerWeapon?.penetration_bonus)||0)),stun:Math.min(cfg.mechanical_limits.maximum_stun_seconds,value('fortress_stun')),waveWidth:5+value('fortress_range')*.04,...stats};
 }
 function update(shield,dt,cfg,run){shield.phase=(shield.phase+dt*(cfg.shield_orbit_speed||.85))%(Math.PI*2);shield.flash=Math.max(0,shield.flash-dt);shield.broken=Math.max(0,shield.broken-dt);if(run){const stats=equipmentStats(run,cfg);shield.recovery=Math.max(0,(shield.recovery||0)-dt);if(shield.recovery<=0)shield.hp=Math.min(shield.max,shield.hp+stats.shieldRegen*dt);}}
 function absorb(shield,damage,delay=6){const used=Math.min(shield.hp,Math.max(0,damage));shield.hp-=used;if(used){shield.recovery=delay;shield.flash=.35;shield.hitAngle=shield.phase;if(shield.hp===0)shield.broken=.65;}return Math.max(0,damage-used);}
 const shieldImages=new Map();
 function renderShield(ctx,s,level,cfg,x,y,front){
  if(!s)return;
+ level=Math.min(10,Math.max(0,level));
  const rx=76,ry=48,orbitY=ry*.67,flash=Math.max(0,Math.min(1,s.flash/.35));
  if(s.hp>0){
  const ratio=s.hp/Math.max(1,s.max),max=Math.min(cfg.shield_plate_max||6,(cfg.shield_plate_min||3)+Math.floor(Math.max(0,level-1)/3)),count=Math.max(1,Math.ceil(max*(.55+.45*ratio)));
