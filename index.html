@@ -476,7 +476,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script src="modules/elements/environment.js?v=20261128-ice-status"></script>
 <script src="modules/day-night/engine.js?v=20261127-fixed-time"></script>
-<script src="modules/towers/upgrades.js?v=20261128-combat-normalization"></script>
+<script src="modules/towers/upgrades.js?v=20261128-growth-balance"></script>
 <script>
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=960,H=480,ground=325;
@@ -557,12 +557,12 @@ let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentC
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json?v=20261128-combat-normalization',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
-  fetch('battle_rules.json?v=20261128-combat-normalization',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Battle rules HTTP '+r.status);return r.json()}),
+  fetch('towers.json?v=20261128-growth-balance',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
+  fetch('battle_rules.json?v=20261128-growth-balance',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Battle rules HTTP '+r.status);return r.json()}),
   fetch('audio.json?v=20261127-deep-sfx',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch('progression.json?v=20261128-combat-normalization',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
+  fetch('progression.json?v=20261128-growth-balance',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
  ]);
- if(!progress?.team||!progress?.coins||!progress?.defence||!progress?.rank_bonus_pct||!progress?.round_growth_pct||!progress?.summoner)throw Error('Progression configuration incomplete. Reload the page.');progression=progress;
+ if(!progress?.team||!progress?.coins||!progress?.defence||!progress?.rank_bonus_pct||!progress?.round_growth_pct||!Number.isFinite(progress.round_growth_pct.equipment)||!progress?.summoner)throw Error('Progression configuration incomplete. Reload the page.');progression=progress;
  towerRegistry=towers;
  if(!towerRegistry?.mechanical_limits)throw Error('Equipment mechanical limits missing. Reload the page.');
  if(!TowerUpgrades?.selectEquipment)throw Error('Tower upgrade engine is outdated. Reload the page.');
@@ -761,7 +761,7 @@ function settleBattle(){
 }
 function selectEquipment(){
  const selectionProfile=progression.testing_mode===true?{...profile,...Object.fromEntries(['towers','shields','drones','generators'].map(group=>[group,towerRegistry[group].filter(x=>x.available!==false).map(x=>x.id)]))}:profile;
- const selected=TowerUpgrades.selectEquipment(towerRegistry,selectionProfile,progression.defence);
+ const selected=TowerUpgrades.selectEquipment(towerRegistry,selectionProfile,{...progression.defence,equipment_round_growth_pct:progression.round_growth_pct.equipment});
  towerConfigs.ally=selected.tower;equipmentConfig=selected.config;
  if(selected.tower.sheet)towerImages.ally.src=selected.tower.sheet+'?v=20261127-low-hover-v2';
  if(selected.drone.sheet)droneImage.src=selected.drone.sheet+'?v=20261127-low-hover-v2';else droneImage.removeAttribute('src');
@@ -990,7 +990,7 @@ const groundRows=[343,363,385,407,429];
 const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(best,Math.hypot((u.x-spawnX)*.8,(u.y-y)*1.4)),Infinity)})).sort((a,b)=>b.clearance-a.clearance)[0];
 const forward=side>0?1:-1;
 const x=side<0?spawnX:spawnX+forward*Math.min(54,Math.max(0,54-row.clearance));
-state.units.push({m,side,rank,scale,damageScale,skillScale,attackSpeed,defenceScale:roundScale*(1+(bonus.defence||0)/100),skillCD:Math.max(.1,m.skill.cooldown_seconds*(1-Math.min(60,bonus.skill_cdr||0)/100)),rankStyle:specialBosses.includes(m)?'normal':rank,darkEvolved:rank==='boss'&&!specialBosses.includes(m),nightBoost:false,rankParticles:[],rankEmit:0,visualScale:rank==='boss'?cfg.boss_sprite_scale:rank==='elite'?cfg.elite_sprite_scale:cfg.normal_sprite_scale,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,shieldTime:0,shieldImpact:0,shieldStart:0,atk:.5/attackSpeed,skill:Math.max(.1,m.skill.cooldown_seconds*(1-Math.min(60,bonus.skill_cdr||0)/100)),motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});if(side<0&&rank!=='normal'){soundEffect(rank+'_arrival');state.heartbeatRank=rank;state.heartbeatTimer=.85;}return true}
+state.units.push({m,side,rank,scale,damageScale,skillScale,attackSpeed,defenceScale:1+(bonus.defence||0)/100,skillCD:Math.max(.1,m.skill.cooldown_seconds*(1-Math.min(60,bonus.skill_cdr||0)/100)),rankStyle:specialBosses.includes(m)?'normal':rank,darkEvolved:rank==='boss'&&!specialBosses.includes(m),nightBoost:false,rankParticles:[],rankEmit:0,visualScale:rank==='boss'?cfg.boss_sprite_scale:rank==='elite'?cfg.elite_sprite_scale:cfg.normal_sprite_scale,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,shieldTime:0,shieldImpact:0,shieldStart:0,atk:.5/attackSpeed,skill:Math.max(.1,m.skill.cooldown_seconds*(1-Math.min(60,bonus.skill_cdr||0)/100)),motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});if(side<0&&rank!=='normal'){soundEffect(rank+'_arrival');state.heartbeatRank=rank;state.heartbeatTimer=.85;}return true}
 function dmg(u,amount,damageType='physical',penetration=0){
  if(!Number.isFinite(amount)||amount<=0||u.hp<=0)return;
  // DEF and RES mitigate direct hits before existing map, passive and shield protection.
