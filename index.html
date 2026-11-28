@@ -503,7 +503,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </main>
 <script src="modules/elements/environment.js?v=20261128-ice-status"></script>
 <script src="modules/day-night/engine.js?v=20261127-fixed-time"></script>
-<script src="modules/towers/upgrades.js?v=20261129-guardian-refine"></script>
+<script src="modules/towers/upgrades.js?v=20261129-guardian-aim"></script>
 <script>
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=960,H=480,ground=325;
@@ -584,10 +584,10 @@ let towerRegistry=null,towerConfigs={ally:null},equipmentTab='towers',equipmentC
 async function loadGameCatalog(){
  const [index,towers,rules,audio,progress]=await Promise.all([
   fetch('roster.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('roster.json missing');return r.json()}),
-  fetch('towers.json?v=20261129-guardian-refine',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
-  fetch('battle_rules.json?v=20261129-guardian-refine',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Battle rules HTTP '+r.status);return r.json()}),
+  fetch('towers.json?v=20261129-guardian-aim',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
+  fetch('battle_rules.json?v=20261129-guardian-aim',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Battle rules HTTP '+r.status);return r.json()}),
   fetch('audio.json?v=20261127-deep-sfx',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch('progression.json?v=20261129-guardian-refine',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
+  fetch('progression.json?v=20261129-guardian-aim',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
  ]);
  if(!progress?.team||!progress?.coins||!progress?.defence||!progress?.rank_bonus_pct||!progress?.round_growth_pct||!Number.isFinite(progress.round_growth_pct.equipment)||!progress?.summoner)throw Error('Progression configuration incomplete. Reload the page.');progression=progress;
  towerRegistry=towers;
@@ -671,9 +671,9 @@ function monsterFrame(u){
   const p=Math.max(0,Math.min(.999,(u.anim.duration-u.anim.remaining)/u.anim.duration));
   return 12+Math.floor(p*4);
  }
- if(u.hit>0)return 6;
  if(u.anim&&u.anim.remaining>0){const elapsed=u.anim.duration-u.anim.remaining;const progress=Math.max(0,Math.min(.999,elapsed/u.anim.duration));return (u.anim.type==='skill'?12:8)+Math.floor(progress*4)}
  if(u.walking)return Math.floor((u.phase%(Math.PI*2))/(Math.PI*2)*4)%4;
+ if(u.hit>0)return 6;
  return 4+(Math.floor(state.time*1.4+u.phase)%2);
 }
 function sheetUrl(m){return m.art?.sheet||m.art?.battle_side}
@@ -1006,7 +1006,7 @@ function reset(){
  refreshCoinDisplays();
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  towerCooldowns.ally=1;
- towerAttackAnims.ally=0;state.flameRemaining=0;state.flameCooldown=0;state.flameTick=0;state.guardianTilt=0;state.guardianFlameAngle=0;state.guardianTarget=null;towerProjectiles=[];chargeEffects=[];unitSerial=0;
+ towerAttackAnims.ally=0;state.flameRemaining=0;state.flameCooldown=0;state.flameTick=0;state.guardianTilt=0;state.guardianFacing=1;state.guardianFlameAngle=0;state.guardianTarget=null;towerProjectiles=[];chargeEffects=[];unitSerial=0;
  state.enemyRoster=roster.filter(m=>window.MonstersClashEnvironment?.matchesElement(m));if(!state.enemyRoster.length)state.enemyRoster=roster.slice();else{const other=roster.filter(m=>!state.enemyRoster.includes(m));if(other.length)state.enemyRoster.push(other[Math.floor(Math.random()*other.length)]);}
  state.finalMonster=state.finalRank?state.enemyRoster[Math.floor(Math.random()*state.enemyRoster.length)]:null;
  $('gear-detail').hidden=true;document.querySelector('.battle-sidebar').append($('gear-detail'));$('gear-detail').dataset.kind='';document.querySelectorAll('.battle-sidebar [aria-controls="gear-detail"]').forEach(b=>b.setAttribute('aria-expanded','false'));$('battle-items').replaceChildren(...progression.summoner.equipment.slots.map((slot,i)=>{const b=document.createElement('button'),small=document.createElement('small'),id=profile.summonerEquipment?.[slot],inst=profile.inventory.find(x=>x.id===id),item=progression.summoner.equipment.items.find(x=>x.id===inst?.item_id);b.textContent=['♛','◇','⚔','▣','○','▤'][i];small.textContent=slot;b.append(small);b.title=item?.name||'Empty '+slot;b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','gear-detail');b.onclick=()=>toggleGearDetail(b,'item:'+slot);return b;}));
@@ -1046,7 +1046,7 @@ const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(
 const forward=side>0?1:-1;
 const x=side<0?spawnX:spawnX+forward*Math.min(54,Math.max(0,54-row.clearance));
 state.units.push({m,side,rank,scale,damageScale,skillScale,attackSpeed,defenceScale:1+(bonus.defence||0)/100,skillCD:Math.max(.1,m.skill.cooldown_seconds*(1-Math.min(60,bonus.skill_cdr||0)/100)),rankStyle:specialBosses.includes(m)?'normal':rank,darkEvolved:rank==='boss'&&!specialBosses.includes(m),nightBoost:false,rankParticles:[],rankEmit:0,visualScale:rank==='boss'?cfg.boss_sprite_scale:rank==='elite'?cfg.elite_sprite_scale:cfg.normal_sprite_scale,x,y:row.y,radius:m.role==='tank'?27:23,hp,maxhp:hp,shield:0,shieldTime:0,shieldImpact:0,shieldStart:0,atk:.5/attackSpeed,skill:Math.max(.1,m.skill.cooldown_seconds*(1-Math.min(60,bonus.skill_cdr||0)/100)),motion:0,hit:0,phase:Math.random()*6,mod:b,walking:false,anim:null,charge:null,uid:++unitSerial,facing:side>0?1:-1});if(side<0&&rank!=='normal'){soundEffect(rank+'_arrival');state.heartbeatRank=rank;state.heartbeatTimer=.85;}return true}
-function dmg(u,amount,damageType='physical',penetration=0){
+function dmg(u,amount,damageType='physical',penetration=0,hitReaction=true){
  if(!Number.isFinite(amount)||amount<=0||u.hp<=0)return;
  // DEF and RES mitigate direct hits before existing map, passive and shield protection.
  if(damageType!=='true'){const magical=damageType==='magic'||damageType==='magical',stat=magical?u.m.stats?.res:u.m.stats?.def;amount*=100/(100+Math.max(0,(Number(stat)||0)*(u.defenceScale||1))*(1-Math.max(0,Math.min(100,penetration))/100));}
@@ -1055,7 +1055,7 @@ function dmg(u,amount,damageType='physical',penetration=0){
  const shield=Math.min(u.shieldTime>0?u.shield:0,amount);
  u.shield=Math.max(0,u.shield-shield);
  if(shield>0){u.shieldImpact=.32;if(u.shield<=0)u.natureShieldBreak=.55;}
- u.hp-=amount-shield;u.hit=.15;
+ u.hp-=amount-shield;if(hitReaction)u.hit=.15;
  if(damageType!=='true')soundEffect(shield>0?'shield_hit':'impact');if(shield>0&&u.shield<=0)soundEffect('shield_break');if(u.hp<=0)soundEffect('collapse');
 }
 function activateShield(u){
@@ -1080,11 +1080,11 @@ function towerSlotFor(u){
  const x=frontline-u.side*rank*52;
  return {x,y:TOWER_LANES[row],rank};
 }
-function hitTower(side,amount){
+function hitTower(side,amount,damageType='physical'){
  const reduction=Math.max(0,Math.min(.9,Number(battleRules.towers?.common_passive?.direct_damage_reduction_pct)||0));
  const amountDone=Math.max(0,amount*(1-reduction));
  if(side>0)return;
- const before=state.towerShield.hp;const guardianStats=TowerUpgrades.equipmentStats(run,equipmentConfig);const damage=TowerUpgrades.absorb(state.towerShield,amountDone*100/(100+guardianStats.fortressDef),TowerUpgrades.equipmentStats(run,equipmentConfig).shieldDelay);state.allyBase=Math.max(0,state.allyBase-damage);if(before>state.towerShield.hp)soundEffect(state.towerShield.hp<=0?'shield_break':'shield_hit');if(damage>0)soundEffect('tower_hit');
+ const before=state.towerShield.hp;const guardianStats=TowerUpgrades.equipmentStats(run,equipmentConfig);const damage=TowerUpgrades.absorb(state.towerShield,amountDone*100/(100+(damageType==='magical'||damageType==='magic'?guardianStats.fortressRes:guardianStats.fortressDef)),TowerUpgrades.equipmentStats(run,equipmentConfig).shieldDelay);state.allyBase=Math.max(0,state.allyBase-damage);if(before>state.towerShield.hp)soundEffect(state.towerShield.hp<=0?'shield_break':'shield_hit');if(damage>0)soundEffect('tower_hit');
 }
 function performCharge(u,dt){
  const c=u.charge;if(!c)return false;
@@ -1120,7 +1120,7 @@ function performCharge(u,dt){
     if(c.target&&c.target.hp>0&&unitDistance(u,c.target)<u.radius+c.target.radius+18){
      dmg(c.target,power,u.m.skill.effect.damage_type||u.m.attack.damage_type);landed=true;
     }else if(!c.target&&unitDistance(u,c.destination)<18){
-     hitTower(u.side,power);landed=true;
+     hitTower(u.side,power,u.m.attack.damage_type);landed=true;
     }
     c.hit=true;u.motion=.22;
     if(landed)chargeEffects.push({x:u.x,y:u.y-38*u.visualScale,scale:u.visualScale,life:.34,maxLife:.34,impact:true,side:u.side});
@@ -1168,8 +1168,8 @@ function separateGroundUnits(){
 function guardianPose(){
  const img=towerImages.ally,height=towerLayout.height,width=readyImage(img)?height*img.naturalWidth/img.naturalHeight:height,top=towerLayout.ground-height+(state.allyBase>0?-12+Math.sin(state.time*2.2)*3:0),cx=towerLayout.x,cy=top+height*.5,angle=state.guardianTilt||0;
  const actorRatio=Math.min(1,cv.height/(Math.min(cv.clientWidth,cv.clientHeight)<=500?450:H)/(cv.width/W||1));
- const point=(p)=>{const x=(p[0]-.5)*width,y=(p[1]-.5)*height;return {x:cx+(x*Math.cos(angle)-y*Math.sin(angle))*actorRatio,y:cy+x*Math.sin(angle)+y*Math.cos(angle)};};
- return {height,width,top,cx,cy,angle,actorRatio,laser:point(towerConfigs.ally.muzzles.laser),flame:point(towerConfigs.ally.muzzles.flame),core:point(towerConfigs.ally.lights.core)};
+ const facing=state.guardianFacing||1;const point=(p)=>{const x=(p[0]-.5)*width*facing,y=(p[1]-.5)*height;return {x:cx+(x*Math.cos(angle)-y*Math.sin(angle))*actorRatio,y:cy+x*Math.sin(angle)+y*Math.cos(angle)};};
+ return {height,width,top,cx,cy,angle,actorRatio,laser:point(towerConfigs.ally.muzzles.laser),flame:point(towerConfigs.ally.muzzles.flame),core:point(towerConfigs.ally.shield_center||towerConfigs.ally.lights.core)};
 }
 function stepTowerDefense(dt){
  const attack=TowerUpgrades.attackStats(towerConfigs.ally,run,equipmentConfig);
@@ -1179,20 +1179,21 @@ function stepTowerDefense(dt){
  const foes=state.units.filter(u=>u.hp>0&&u.side<0&&Math.hypot(u.x-(towerLayout.x-40),(u.y-335)*.6)<=range).sort((a,b)=>a.x-b.x);
  if(attack.type==='laser'){
  const skill=attack.skill,camera=Math.max(0,Math.min(progression.defence.fortress_world_width-W,towerLayout.x-progression.defence.fortress_start_x));
- const visible=state.units.filter(u=>u.hp>0&&u.side<0&&u.x>=towerLayout.x&&u.x<=camera+W*.75).sort((a,b)=>a.x-b.x);
+ const visible=state.units.filter(u=>u.hp>0&&u.side<0&&u.x>=camera&&u.x<=camera+W*.75&&Math.abs(u.x-towerLayout.x)<=range).sort((a,b)=>Math.hypot(a.x-towerLayout.x,a.y-335)-Math.hypot(b.x-towerLayout.x,b.y-335));
  const target=visible.includes(state.guardianTarget)?state.guardianTarget:visible[0];state.guardianTarget=target||null;
- let pose=guardianPose();const maxTilt=towerConfigs.ally.aim.max_tilt_degrees*Math.PI/180,desired=target?Math.max(-maxTilt,Math.min(maxTilt,Math.atan2(target.y-34-pose.laser.y,Math.max(1,target.x-pose.laser.x)))):0;
+ if(target&&Math.abs(target.x-towerLayout.x)>12)state.guardianFacing=target.x>=towerLayout.x?1:-1;
+ let pose=guardianPose();const maxTilt=towerConfigs.ally.aim.max_tilt_degrees*Math.PI/180,desired=target?state.guardianFacing*Math.max(-maxTilt,Math.min(maxTilt,Math.atan2(target.y-34-pose.laser.y,Math.max(1,Math.abs(target.x-pose.laser.x)/Math.max(.01,pose.actorRatio))))):0;
  state.guardianTilt+=(desired-state.guardianTilt)*(1-Math.exp(-dt*towerConfigs.ally.aim.tracking_speed));pose=guardianPose();
- if(target&&towerCooldowns.ally<=0){dmg(target,damage,attack.damageType,attack.penetration);towerProjectiles.push({type:'laser',x:pose.laser.x,y:pose.laser.y,tx:target.x,ty:target.y-34,age:0,duration:Math.max(.13,Math.hypot(target.x-pose.laser.x,target.y-34-pose.laser.y)/1500)});towerCooldowns.ally+=attack.interval;}
+ if(target&&towerCooldowns.ally<=0){dmg(target,damage,attack.damageType,attack.penetration,false);towerProjectiles.push({type:'laser',x:pose.laser.x,y:pose.laser.y,tx:target.x,ty:target.y-34,age:0,duration:Math.max(.13,Math.hypot(target.x-pose.laser.x,target.y-34-pose.laser.y)/1500)});towerCooldowns.ally+=attack.interval;}
  state.flameCooldown=Math.max(0,(state.flameCooldown||0)-dt);
- const nearby=state.units.filter(u=>u.hp>0&&u.side<0&&u.x>=pose.flame.x&&Math.hypot(u.x-pose.flame.x,u.y-34-pose.flame.y)<=skill.range);
+ const nearby=state.units.filter(u=>u.hp>0&&u.side<0&&(u.x-pose.flame.x)*state.guardianFacing>=0&&Math.hypot(u.x-pose.flame.x,u.y-34-pose.flame.y)<=skill.range);
  const flameTarget=nearby.find(u=>u.rank==='boss'||u.rank==='elite')||nearby[0];
- const aim=flameTarget?Math.atan2(flameTarget.y-34-pose.flame.y,Math.max(1,flameTarget.x-pose.flame.x)):0;
- state.guardianFlameAngle+=(aim-state.guardianFlameAngle)*(1-Math.exp(-dt*10));
- const victims=nearby.filter(u=>Math.abs(Math.atan2(u.y-34-pose.flame.y,u.x-pose.flame.x)-state.guardianFlameAngle)<=skill.cone_half_angle);
+ const aim=flameTarget?Math.atan2(flameTarget.y-34-pose.flame.y,flameTarget.x-pose.flame.x):state.guardianFacing<0?Math.PI:0;
+ state.guardianFlameAngle+=Math.atan2(Math.sin(aim-state.guardianFlameAngle),Math.cos(aim-state.guardianFlameAngle))*(1-Math.exp(-dt*10));
+ const victims=nearby.filter(u=>Math.abs(Math.atan2(Math.sin(Math.atan2(u.y-34-pose.flame.y,u.x-pose.flame.x)-state.guardianFlameAngle),Math.cos(Math.atan2(u.y-34-pose.flame.y,u.x-pose.flame.x)-state.guardianFlameAngle)))<=skill.cone_half_angle);
  if(state.flameRemaining<=0&&state.flameCooldown<=0&&victims.length&&(victims.length>=2||victims.some(u=>u.rank==='elite'||u.rank==='boss'))){state.flameRemaining=skill.duration_seconds;state.flameCooldown=skill.cooldown_seconds;state.flameTick=0;}
- if(state.flameRemaining>0){const span=Math.min(dt,state.flameRemaining);state.flameRemaining-=span;state.flameTick+=span;if(state.flameTick>=.2||state.flameRemaining<=0){const tick=state.flameTick;state.flameTick=0;for(const u of victims){dmg(u,skill.damage_per_second*tick,skill.damage_type);u.guardianBurn=skill.burn_duration_seconds;u.guardianBurnDps=skill.burn_damage_per_second;}}}
- for(const u of state.units){if(u.hp>0&&u.guardianBurn>0){const span=Math.min(dt,u.guardianBurn);u.guardianBurn-=span;u.guardianBurnTick=(u.guardianBurnTick||0)+span;if(u.guardianBurnTick>=.5||u.guardianBurn<=0){dmg(u,u.guardianBurnDps*u.guardianBurnTick,'magical');u.guardianBurnTick=0;}}}
+ if(state.flameRemaining>0){const span=Math.min(dt,state.flameRemaining);state.flameRemaining-=span;state.flameTick+=span;if(state.flameTick>=.2||state.flameRemaining<=0){const tick=state.flameTick;state.flameTick=0;for(const u of victims){dmg(u,skill.damage_per_second*tick,skill.damage_type,0,false);u.guardianBurn=skill.burn_duration_seconds;u.guardianBurnDps=skill.burn_damage_per_second;}}}
+ for(const u of state.units){if(u.hp>0&&u.guardianBurn>0){const span=Math.min(dt,u.guardianBurn);u.guardianBurn-=span;u.guardianBurnTick=(u.guardianBurnTick||0)+span;if(u.guardianBurnTick>=.5||u.guardianBurn<=0){dmg(u,u.guardianBurnDps*u.guardianBurnTick,'magical',0,false);u.guardianBurnTick=0;}}}
  }else if(foes.length&&towerCooldowns.ally<=0){
  soundEffect(attack.type==='electric_pulse'?'lightning':'arrow');
  if(attack.type==='electric_pulse'){
@@ -1316,7 +1317,7 @@ function step(dt){
    u.y=Math.max(343,Math.min(429,u.y));
   }else if(u.atk<=0&&(target||slot.rank===0)){
    const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*u.damageScale*(u.nightBoost?1+progression.dark_night_bonus_pct.damage/100:1);
-   if(target)dmg(target,amount,u.m.attack.damage_type);else hitTower(u.side,amount);
+   if(target)dmg(target,amount,u.m.attack.damage_type);else hitTower(u.side,amount,u.m.attack.damage_type);
    if(target)soundEffect('attack');
    u.atk=u.m.attack.interval_seconds/u.attackSpeed;
    // Mossguard uses a short shell/body lunge; Cinderhorn uses a horn-first thrust.
@@ -1351,7 +1352,7 @@ function drawTower(side,x,hp){
  if(readyImage(img)){
    const height=towerLayout.height,width=height*(img.naturalWidth/(towerConfigs[side]?.sheet_columns||4))/(img.naturalHeight/(towerConfigs[side]?.sheet_rows||1));
    // Low hover keeps the fortress near the ground; destroyed artwork rests at ground level.
-   ctx.save();if(towerConfigs[side]?.render_mode==='guardian'){ctx.translate(x,y-16+height*.5);ctx.rotate(state.guardianTilt||0);ctx.translate(-x,-(y-16+height*.5));}
+   ctx.save();if(towerConfigs[side]?.render_mode==='guardian'){ctx.translate(x,y-16+height*.5);ctx.rotate(state.guardianTilt||0);ctx.scale(state.guardianFacing||1,1);ctx.translate(-x,-(y-16+height*.5));}
    spriteFrame(img,frame,x-width/2,y-16,width,height,
      towerConfigs[side]?.sheet_columns||4,towerConfigs[side]?.sheet_rows||1);
    if(towerConfigs[side]?.render_mode==='guardian'){
@@ -1829,8 +1830,8 @@ function drawLobby(t){
  const world=document.querySelector('.lobby-world'),elite=world.querySelector('.lobby-elite'),boss=world.querySelector('.lobby-boss');
  for(const [el,rank] of [[elite,'elite'],[boss,'boss']])el.style.filter=rankFilter(rank,clock)+' drop-shadow(0 9px 5px #132516a0)';
  for(const el of world.querySelectorAll('.lobby-monster'))el.style.backgroundPosition=''+(Math.floor(clock*1.4)%2)*33.333333+'% 33.333333%';
- const shield=towerRegistry.shields.find(s=>s.id==='s001'),cfg={shield_plate_min:shield.plate_min,shield_plate_max:shield.plate_max,shield_render_mode:shield.render_mode},s={hp:160,max:160,phase:clock*(shield.orbit_speed||.85),flash:0,broken:0,hitAngle:0};
- for(const front of [false,true]){const canvas=world.querySelector(front?'.lobby-shield-front':'.lobby-shield-rear'),g=canvas.getContext('2d');g.clearRect(0,0,320,320);g.save();g.translate(160,215);g.scale(1.45,1.45);TowerUpgrades.renderShield(g,s,4,cfg,0,0,front);g.restore();}
+ const shield=towerRegistry.shields.find(s=>s.id==='s001'),cfg={shield_plate_min:shield.plate_min,shield_plate_max:shield.plate_max,shield_render_mode:shield.render_mode,shield_orbit:towerRegistry.towers.find(t=>t.id==='f001')?.shield_orbit},s={hp:160,max:160,phase:clock*(shield.orbit_speed||.85),flash:0,broken:0,hitAngle:0};
+ for(const front of [false,true]){const canvas=world.querySelector(front?'.lobby-shield-front':'.lobby-shield-rear'),g=canvas.getContext('2d');g.clearRect(0,0,320,320);g.save();g.translate(150,172);g.scale(1.45,1.45);TowerUpgrades.renderShield(g,s,4,cfg,0,0,front);g.restore();}
  const canvas=$('lobby-atmosphere'),w=world.clientWidth,h=world.clientHeight;if(!w||!h)return;
  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
  const g=canvas.getContext('2d');g.clearRect(0,0,w,h);
