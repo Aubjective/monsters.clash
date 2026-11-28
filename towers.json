@@ -120,12 +120,16 @@
         "tracking_speed": 9
       },
       "shield_orbit": {
-        "rx": 58,
-        "ry": 27,
+        "rx": 84,
+        "ry": 43,
         "plate_scale": 0.7
       },
       "shield_center": [
         0.47,
+        0.55
+      ],
+      "hover_anchor": [
+        0.43,
         0.55
       ]
     },
