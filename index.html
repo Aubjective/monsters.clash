@@ -372,41 +372,6 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 @media(max-height:500px){.lobby-header{padding:8px 12px;min-height:48px}.lobby-brand h1{font-size:clamp(20px,4.5vw,40px)}.lobby-kicker{font-size:8px}.lobby-utility{right:44px;top:8px}.lobby-utility .coin-wallet{font-size:10px;padding:4px}.lobby-brand{max-width:65%}}
 @media(orientation:portrait) and (max-width:699px){.lobby-world .lobby-monster{--size:19vw}.lobby-world .lobby-elite{--size:23vw}.lobby-world .lobby-boss{--size:27vw}.lobby-sentinel{width:24vw}.lobby-generator{bottom:34%}}
 @media(prefers-reduced-motion:reduce){.lobby-world .lobby-monster,.lobby-sentinel,.lobby-drone,.lobby-generator{animation:none}}
-.battle-sidebar{overflow:hidden;gap:0;padding:0}.fortress-set-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;touch-action:pan-y;padding:8px;scrollbar-width:thin;display:flex;flex-direction:column;gap:5px}.fortress-set-scroll>*{flex-shrink:0}.fortress-overview{display:grid;gap:3px;text-align:center;font-size:11px}.fortress-overview strong{color:#f4d18a;font-size:14px}.fortress-overview progress{width:100%;height:8px;accent-color:#65a9ef}.fortress-overview #fortress-hp-bar{accent-color:#64c783}.fortress-overview #battle-hero{height:clamp(48px,12vh,105px)}
-
-/* Icon-only dice controls. The movement surface accepts a continuous analogue drag. */
-.battle-sidebar{touch-action:auto}
-.fortress-controls{flex:0 0 auto;display:flex;align-items:center;justify-content:center;padding:5px;background:#102438;border-top:1px solid #4b657e;touch-action:none;user-select:none}
-.fortress-dice{--pip:clamp(30px,5.6vh,44px);position:relative;width:calc(var(--pip)*3 + 8px);height:calc(var(--pip)*3 + 8px);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:3px;align-items:center;justify-items:center;touch-action:none;user-select:none;isolation:isolate}
-.fortress-dice:before{content:"";position:absolute;width:70%;height:70%;left:15%;top:15%;transform:rotate(45deg);border-radius:17%;background:#122639d9;border:1px solid #627b90;box-shadow:0 0 9px #07132099;z-index:-1;pointer-events:none}
-.fortress-dice button{padding:0;width:var(--pip);height:var(--pip);border-radius:50%;display:grid;place-items:center;touch-action:none;user-select:none;-webkit-tap-highlight-color:transparent;background:#20394ef2;border:1px solid #7b91a3;color:#e4eef6;box-shadow:0 2px 6px #06142088}
-.fortress-dice button svg{width:53%;height:53%;pointer-events:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.fortress-dice button:focus-visible{outline:2px solid #b8eaff;outline-offset:2px}
-.fortress-dice button[data-active=true]{background:#476b85;border-color:#a5dfff;box-shadow:0 0 9px #60b7ec77}
-.fortress-dice .dice-toggle{grid-area:2/2;z-index:2;width:calc(var(--pip)*.94);height:calc(var(--pip)*.94)}
-.dice-toggle .auto-light{width:8px;height:8px;border-radius:50%;background:#92dfff;box-shadow:0 0 12px #62ceff,0 0 4px #d8f5ff}
-.dice-toggle[aria-expanded=true] .auto-light{background:#b2c4d3;box-shadow:none}
-.dice-toggle .dice-symbol{width:20px;height:20px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:2px;align-items:center;justify-items:center;pointer-events:none}
-.dice-symbol i{width:4px;height:4px;background:#94ddff;border-radius:50%;box-shadow:0 0 5px #67cbff}
-.dice-symbol i:nth-child(1){grid-area:1/1}.dice-symbol i:nth-child(2){grid-area:1/3}.dice-symbol i:nth-child(3){grid-area:2/2}.dice-symbol i:nth-child(4){grid-area:3/1}.dice-symbol i:nth-child(5){grid-area:3/3}
-.fortress-dice[data-open=false]{width:calc(var(--pip)*1.55);height:calc(var(--pip)*1.55);display:flex;align-items:center;justify-content:center}
-.fortress-dice[data-open=false] .dice-direction{display:none}
-.fortress-dice[data-open=true] .dice-symbol{display:none}
-.fortress-dice[data-open=false] .dice-toggle .auto-light{display:none}
-.dice-direction[data-direction=up]{grid-area:1/2}.dice-direction[data-direction=left]{grid-area:2/1}.dice-direction[data-direction=right]{grid-area:2/3}.dice-direction[data-direction=down]{grid-area:3/2}
-.fortress-action-controls{position:absolute;right:12px;bottom:10px;z-index:3;display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none}
-.fortress-action-controls .fortress-dice{--pip:clamp(42px,7.5vh,64px);pointer-events:auto;display:flex;align-items:center;justify-content:center;width:calc(var(--pip)*1.55);height:calc(var(--pip)*1.55)}
-.fortress-action-controls .fortress-dice:before{border-color:#b79b6b}
-.fortress-action-controls .dice-toggle{border-color:#b79b6b}
-.fortress-action-controls .dice-toggle .auto-light{display:block;background:#ffd290;box-shadow:0 0 10px #eab864}
-.fortress-action-controls .fortress-dice[data-open=true]{flex-direction:column;height:auto;width:auto;padding:8px}
-.fortress-action-controls .fortress-dice[data-open=true]:before{width:calc(var(--pip)*1.1);height:calc(var(--pip)*1.1);left:50%;top:auto;bottom:5px;transform:translateX(-50%) rotate(45deg)}
-.fortress-action-controls .fortress-dice[data-open=true] .dice-toggle{width:30px;height:30px}
-.fortress-action-controls .fortress-dice[data-open=true] .dice-toggle .auto-light{background:#b1a387;box-shadow:none}
-.fortress-fire[hidden]{display:none}.fortress-fire{display:flex;justify-content:center}.fortress-fire button{background:#935c35;border-color:#f0c982;z-index:1}.fortress-fire button[data-active=true]{background:#c18c4b;box-shadow:0 0 12px #efc37f99;border-color:#fff0be}
-.arena-wrap:has(.run-results:not([hidden])) .fortress-action-controls{visibility:hidden}
-.battle-sidebar:has(+.arena-wrap .run-results:not([hidden])) .fortress-controls{opacity:.45;pointer-events:none}
-@media(max-height:500px){.fortress-set-scroll{padding:4px}.fortress-overview #battle-hero{height:42px}.fortress-controls{padding:3px}.fortress-action-controls{right:7px;bottom:7px}}
 </style>
 </head>
 <body>
@@ -427,7 +392,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 </section>
 <section class="app-screen" id="summoner-screen" hidden><div class="page-inner"><div class="page-head"><div><div class="eyebrow">Player Progression</div><h2>Summoner</h2></div><button id="summoner-back">← Home</button></div>
 <div class="summoner-detail"><div class="summoner-panel summoner-home"><span class="summoner-face" aria-label="Temporary Summoner portrait"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path d="M5 27L6 14Q8 4 16 3Q24 4 26 14L27 27L16 30Z" fill="#50749c" stroke="#c9a768"/><path d="M10 13Q16 8 22 13L21 22L16 25L11 22Z" fill="#d7b08e"/><path d="M10 13L16 7L22 13L16 11Z" fill="#263c59"/><path d="M12 17H14M18 17H20" stroke="#233246" stroke-width="2"/></svg></span><div style="flex:1;min-width:0"><strong id="summoner-home-label">Lv 1 · Power 100</strong><progress id="summoner-home-bar" max="1" value="0"></progress><small id="summoner-home-exp">0 / 100 EXP</small></div></div><div class="summoner-hero-art" id="summoner-hero-art" aria-label="Summoner portrait"><span id="summoner-hero-placeholder">Artwork pending</span><span id="summoner-hero-sprite" hidden></span></div><p id="summoner-character-name"></p><p id="summoner-power-breakdown"></p><div class="profile-stats"><div class="profile-stat"><strong>Summoner Power</strong><small>Passive · SP capacity and faster summoning</small></div><div class="profile-stat"><strong>Summoning Surge</strong><small id="summoner-skill-info"></small></div></div><h3>Summoner Collection</h3><div id="summoner-collection" class="app-grid"></div><h3>Equipment</h3><p class="page-sub">Equipment and loot are coming soon.</p><div id="summoner-equipment" class="summoner-slots"></div><button id="summoner-inventory">Inventory</button></div></div></section>
-<section class="app-screen" id="inventory-screen" hidden><div class="page-inner"><div class="page-head"><div><div class="eyebrow">Player Collection</div><h2>Inventory</h2></div><button id="inventory-back">← Home</button></div><p class="page-sub">Equipment and loot collection is not yet available.</p><h3>Rarity</h3><div id="inventory-rarities" class="inventory-rarities"></div><h3>Elements</h3><div id="inventory-elements" class="inventory-rarities"></div><div id="inventory-items" class="app-grid"></div></div></section>
+<section class="app-screen" id="inventory-screen" hidden><div class="page-inner"><div class="page-head"><div><div class="eyebrow">Player Collection</div><h2>Inventory</h2></div><button id="inventory-back">← Summoner</button></div><p class="page-sub">Equipment and loot collection is not yet available.</p><h3>Rarity</h3><div id="inventory-rarities" class="inventory-rarities"></div><h3>Elements</h3><div id="inventory-elements" class="inventory-rarities"></div><div id="inventory-items" class="app-grid"></div></div></section>
 <section class="app-screen" id="bestiary-screen" hidden>
  <div class="page-inner">
   <div class="page-head"><div><div class="eyebrow">Monster Collection</div><h2>Bestiary</h2></div></div>
@@ -479,7 +444,7 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 <div id="site-navigation"><button class="floating-plus" id="nav-toggle" aria-label="Expand menu" aria-expanded="false">+</button>
 <nav class="pop-menu" id="quick-nav" hidden aria-label="Navigation">
  <button id="nav-home">⌂ Main Menu</button>
- <button id="nav-inventory">Inventory</button><button id="nav-bestiary">Bestiary</button>
+ <button id="nav-summoner">Summoner</button><button id="nav-inventory">Inventory</button><button id="nav-bestiary">Bestiary</button>
  <button id="nav-settings">Settings</button>
  <button id="nav-team">My Team</button><button id="nav-upgrades">Upgrades</button>
  <button id="nav-music">Music: On</button>
@@ -498,10 +463,10 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
   <p class="map-info-desc" id="stage-info-desc"></p>
   <div id="stage-info-details"></div>
  </aside>
- <div class="battle-middle"><aside class="battle-sidebar" aria-label="Fortress set and controls"><div class="fortress-set-scroll">
- <section class="fortress-overview"><strong id="battle-hero-name">Fortress</strong><canvas id="battle-hero" width="180" height="120" aria-label="Fortress portrait"></canvas><b id="fortress-hp-label">HP</b><progress id="fortress-hp-bar" max="1" value="1"></progress><b id="summoner-battle-label">10 SP</b><progress id="summoner-battle-bar" max="1" value="1"></progress></section>
- <h3>Fortress Set Upgrades</h3><div id="battle-upgrades"><button class="battle-gear" id="gear-attack"><canvas width="88" height="68" id="gear-art-attack"></canvas><span id="gear-label-attack"></span></button><button class="battle-gear" id="gear-shield"><canvas width="88" height="68" id="gear-art-shield"></canvas><span id="gear-label-shield"></span></button><button class="battle-gear" id="gear-drone"><canvas width="88" height="68" id="gear-art-drone"></canvas><span id="gear-label-drone"></span></button><button class="battle-gear" id="gear-generator"><canvas width="88" height="68" id="gear-art-generator"></canvas><span id="gear-label-generator"></span></button></div><span id="tower-shield-label" hidden></span><section id="gear-detail" class="gear-detail" hidden><div class="gear-heading"><strong id="gear-title"></strong><button id="gear-close" aria-label="Close statistics">×</button></div><div id="gear-stats"></div><div id="gear-upgrade-list"></div><button id="upgrade-attack" hidden></button><button id="upgrade-shield" hidden></button><button id="upgrade-drone" hidden></button><button id="upgrade-generator" hidden></button><button id="upgrade-sp" hidden></button></section>
- </div><div class="fortress-controls" aria-label="Fortress movement controls"><div id="fortress-stick" class="fortress-dice" data-open="false" role="group" aria-label="Movement dice controller"><button id="movement-mode" class="dice-toggle" aria-expanded="false" aria-label="Enable manual movement" title="Enable manual movement"><span class="dice-symbol" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="auto-light" aria-hidden="true"></span></button><button class="dice-direction" data-direction="up" aria-label="Move up" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 15 7-7 7 7"/></svg></button><button class="dice-direction" data-direction="left" aria-label="Move left" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button><button class="dice-direction" data-direction="right" aria-label="Move right" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><button class="dice-direction" data-direction="down" aria-label="Move down" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7"/></svg></button></div></div> </aside><div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas><div class="fortress-action-controls" aria-label="Fortress attack and skill controls"><div id="fire-dice" class="fortress-dice" data-open="false"><button id="fortress-auto" class="dice-toggle" aria-expanded="false" aria-controls="fortress-fire" aria-label="Enable manual fire" title="Enable manual fire"><span class="auto-light" aria-hidden="true"></span></button><div id="fortress-fire" class="fortress-fire" hidden><button data-move="fire" aria-label="Fire projectile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/><circle cx="12" cy="12" r="1"/></svg></button></div></div></div>
+ <div class="battle-middle"><aside class="battle-sidebar" aria-label="Summoner and upgrades">
+ <div class="summoner-panel summoner-battle"><canvas id="battle-hero" width="180" height="180" aria-label="Animated Summoner"></canvas><strong id="battle-hero-name">Summoner</strong><b id="summoner-battle-label">100 SP</b><progress id="summoner-battle-bar" max="1" value="0"></progress><div class="skill-slots"><button type="button" id="summoner-surge" disabled aria-label="Summoning Surge"><span>⚡</span><small id="surge-caption">Surge</small></button><button disabled title="Future skill slot">🔒</button><button disabled title="Future skill slot">🔒</button></div><button id="summoner-stats-toggle">Summoner stats</button></div>
+ <h3>Fortress Equipment</h3><div id="battle-upgrades"><button class="battle-gear" id="gear-attack"><canvas width="88" height="68" id="gear-art-attack"></canvas><span id="gear-label-attack"></span></button><button class="battle-gear" id="gear-shield"><canvas width="88" height="68" id="gear-art-shield"></canvas><span id="gear-label-shield"></span></button><button class="battle-gear" id="gear-drone"><canvas width="88" height="68" id="gear-art-drone"></canvas><span id="gear-label-drone"></span></button><button class="battle-gear" id="gear-generator"><canvas width="88" height="68" id="gear-art-generator"></canvas><span id="gear-label-generator"></span></button></div><span id="tower-shield-label" hidden></span><h3>Summoner Items</h3><div id="battle-items" class="battle-items"></div><section id="gear-detail" class="gear-detail" hidden><div class="gear-heading"><strong id="gear-title"></strong><button id="gear-close" aria-label="Close statistics">×</button></div><div id="gear-stats"></div><div id="gear-upgrade-list"></div><button id="upgrade-attack" hidden></button><button id="upgrade-shield" hidden></button><button id="upgrade-drone" hidden></button><button id="upgrade-generator" hidden></button><button id="upgrade-sp" hidden></button></section>
+ </aside><div class="arena-wrap"><canvas id="game" width="960" height="480" aria-label="Monsters Clash battle arena"></canvas>
   <section class="run-results" id="run-results" hidden aria-live="polite" aria-label="Battle result">
     <h2 id="result-heading">Victory</h2>
     <p id="result-stage"></p>
@@ -790,9 +755,13 @@ function summonerStats(){
 }
 function rankUnlockLevel(rank){if(progression.testing_mode===true)return 1;const c=progression.summoner;return rank==='elite'?c.elite_unlock_level:rank==='boss'?c.boss_unlock_level:1;}
 function refreshSummoner(){
- const battlePower=10,available=Math.min(battlePower,state?.availablePower??battlePower);
- $('summoner-battle-label').textContent=Math.floor(available)+' / '+battlePower+' SP';$('summoner-battle-bar').value=available/battlePower;
- $('summoner-battle-bar').title='Monster deployment · '+progression.summoner.power_regen_per_second+' SP/s';
+ const s=summonerStats(),c=progression.summoner;
+ const homeLabel=$('summoner-home-label'),homeBar=$('summoner-home-bar');homeLabel.textContent='Lv '+s.level+' · Max SP '+s.power;homeBar.value=s.max?1:s.xp/s.required;homeBar.title=s.max?'Maximum level':s.xp+' / '+s.required+' EXP';const battlePower=s.power+(run.active?(run.spLevel||0)*c.run_sp_per_level:0),available=Math.min(battlePower,state?.availablePower??battlePower),battleLabel=$('summoner-battle-label'),battleBar=$('summoner-battle-bar');battleLabel.textContent=Math.floor(available)+' / '+battlePower+' SP';battleBar.value=available/battlePower;battleBar.title='Summoner Power · +'+(c.power_regen_per_second*(run.surgeTime>0?1+c.surge_regen_pct/100:1))+' SP/s';
+ $('summoner-home-exp').textContent=s.max?'Maximum level':s.xp+' / '+s.required+' EXP · Summoning speed +'+(s.power/c.base_power*100-100).toFixed(0)+'%';
+ const button=$('summoner-surge');const locked=progression.testing_mode!==true&&s.level<c.surge_unlock_level,active=run.surgeTime>0,cd=run.surgeCooldown>0;
+ const label=locked?'Surge · Lv '+c.surge_unlock_level:active?'Surge '+Math.ceil(run.surgeTime)+'s':cd?'Surge '+Math.ceil(run.surgeCooldown)+'s':'Surge';
+ if($('surge-caption').textContent!==label)$('surge-caption').textContent=label;button.title='Summoning Surge · '+label;
+ button.disabled=locked||active||cd||!run.active||!!state?.ended||!!state?.preparing||!!state?.portalUnlocked;
 }
 function renderSummonerPage(){
  refreshSummoner();const c=progression.summoner,s=summonerStats(),selected=c.characters.find(m=>m.id===profile.summoner)||c.characters[0];
@@ -897,7 +866,7 @@ function renderUpgrades(){
  b.disabled=state.ended||battleMenuOpen||state.countdown>0||level>=max||run.wallet<cost;
  $('gear-'+kind).classList.toggle('can-upgrade',!b.disabled&&run.active);
  }
- $('fortress-hp-label').textContent='HP '+Math.ceil(state.allyBase)+' / '+Math.ceil(TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp);$('fortress-hp-bar').value=state.allyBase/TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp;
+ $('summoner-stats-toggle').classList.toggle('can-upgrade',!$('upgrade-sp').disabled&&run.active);
  const journey=Math.max(0,Math.min(1,(towerLayout.x-progression.defence.fortress_start_x)/(progression.defence.fortress_goal_x-progression.defence.fortress_start_x)));$('journey-bar').value=journey;$('journey-label').textContent='Journey '+Math.floor(journey*100)+'%';
  const label='Stage '+run.battle+' · '+state.kills+' defeated'+(state.portalUnlocked?' · Portal open':state.finalPhase?' · Final encounter':'')+(state.preparing?' · Preparation':state.ended&&state.victory?' · Victory':'');
  if($('run-progress').textContent!==label)$('run-progress').textContent=label;
@@ -1030,17 +999,17 @@ function reset(){
  const extended=run.battle>=progression.defence.fortress_extended_stage;
  progression.defence.fortress_world_width=extended?progression.defence.fortress_extended_world_width:2*W;
  progression.defence.fortress_goal_x=extended?progression.defence.fortress_extended_goal_x:progression.defence.fortress_world_width-215;
- towerLayout.x=progression.defence.fortress_start_x;Object.assign(towerLayout,{ground:390,hpY:201,shieldY:319,generatorY:98,droneY:178});clearFortressInput();fortressTarget=null;fortressVelocity.x=fortressVelocity.y=0;fortressFacing=1;battleCameraX=0;TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;battleHeroFrame=-1;
+ towerLayout.x=progression.defence.fortress_start_x;TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;battleHeroFrame=-1;
  chooseRandomStage();
  const cfg=progression.defence;
- state={preparing:true,countdown:0,heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:10,units:[],allyBase:TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp,towerShield:TowerUpgrades.createShield(run,equipmentConfig),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,portalUnlocked:false,portalAge:0,portalExit:0,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
+ state={preparing:true,countdown:0,heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power+(run.spLevel||0)*progression.summoner.run_sp_per_level,units:[],allyBase:TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp,towerShield:TowerUpgrades.createShield(run,equipmentConfig),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,portalUnlocked:false,portalAge:0,portalExit:0,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
  refreshCoinDisplays();
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  towerCooldowns.ally=1;
  towerAttackAnims.ally=0;towerProjectiles=[];chargeEffects=[];unitSerial=0;
  state.enemyRoster=roster.filter(m=>window.MonstersClashEnvironment?.matchesElement(m));if(!state.enemyRoster.length)state.enemyRoster=roster.slice();else{const other=roster.filter(m=>!state.enemyRoster.includes(m));if(other.length)state.enemyRoster.push(other[Math.floor(Math.random()*other.length)]);}
  state.finalMonster=state.finalRank?state.enemyRoster[Math.floor(Math.random()*state.enemyRoster.length)]:null;
- $('gear-detail').hidden=true;document.querySelector('.fortress-set-scroll').append($('gear-detail'));$('gear-detail').dataset.kind='';document.querySelectorAll('.battle-sidebar [aria-controls="gear-detail"]').forEach(b=>b.setAttribute('aria-expanded','false'));
+ $('gear-detail').hidden=true;document.querySelector('.battle-sidebar').append($('gear-detail'));$('gear-detail').dataset.kind='';document.querySelectorAll('.battle-sidebar [aria-controls="gear-detail"]').forEach(b=>b.setAttribute('aria-expanded','false'));$('battle-items').replaceChildren(...progression.summoner.equipment.slots.map((slot,i)=>{const b=document.createElement('button'),small=document.createElement('small'),id=profile.summonerEquipment?.[slot],inst=profile.inventory.find(x=>x.id===id),item=progression.summoner.equipment.items.find(x=>x.id===inst?.item_id);b.textContent=['♛','◇','⚔','▣','○','▤'][i];small.textContent=slot;b.append(small);b.title=item?.name||'Empty '+slot;b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','gear-detail');b.onclick=()=>toggleGearDetail(b,'item:'+slot);return b;}));
  $('run-results').classList.add('preparing');$('run-results').hidden=false;$('run-results').scrollTop=0;$('prep-panel').hidden=false;$('result-heading').textContent='Battle Preparation';$('result-stage').textContent='Stage '+run.battle;
  for(const id of ['result-reward','result-gold-reward','result-run-coins'])$(id).hidden=true;document.querySelector('.run-result-metrics').hidden=true;
  $('restart-run-result').hidden=true;$('next-battle').hidden=false;$('next-battle').disabled=true;$('next-battle').textContent='Start Battle';
@@ -1072,7 +1041,7 @@ function spawn(m,side,rank='normal'){if(!m||!canSummon(m,side))return false;if(s
 const cfg=progression.defence,b=mods(m),bonus=progression.rank_bonus_pct[specialBosses.includes(m)?'normal':rank]||progression.rank_bonus_pct.normal,roundScale=side>0?allyScale():enemyScale(),scale=roundScale*(1+bonus.hp/100),damageScale=roundScale*(1+bonus.damage/100),skillScale=roundScale*(1+bonus.skill_power/100),attackSpeed=1+(bonus.attack_speed??0)/100,hp=m.stats.hp*(1+(b.max_hp_bonus_pct||0))*scale,spawnX=side>0?TOWER_APPROACH.ally+28:Math.min(cfg.fortress_goal_x-cfg.portal_clearance,Math.max(0,Math.min(cfg.fortress_world_width-W,towerLayout.x-cfg.fortress_start_x))+W-35);
 // Deploy just beyond the visible tower art (not behind or inside the castle).
 // Prefer a clear depth lane and shift *toward the battlefield* when occupied.
-const groundRows=TOWER_LANES;
+const groundRows=[343,363,385,407,429];
 const row=groundRows.map(y=>({y,clearance:state.units.reduce((best,u)=>Math.min(best,Math.hypot((u.x-spawnX)*.8,(u.y-y)*1.4)),Infinity)})).sort((a,b)=>b.clearance-a.clearance)[0];
 const forward=side>0?1:-1;
 const x=side<0?spawnX:spawnX+forward*Math.min(54,Math.max(0,54-row.clearance));
@@ -1102,15 +1071,14 @@ function unitDistance(a,b){return Math.hypot(a.x-b.x,(a.y-b.y)*1.45)}
 // Tower collision is separate from the visual center of the castle.
 const TOWER_APPROACH={ally:235};
 const towerLayout={x:156,ground:402,height:160,width:136,hpY:213,shieldY:331,generatorX:78,generatorY:110,generatorHeight:78,droneX:270,droneSpacing:64,droneY:190};
-const TOWER_LANES=[350,390,429];
-const fortressKeys=new Set(),fortressTouch=new Set();let fortressAuto=true,fortressTarget=null,fortressMoveAuto=true,fortressStick={x:0,y:0},fortressVelocity={x:0,y:0},fortressFacing=1,battleCameraX=0;
+const TOWER_LANES=[350,370,390,410,429];
 function towerSlotFor(u){
  const same=state.units.filter(a=>a.hp>0&&a.side===u.side&&a.assaultTower).sort((a,b)=>a.uid-b.uid);
  const index=Math.max(0,same.indexOf(u));
  const row=index%TOWER_LANES.length,rank=Math.floor(index/TOWER_LANES.length);
- const flank=u.x<towerLayout.x?-1:1;
- const x=towerLayout.x+flank*(79+rank*52);
- return {x,y:Math.max(343,Math.min(429,towerLayout.ground+(row-1)*20)),rank};
+ const frontline=TOWER_APPROACH.ally+1;
+ const x=frontline-u.side*rank*52;
+ return {x,y:TOWER_LANES[row],rank};
 }
 function hitTower(side,amount){
  const reduction=Math.max(0,Math.min(.9,Number(battleRules.towers?.common_passive?.direct_damage_reduction_pct)||0));
@@ -1139,7 +1107,7 @@ function performCharge(u,dt){
   if(delta>0&&distance>0){
    u.x+=dx/distance*delta;
    u.y+=dy/distance*delta;
-   u.x=Math.max(35,Math.min(progression.defence.fortress_goal_x-progression.defence.portal_clearance,u.x));u.y=Math.max(343,Math.min(429,u.y));
+   u.x=Math.max(TOWER_APPROACH.ally+1,Math.min(progression.defence.fortress_goal_x-progression.defence.portal_clearance,u.x));u.y=Math.max(343,Math.min(429,u.y));
    c.travel+=delta;
   }
   chargeEffects.push({x:u.x-u.facing*24*u.visualScale,y:u.y-20*u.visualScale,scale:u.visualScale,life:.24,maxLife:.24,side:u.side});
@@ -1178,7 +1146,6 @@ function beginCharge(u,target,point){
 function separateGroundUnits(){
   // Two small passes resolve physical overlaps; opposing monsters touch but never stack.
   const living=state.units.filter(u=>u.hp>0);
-  for(const u of living){const dx=u.x-towerLayout.x,dy=(u.y-towerLayout.ground)*1.45,d=Math.hypot(dx,dy),min=52+u.radius;if(d<min){const nx=d>.001?dx/d:(u.side>0?1:-1),ny=d>.001?dy/d:0;u.x=Math.max(35,Math.min(progression.defence.fortress_goal_x-progression.defence.portal_clearance,towerLayout.x+nx*min));u.y=Math.max(343,Math.min(429,towerLayout.ground+ny*min/1.45));}}
   for(let pass=0;pass<3;pass++){
     for(let i=0;i<living.length;i++)for(let j=i+1;j<living.length;j++){
       const a=living[i],b=living[j],dx=b.x-a.x,dy=(b.y-a.y)*1.45;
@@ -1193,7 +1160,7 @@ function separateGroundUnits(){
       const push=minimum-Math.max(dist,.001);if(a.side===b.side&&a.waiting&&b.waiting&&push<3)continue;const ap=ar?0:br?push:push*.5,bp=br?0:ar?push:push*.5;
       a.x-=nx*ap;b.x+=nx*bp;
       a.y-=ny*ap/1.45;b.y+=ny*bp/1.45;
-      for(const u of [a,b]){u.x=Math.max(35,Math.min(progression.defence.fortress_goal_x-progression.defence.portal_clearance,u.x));u.y=Math.max(343,Math.min(429,u.y))}
+      for(const u of [a,b]){u.x=Math.max(TOWER_APPROACH.ally+1,Math.min(progression.defence.fortress_goal_x-progression.defence.portal_clearance,u.x));u.y=Math.max(343,Math.min(429,u.y))}
     }
   }
 }
@@ -1201,16 +1168,15 @@ function stepTowerDefense(dt){
  const attack=TowerUpgrades.attackStats(towerConfigs.ally,run,equipmentConfig);
  if(!attack||state.allyBase<=0)return;
  towerCooldowns.ally=Math.max(0,towerCooldowns.ally-dt);
- const {range,damage}=attack,towerLayoutPoint={x:towerLayout.x,y:towerLayout.ground};
- const foes=state.units.filter(u=>u.hp>0&&u.side<0&&unitDistance(u,towerLayoutPoint)<=range).sort((a,b)=>unitDistance(a,towerLayoutPoint)-unitDistance(b,towerLayoutPoint));
- if(fortressTarget&&foes.includes(fortressTarget)){foes.splice(foes.indexOf(fortressTarget),1);foes.unshift(fortressTarget);}
- if(foes.length&&towerCooldowns.ally<=0&&(fortressAuto||fortressKeys.has('fire')||fortressTouch.size>0)){
+ const {range,damage}=attack;
+ const foes=state.units.filter(u=>u.hp>0&&u.side<0&&Math.hypot(u.x-(towerLayout.x-40),(u.y-335)*.6)<=range).sort((a,b)=>a.x-b.x);
+ if(foes.length&&towerCooldowns.ally<=0){
  soundEffect(attack.type==='electric_pulse'?'lightning':'arrow');
  if(attack.type==='electric_pulse'){
   for(const u of foes){dmg(u,damage,attack.damageType,attack.penetration);if(attack.stun>0){u.environmentStatus=u.environmentStatus||{slowTime:0,slowPct:0,freezeTime:0};u.environmentStatus.staggerTime=Math.max(u.environmentStatus.staggerTime||0,attack.stun);}}
   towerProjectiles.push({type:'electric_pulse',x:towerLayout.x-3,y:towerLayout.ground-towerLayout.height+42,age:0,duration:.6,range,width:attack.waveWidth});
  }else{
- const count=attack.arrows;fortressFacing=foes[0].x<towerLayout.x?-1:1;for(let i=0;i<Math.min(count,foes.length);i++){const target=foes[i];towerProjectiles.push({target,damage,damageType:attack.damageType,penetration:attack.penetration,type:'arrow',x:towerLayout.x+20*fortressFacing,y:towerLayout.ground-towerLayout.height+74-12+Math.sin(state.time*2.2)*3,tx:target.x,ty:target.y-34,age:0,duration:.45});}
+ const count=attack.arrows;for(let i=0;i<Math.min(count,foes.length);i++){const target=foes[i];dmg(target,damage,attack.damageType,attack.penetration);towerProjectiles.push({type:'arrow',x:towerLayout.x+20,y:towerLayout.ground-towerLayout.height+74-12+Math.sin(state.time*2.2)*3,tx:target.x,ty:target.y-34,age:0,duration:.45});}
  }
  towerCooldowns.ally=attack.interval;
  }
@@ -1233,11 +1199,11 @@ function step(dt){
  const gearStats=TowerUpgrades.equipmentStats(run,equipmentConfig);state.time+=dt;state.generatorPulse=Math.max(0,state.generatorPulse-dt);if(run.generatorLevel>0&&state.allyBase>0){run.generatorElapsed+=dt;while(run.generatorElapsed>=gearStats.generatorInterval){run.generatorElapsed-=gearStats.generatorInterval;state.generatorPulse=.85;const coins=gearStats.generatorIncome;run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.earnings.push({x:towerLayout.generatorX,y:towerLayout.generatorY-towerLayout.generatorHeight/2-5,value:coins,life:1.35});refreshCoinDisplays();}}state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig,run);
  window.MonstersClashDayNight?.update(dt);
  window.MonstersClashDayNight?.updateLabel($('day-night-label'));
- window.MonstersClashEnvironment?.update(dt,state.units,dmg,soundEffect,35,progression.defence.fortress_goal_x-progression.defence.portal_clearance);
+ window.MonstersClashEnvironment?.update(dt,state.units,dmg,soundEffect,TOWER_APPROACH.ally+1,progression.defence.fortress_goal_x-progression.defence.portal_clearance);
  const heartbeatRank=state.units.some(u=>u.hp>0&&u.side<0&&u.rank==='boss')?'boss':state.units.some(u=>u.hp>0&&u.side<0&&u.rank==='elite')?'elite':null;
  if(heartbeatRank){if(state.heartbeatRank!==heartbeatRank){state.heartbeatRank=heartbeatRank;state.heartbeatTimer=0;}state.heartbeatTimer=(state.heartbeatTimer||0)-dt;if(state.heartbeatTimer<=0){soundEffect(heartbeatRank+'_heartbeat');state.heartbeatTimer=heartbeatRank==='boss'?1.05:1.5;}}else{state.heartbeatRank=null;state.heartbeatTimer=0;}
- const sp=progression.summoner,allyTick=dt;
- state.availablePower=Math.min(10,state.availablePower+sp.power_regen_per_second*dt);
+ const sp=progression.summoner,ss=summonerStats(),surgeSpan=Math.min(dt,run.surgeTime),allyTick=(dt+surgeSpan*sp.surge_speed_pct/100)*ss.power/sp.base_power;
+ state.availablePower=Math.min(ss.power+(run.spLevel||0)*sp.run_sp_per_level,state.availablePower+sp.power_regen_per_second*(dt+surgeSpan*sp.surge_regen_pct/100));
  run.surgeTime=Math.max(0,run.surgeTime-dt);run.surgeCooldown=Math.max(0,run.surgeCooldown-dt);
  for(const side of ['ally','enemy'])for(const k of Object.keys(cooldowns[side]))cooldowns[side][k]=Math.max(0,cooldowns[side][k]-(side==='ally'?allyTick:dt));
  refreshSummoner();
@@ -1275,8 +1241,8 @@ function step(dt){
   if(u.skill<=0&&u.m.skill?.effect?.type==='shield_self'){
     activateShield(u);continue;
   }
-  const nearest=state.units.filter(t=>t!==u&&t.side!==u.side&&t.hp>0).sort((a,b)=>unitDistance(u,a)-unitDistance(u,b))[0];
-  const old=u.target;const target=old?.hp>0&&state.units.includes(old)&&(!nearest||unitDistance(u,old)<=unitDistance(u,nearest)+22)?old:nearest;u.target=target;
+  const target=state.units.filter(t=>t!==u&&t.side!==u.side&&t.hp>0)
+      .sort((a,b)=>unitDistance(u,a)-unitDistance(u,b))[0];
   u.assaultTower=!target&&u.side<0;
   const advanceLimit=Math.min(cfg.fortress_goal_x-cfg.portal_clearance,towerLayout.x+cfg.ally_advance_distance);
   if(u.side>0&&!target){
@@ -1299,7 +1265,7 @@ function step(dt){
   const slot=target?null:towerSlotFor(u);
   const point=target?{x:target.x,y:target.y}:slot;
   const dx=point.x-u.x,dy=point.y-u.y;
-  u.facing=Math.abs(dx)>8?(dx>0?1:-1):u.facing;
+  u.facing=target?(Math.abs(dx)>8?(dx>0?1:-1):u.facing):u.side;
   const distance=Math.hypot(dx,dy*1.45);
   // A melee unit must reach the tower's near-side attack slot, not the visual center.
   const attackRange=target?(u.m.attack.range||32)+u.radius+target.radius:
@@ -1323,7 +1289,7 @@ function step(dt){
      u.y+=dy*1.45/distance*travel/1.45;
    }
    // The towers occupy protected zones, never enter their physical footprints.
-   u.x=Math.max(35,Math.min(progression.defence.fortress_goal_x-progression.defence.portal_clearance,u.x));
+   u.x=Math.max(TOWER_APPROACH.ally+1,Math.min(progression.defence.fortress_goal_x-progression.defence.portal_clearance,u.x));
    u.y=Math.max(343,Math.min(429,u.y));
   }else if(u.atk<=0&&(target||slot.rank===0)){
    const amount=u.m.attack.base_damage*(1+(u.mod.outgoing_damage_bonus_pct||0))*u.damageScale*(u.nightBoost?1+progression.dark_night_bonus_pct.damage/100:1);
@@ -1342,26 +1308,14 @@ function step(dt){
  separateGroundUnits();
  chargeEffects=chargeEffects.filter(p=>(p.life-=dt)>0);
  stepTowerDefense(dt);
- for(const p of towerProjectiles){p.age+=dt;if(p.target?.hp>0){p.tx=p.target.x;p.ty=p.target.y-34;if(p.age>=p.duration)dmg(p.target,p.damage,p.damageType,p.penetration);}}
- towerProjectiles=towerProjectiles.filter(p=>p.age<p.duration);
+ towerProjectiles=towerProjectiles.filter(p=>(p.age+=dt)<p.duration);
  for(const u of state.units){if(u.hp<=0&&u.side<0){const coins=Math.round(progression.coins.kill_base*(u.rank==='boss'?progression.coins.boss_multiplier:u.rank==='elite'?progression.coins.elite_multiplier:1));run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.kills++;const sp=progression.summoner;profile.xp+=u.rank==='boss'?sp.xp_boss:u.rank==='elite'?sp.xp_elite:sp.xp_normal;storeProfile();const gold=u.rank==='boss'?progression.coins.boss_kill_gold:u.rank==='elite'?progression.coins.elite_kill_gold:0;if(gold){profile.coins+=gold;run.menuEarned+=gold;storeProfile();}state.earnings.push({x:u.x,y:Math.max(28,u.y-(u.m.id==='m001'?134:128)*u.visualScale*.75),value:coins,life:1.35});refreshCoinDisplays();}}
  state.units=state.units.filter(u=>u.hp>0);
  const goal=cfg.fortress_goal_x,blocked=state.units.some(u=>u.hp>0&&u.side<0&&u.x<=towerLayout.x+cfg.fortress_stop_distance);
  if(state.allyBase>0&&state.finalPhase&&state.finalMinionsRemaining===0&&(!state.finalRank||state.finalSpawned)&&teamCount(-1)===0){state.portalUnlocked=true;state.portalStartX=towerLayout.x;state.fortressMoving=false;return;}
  const stop=state.portalUnlocked?goal:goal-cfg.portal_clearance-110;
- const held=k=>fortressKeys.has(k),manualX=Number(held('right'))-Number(held('left')),manualY=Number(held('down'))-Number(held('up'));
- const blockedAhead=state.units.some(u=>u.hp>0&&u.side<0&&u.x>towerLayout.x&&u.x-towerLayout.x<cfg.fortress_stop_distance&&Math.abs(u.y-towerLayout.ground)<58);
- const auto=fortressMoveAuto&&!manualX&&!manualY;
- const dx=auto?(blockedAhead?0:1):manualX||fortressStick.x,dy=auto?0:manualY||fortressStick.y,length=Math.max(1,Math.hypot(dx,dy)),speed=Math.max(85,cfg.fortress_move_speed),blend=1-Math.exp(-dt*12);
- fortressVelocity.x+=(dx/length*speed-fortressVelocity.x)*blend;fortressVelocity.y+=(dy/length*speed*.65-fortressVelocity.y)*blend;
- if(Math.abs(fortressVelocity.x)<.2)fortressVelocity.x=0;if(Math.abs(fortressVelocity.y)<.2)fortressVelocity.y=0;
- const oldX=towerLayout.x,oldY=towerLayout.ground;
- let nx=Math.max(cfg.fortress_start_x,Math.min(stop,oldX+fortressVelocity.x*dt)),ny=Math.max(343,Math.min(429,oldY+fortressVelocity.y*dt));
- // The fortress has a solid ground footprint; slide along units instead of passing through them.
- const clear=(x,y)=>state.units.every(u=>u.hp<=0||Math.hypot((u.x-x)/1.0,(u.y-y)*1.45)>=Math.max(54,52+u.radius-4)||Math.hypot(u.x-x,(u.y-y)*1.45)>Math.hypot(u.x-oldX,(u.y-oldY)*1.45));
- if(!clear(nx,oldY)){nx=oldX;fortressVelocity.x=0;}if(!clear(nx,ny)){ny=oldY;fortressVelocity.y=0;}
- if(Math.abs(nx-oldX)>.01)fortressFacing=nx>oldX?1:-1;
- const shift=ny-oldY;state.fortressMoving=nx!==oldX||shift!==0;towerLayout.x=nx;towerLayout.ground=ny;towerLayout.hpY+=shift;towerLayout.shieldY+=shift;towerLayout.generatorY+=shift;towerLayout.droneY+=shift;TOWER_APPROACH.ally=nx+79;towerLayout.generatorX=nx-78;
+ state.fortressMoving=state.allyBase>0&&!blocked&&towerLayout.x<stop;
+ if(state.fortressMoving){towerLayout.x=Math.min(stop,towerLayout.x+cfg.fortress_move_speed*dt);TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;if(!state.portalUnlocked)for(const u of state.units)u.x=Math.max(TOWER_APPROACH.ally+1,u.x);}
  if(state.portalUnlocked&&towerLayout.x>=goal){if(state.arrivalTime===null)state.arrivalTime=state.time;state.portalExit=Math.min(1,state.portalExit+dt/cfg.portal_exit_seconds);}
  if(state.allyBase<=0||state.portalExit>=1){
   state.victory=state.allyBase>0;state.ended=true;run.totalSeconds+=state.time;settleBattle();soundEffect(state.victory?'victory':'defeat');
@@ -1374,8 +1328,8 @@ function drawTower(side,x,hp){
  if(readyImage(img)){
    const height=towerLayout.height,width=height*(img.naturalWidth/(towerConfigs[side]?.sheet_columns||4))/(img.naturalHeight/(towerConfigs[side]?.sheet_rows||1));
    // Low hover keeps the fortress near the ground; destroyed artwork rests at ground level.
-   ctx.save();ctx.translate(x,0);ctx.scale(side==='ally'?fortressFacing:1,1);spriteFrame(img,frame,-width/2,y-16,width,height,
-     towerConfigs[side]?.sheet_columns||4,towerConfigs[side]?.sheet_rows||1);ctx.restore();
+   spriteFrame(img,frame,x-width/2,y-16,width,height,
+     towerConfigs[side]?.sheet_columns||4,towerConfigs[side]?.sheet_rows||1);
  }else{
    // Keep old game playable until the tower sheets are uploaded.
    ctx.fillStyle=side==='ally'?'#4d8cc1':'#aa5364';
@@ -1400,7 +1354,7 @@ function drawTowerAttacks(){
    const wave=Math.max(0,Math.sin(Math.PI*progress));
    const radius=34+progress*(p.range||180);
    ctx.strokeStyle='rgba(86,219,255,'+(wave*.75)+')';ctx.lineWidth=(p.width||5)*wave+1;
-   ctx.beginPath();ctx.ellipse(p.x,p.y+60,radius,radius*.34,0,0,Math.PI*2);ctx.stroke();
+   ctx.beginPath();ctx.ellipse(p.x,341,radius,radius*.34,0,0,Math.PI*2);ctx.stroke();
   }
   ctx.restore();
  }
@@ -1442,7 +1396,7 @@ function draw(){
  const horizontalScale=cv.width/W;
  const worldScale=Math.min(horizontalScale,cv.height/(phone?450:H));
  const viewWidth=W,viewHeight=cv.height/worldScale;
- const cameraX=battleCameraX;
+ const cameraX=Math.max(0,Math.min(progression.defence.fortress_world_width-W,towerLayout.x-progression.defence.fortress_start_x));
  const viewOffsetX=-cameraX,viewOffsetY=(viewHeight-H)*.5;
  const actorRatio=worldScale/horizontalScale;
  ctx.setTransform(1,0,0,1,0,0);
@@ -1487,10 +1441,20 @@ function draw(){
  for(let i=0;i<2;i++){const p=(state.time*.72+i*.5)%1;ctx.strokeStyle='rgba(95,211,255,'+(.32*(1-p))+')';ctx.lineWidth=1.15;ctx.beginPath();ctx.ellipse(0,-2,23+28*p,4+5*p,0,0,Math.PI*2);ctx.stroke();}
  ctx.restore();}
  for(const [kind,img,cols] of [['attack',towerImages.ally,towerConfigs.ally?.sheet_columns||4],['drone',droneImage,equipmentConfig.drone_sheet_columns],['generator',generatorImage,1]]){const c=$('gear-art-'+kind);if(readyImage(img)&&c.dataset.src!==img.src){c.dataset.src=img.src;const g=c.getContext('2d'),sw=img.naturalWidth/cols,sh=img.naturalHeight,k=Math.min(88/sw,68/sh);g.clearRect(0,0,88,68);g.drawImage(img,0,0,sw,sh,(88-sw*k)/2,(68-sh*k)/2,sw*k,sh*k);}}const sc=$('gear-art-shield');if(!sc.dataset.ready){sc.dataset.ready='1';const g=sc.getContext('2d');g.save();g.translate(44,34);g.scale(.45,.45);const shield={hp:160,max:160,phase:1.57,flash:0,broken:0};TowerUpgrades.renderShield(g,shield,1,equipmentConfig,0,0,false);TowerUpgrades.renderShield(g,shield,1,equipmentConfig,0,0,true);g.restore();}
- const heroCanvas=$('battle-hero'),fortressArt=towerImages.ally;
- $('battle-hero-name').textContent=towerConfigs.ally?.name||'Fortress';
- if(readyImage(fortressArt)){const hc=heroCanvas.getContext('2d'),sw=fortressArt.naturalWidth/(towerConfigs.ally?.sheet_columns||4),sh=fortressArt.naturalHeight/(towerConfigs.ally?.sheet_rows||1),scale=Math.min(heroCanvas.width/sw,heroCanvas.height/sh),frame=towerDamageFrame(state.allyBase,TowerUpgrades.equipmentStats(run,equipmentConfig).maxHp);hc.clearRect(0,0,heroCanvas.width,heroCanvas.height);hc.drawImage(fortressArt,frame*sw,0,sw,sh,(heroCanvas.width-sw*scale)/2,(heroCanvas.height-sh*scale)/2,sw*scale,sh*scale);}
-
+ const hero=progression.summoner.characters.find(c=>c.id===profile.summoner)||progression.summoner.characters[0],art=hero?.art,heroCanvas=$('battle-hero');
+ if(art?.sheet&&battleHeroSource!==art.sheet){battleHeroSource=art.sheet;battleHeroBounds=null;battleHeroFrame=-1;battleHeroImage.src=art.sheet;$('battle-hero-name').textContent=hero.name;}
+ if(readyImage(battleHeroImage)&&art){
+   const pose=state.time<state.heroPoseUntil?state.heroPose:(!reducedRankMotion?.matches&&state.time%4>3.2?'idle':'ready'),frame=art.frames?.[pose]??0;
+   if(frame!==battleHeroFrame){
+     const hc=heroCanvas.getContext('2d'),iw=battleHeroImage.naturalWidth,ih=battleHeroImage.naturalHeight,cols=art.columns||4;
+     if(!battleHeroBounds){
+       battleHeroBounds=Array.from({length:cols+1},(_,i)=>Math.round(i*iw/cols));
+       try{const temp=document.createElement('canvas');temp.width=iw;temp.height=ih;const tc=temp.getContext('2d',{willReadFrequently:true});tc.drawImage(battleHeroImage,0,0);const data=tc.getImageData(0,0,iw,ih).data;const occupancy=new Uint32Array(iw);for(let y=0;y<ih;y++)for(let x=0;x<iw;x++)if(data[(y*iw+x)*4+3]>24)occupancy[x]++;for(let i=1;i<cols;i++){const expected=i*iw/cols;let best=Math.round(expected),score=Infinity;for(let x=Math.max(1,Math.round(expected-iw/cols*.20));x<Math.min(iw-1,expected+iw/cols*.20);x++){const s=occupancy[x]*10+Math.abs(x-expected)*.03;if(s<score){score=s;best=x;}}battleHeroBounds[i]=best;}}catch(err){}
+     }
+     const sx=battleHeroBounds[frame],sw=battleHeroBounds[frame+1]-sx,scale=Math.min(heroCanvas.width/sw,heroCanvas.height/ih);
+     hc.clearRect(0,0,heroCanvas.width,heroCanvas.height);hc.drawImage(battleHeroImage,sx,0,sw,ih,(heroCanvas.width-sw*scale)/2,(heroCanvas.height-ih*scale)/2,sw*scale,ih*scale);battleHeroFrame=frame;
+   }
+ }
  ctx.save();ctx.translate(towerLayout.x,0);ctx.scale(actorRatio,1);ctx.translate(-towerLayout.x,0);
  TowerUpgrades.renderShield(ctx,state.towerShield,run.shieldLevel,equipmentConfig,towerLayout.x,towerLayout.shieldY+(state.allyBase>0?-12+Math.sin(state.time*2.2)*3:0),false);ctx.restore();
  if(run.generatorLevel>0&&readyImage(generatorImage)){
@@ -1578,7 +1542,7 @@ function draw(){
  for(const m of roster){
   const btn=$('card_'+m.id);if(!btn)continue;
   btn.style.display=team.includes(m.id)?'flex':'none';
-  const remaining=(cooldowns.ally[m.id]||0),active=deployedCount(1,m.id),cap=unitCap(m);
+  const remaining=(cooldowns.ally[m.id]||0)/(summonerStats().power/progression.summoner.base_power*(run.surgeTime>0?1+progression.summoner.surge_speed_pct/100:1)),active=deployedCount(1,m.id),cap=unitCap(m);
   const info=$('cooldown_'+m.id);
   if(info)info.textContent=remaining>0?remaining.toFixed(1)+'s':active>=cap?active+'/'+cap+' Deployed':teamCount(1)>=maxTeamUnits()?'Battlefield Full':state.availablePower<summonPowerCost(m)?'Need '+summonPowerCost(m)+' SP':active+'/'+cap+' · '+summonPowerCost(m)+' SP';
   btn.disabled=!canSummon(m,1);
@@ -1590,7 +1554,7 @@ function openView(name,fromRoute=false){
    // Only the explicit pause-menu exit can leave a live match.
    return;
  }
- if(name==='summoner')name='upgrades';if(name==='inventory')renderInventory();if(name==='bestiary')renderBestiary();if(name==='settings')refreshSettings();if(name==='upgrades'){ $('equipment-message').textContent='';renderEquipment();}
+ if(name==='summoner')renderSummonerPage();if(name==='inventory')renderInventory();if(name==='bestiary')renderBestiary();if(name==='settings')refreshSettings();if(name==='upgrades'){ $('equipment-message').textContent='';renderEquipment();}
  if(!fromRoute&&name!=='monster-profile')updateRoute(name,true);
  if(view==='battle'&&name!=='battle')run.active=false;
  view=name;battleMenuOpen=false;navOpen=false;syncMusic();
@@ -1707,7 +1671,7 @@ function readBestiaryRoute(){
 function renderBestiary(){
  const rank=bestiaryRank,list=rank==='boss'?[...catalog,...specialBosses]:catalog,category=rank==='normal'?'Monsters':rank==='elite'?'Elites':'Bosses';
  for(const b of document.querySelectorAll('[data-bestiary]')){const required=rankUnlockLevel(b.dataset.bestiary),locked=summonerStats().level<required;b.setAttribute('aria-pressed',String(b.dataset.bestiary===rank));b.textContent=({normal:'Monsters',elite:'Elites',boss:'Bosses'})[b.dataset.bestiary]+(locked?' · 🔒 Lv '+required:'');}
- if(summonerStats().level<rankUnlockLevel(rank)){$('bestiary-progress').textContent=category+' unlock at Player Level '+rankUnlockLevel(rank)+'. Current level: '+summonerStats().level+'. Encounters are still recorded in battle.';$('bestiary-grid').replaceChildren();return;}
+ if(summonerStats().level<rankUnlockLevel(rank)){$('bestiary-progress').textContent=category+' unlock at Summoner Level '+rankUnlockLevel(rank)+'. Current level: '+summonerStats().level+'. Encounters are still recorded in battle.';$('bestiary-grid').replaceChildren();return;}
  const count=list.filter(m=>encountered(m.id,rank)).length;
  $('bestiary-progress').textContent=count+'/'+list.length+' '+category+' Discovered · Encounter this rank in battle.';
  $('bestiary-grid').replaceChildren(...list.map(m=>{
@@ -1786,13 +1750,13 @@ function toggleQuickNav(force){
  $('nav-toggle').setAttribute('aria-expanded',String(navOpen));
 }
 function bindMenu(){
- $('nav-inventory').onclick=()=>openView('inventory');$('summoner-back').onclick=()=>openView('home');$('summoner-inventory').onclick=()=>openView('inventory');$('inventory-back').onclick=()=>openView('home');
-
+ $('nav-summoner').onclick=()=>openView('summoner');$('nav-inventory').onclick=()=>openView('inventory');$('summoner-back').onclick=()=>openView('home');$('summoner-inventory').onclick=()=>openView('inventory');$('inventory-back').onclick=()=>openView('summoner');
+ $('summoner-surge').onclick=()=>{const c=progression.summoner;if(view!=='battle'||!run.active||state?.ended||state?.preparing||battleMenuOpen||(progression.testing_mode!==true&&summonerStats().level<c.surge_unlock_level)||run.surgeCooldown>0)return;run.surgeTime=c.surge_duration;run.surgeCooldown=c.surge_cooldown;soundEffect('surge');state.heroPose='skill';state.heroPoseUntil=state.time+.95;refreshSummoner();};
  for(const b of document.querySelectorAll('[data-bestiary]'))b.onclick=()=>{bestiaryRank=b.dataset.bestiary;renderBestiary();updateRoute('bestiary',true);};
  $('menu-upgrades-home').onclick=()=>openView('upgrades');$('nav-upgrades').onclick=()=>openView('upgrades');$('upgrades-back').onclick=()=>openView('home');$('upgrades-play').onclick=startRun;
  for(const button of document.querySelectorAll('[data-equipment]'))button.onclick=()=>{equipmentTab=button.dataset.equipment;$('equipment-message').textContent='';renderEquipment();};
  for(const kind of ['attack','shield','drone','generator','sp'])$('upgrade-'+kind).onclick=()=>buyUpgrade(kind);
- for(const kind of ['attack','shield','drone','generator']){const b=$('gear-'+kind);b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','gear-detail');b.onclick=()=>toggleGearDetail(b,kind);}$('gear-close').onclick=()=>{const detail=$('gear-detail'),active=document.querySelector('.battle-sidebar [aria-controls="gear-detail"][aria-expanded="true"]');detail.hidden=true;if(active){active.setAttribute('aria-expanded','false');active.focus({preventScroll:true});}};
+ for(const kind of ['attack','shield','drone','generator','sp']){const b=$(kind==='sp'?'summoner-stats-toggle':'gear-'+kind);b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','gear-detail');b.onclick=()=>toggleGearDetail(b,kind);}$('gear-close').onclick=()=>{const detail=$('gear-detail'),active=document.querySelector('.battle-sidebar [aria-controls="gear-detail"][aria-expanded="true"]');detail.hidden=true;if(active){active.setAttribute('aria-expanded','false');active.focus({preventScroll:true});}};
  $('profile-back').onclick=()=>{if(profileReturnView==='team'){renderTeam();openView('team')}else openView('bestiary')};
  $('bgm-volume').oninput=e=>setAudioLevel('bgm',e.target.value);
  $('sfx-volume').oninput=e=>setAudioLevel('sfx',e.target.value);
@@ -1824,30 +1788,6 @@ function bindMenu(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view==='battle'){if(!$('stage-info-panel').hidden){toggleStageInfo(false);return;}if(!document.fullscreenElement)toggleBattleMenu()}});
 }
 
-const fortressKeyMap={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',Space:'fire'};
-document.addEventListener('keydown',e=>{const k=fortressKeyMap[e.code];if(k&&view==='battle'&&!battleMenuOpen&&!state?.preparing&&!state?.ended&&!['INPUT','TEXTAREA','SELECT'].includes(e.target?.tagName)){e.preventDefault();fortressKeys.add(k);}});
-document.addEventListener('keyup',e=>{const k=fortressKeyMap[e.code];if(k)fortressKeys.delete(k);});
-// Separate pointer ownership: a movement thumb never cancels the firing thumb.
-const stick=$('fortress-stick'),directions=[...stick.querySelectorAll('[data-direction]')],movePointers=new Map(),fireButton=$('fortress-fire').querySelector('button');
-const liveControls=()=>view==='battle'&&!battleMenuOpen&&state&&!state.preparing&&!state.ended&&!state.portalUnlocked;
-function readMovement(){
- let x=0,y=0;for(const p of movePointers.values()){x+=p.x;y+=p.y;}const n=Math.max(1,Math.hypot(x,y));fortressStick.x=x/n;fortressStick.y=y/n;
- for(const b of directions){const d=b.dataset.direction;b.dataset.active=String(d==='up'?fortressStick.y<-.15:d==='down'?fortressStick.y>.15:d==='left'?fortressStick.x<-.15:fortressStick.x>.15);}
-}
-function movePointer(e){
- const r=stick.getBoundingClientRect(),radius=r.width*.35;let x=(e.clientX-r.left-r.width/2)/radius,y=(e.clientY-r.top-r.height/2)/radius;const length=Math.hypot(x,y);if(length<.12){x=0;y=0;}else{const n=Math.max(1,length);x/=n;y/=n;}movePointers.set(e.pointerId,{x,y});readMovement();
-}
-stick.addEventListener('pointerdown',e=>{if(fortressMoveAuto||!liveControls()||e.target.closest('#movement-mode'))return;e.preventDefault();stick.setPointerCapture(e.pointerId);movePointer(e);});
-stick.addEventListener('pointermove',e=>{if(movePointers.has(e.pointerId))movePointer(e);});
-for(const type of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(type,e=>{if(movePointers.delete(e.pointerId))readMovement();});
-fireButton.addEventListener('pointerdown',e=>{if(fortressAuto||!liveControls())return;e.preventDefault();fireButton.setPointerCapture(e.pointerId);fortressTouch.add(e.pointerId);fireButton.dataset.active='true';});
-for(const type of ['pointerup','pointercancel','lostpointercapture'])fireButton.addEventListener(type,e=>{fortressTouch.delete(e.pointerId);fireButton.dataset.active=String(fortressTouch.size>0);});
-$('movement-mode').onclick=()=>{if(!liveControls())return;fortressMoveAuto=!fortressMoveAuto;const b=$('movement-mode');stick.dataset.open=String(!fortressMoveAuto);b.setAttribute('aria-expanded',String(!fortressMoveAuto));b.setAttribute('aria-label',fortressMoveAuto?'Enable manual movement':'Enable automatic movement');b.title=b.getAttribute('aria-label');movePointers.clear();readMovement();};
-$('fortress-auto').onclick=()=>{if(!liveControls())return;fortressAuto=!fortressAuto;const b=$('fortress-auto');$('fire-dice').dataset.open=String(!fortressAuto);b.setAttribute('aria-expanded',String(!fortressAuto));b.setAttribute('aria-label',fortressAuto?'Enable manual fire':'Enable automatic fire');b.title=b.getAttribute('aria-label');$('fortress-fire').hidden=fortressAuto;fortressTouch.clear();fireButton.dataset.active='false';};
-function clearFortressInput(){fortressKeys.clear();fortressTouch.clear();movePointers.clear();readMovement();fireButton.dataset.active='false';}
-window.addEventListener('blur',clearFortressInput);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)clearFortressInput();});
-cv.addEventListener('pointerdown',e=>{if(view!=='battle'||!state||state.preparing||state.ended||battleMenuOpen)return;const r=cv.getBoundingClientRect(),phone=Math.min(cv.clientWidth,cv.clientHeight)<=500,scale=Math.min(cv.width/W,cv.height/(phone?450:H)),camera=battleCameraX,x=(e.clientX-r.left)/r.width*W+camera,y=(e.clientY-r.top)/r.height*cv.height/scale-(cv.height/scale-H)*.5;const target=state.units.filter(u=>u.side<0&&u.hp>0).sort((a,b)=>Math.hypot(a.x-x,a.y-34-y)-Math.hypot(b.x-x,b.y-34-y))[0];fortressTarget=target&&Math.hypot(target.x-x,target.y-34-y)<65?target:null;});
 let lobbyPaintAt=-Infinity;
 const lobbyRankUnits=[{rank:"elite",rankParticles:[],rankEmit:0},{rank:"boss",rankParticles:[],rankEmit:0}];
 function drawLobby(t){
@@ -1874,5 +1814,5 @@ function drawLobby(t){
   g.restore();
  }
 }
-function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){if(!battleMenuOpen){step(dt);const screenX=towerLayout.x-battleCameraX;let desired=battleCameraX;if(screenX>W*.68)desired=towerLayout.x-W*.68;else if(screenX<W*.25)desired=towerLayout.x-W*.25;desired=Math.max(0,Math.min(progression.defence.fortress_world_width-W,desired));battleCameraX+=(desired-battleCameraX)*(1-Math.exp(-dt*3));}draw()}else if(view==='home')drawLobby(t);requestAnimationFrame(frame)}init().catch(e=>{console.error('Monsters Clash startup failed',e);$('status').textContent='Loading failed: '+e.message;const msg=$('startup-message');msg.hidden=false;msg.textContent='Loading failed: '+e.message+' ';const retry=document.createElement('button');retry.textContent='Reload Game';retry.onclick=()=>location.reload();msg.append(retry);});
+function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(view==='battle'){if(!battleMenuOpen)step(dt);draw()}else if(view==='home')drawLobby(t);requestAnimationFrame(frame)}init().catch(e=>{console.error('Monsters Clash startup failed',e);$('status').textContent='Loading failed: '+e.message;const msg=$('startup-message');msg.hidden=false;msg.textContent='Loading failed: '+e.message+' ';const retry=document.createElement('button');retry.textContent='Reload Game';retry.onclick=()=>location.reload();msg.append(retry);});
 </script></body></html>
