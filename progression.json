@@ -30,7 +30,7 @@
     "min_spawn_seconds": 0.8,
     "spawn_acceleration": 0.25,
     "boss_every": 5,
-    "round_break_seconds": 4,
+    "round_break_seconds": 8,
     "attack_cost": 75,
     "max_upgrade": 10,
     "monster_unlock_cost": 250,
@@ -54,7 +54,8 @@
     "final_encounter_distance": 500,
     "portal_clearance": 155,
     "final_spawn_seconds": 4,
-    "portal_exit_seconds": 1.4
+    "portal_exit_seconds": 2,
+    "portal_activation_seconds": 1
   },
   "rank_bonus_pct": {
     "normal": {

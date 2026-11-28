@@ -472,7 +472,6 @@ h2{font-size:clamp(22px,2.8vw,30px);margin:10px 0 14px}
 const TowerUpgrades=window.MonstersClashTowerUpgrades;
 const $=id=>document.getElementById(id);const cv=$('game'),ctx=cv.getContext('2d'),W=960,H=480,ground=325;
 const backgroundImages=new Map(),towerImages={ally:new Image()},droneImage=new Image(),generatorImage=new Image(),hpBarImage=new Image(),towerArrowImage=new Image(),droneArrowImage=new Image();
-const portalImage=new Image();portalImage.src='assets/portals/p001/ground-portal.png?v=20261128';
 const battleHeroImage=new Image();let battleHeroSource='',battleHeroBounds=null,battleHeroFrame=-1;
 const towerCooldowns={ally:0},towerAttackAnims={ally:0};
 let towerProjectiles=[],unitSerial=0,chargeEffects=[];
@@ -552,7 +551,7 @@ async function loadGameCatalog(){
   fetch('towers.json?v=20261127-low-hover-v2',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Equipment catalog HTTP '+r.status);return r.json()}),
   fetch('battle_rules.json?v=20261127-sp',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch('audio.json?v=20261127-deep-sfx',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch('progression.json?v=20261128-portal',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
+  fetch('progression.json?v=20261128-rainbow-exit',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Progression HTTP '+r.status);return r.json()})
  ]);
  if(!progress?.team||!progress?.coins||!progress?.defence||!progress?.rank_bonus_pct||!progress?.round_growth_pct||!progress?.summoner)throw Error('Progression configuration incomplete. Reload the page.');progression=progress;
  towerRegistry=towers;
@@ -638,6 +637,7 @@ function nextBattle(){
  run.battle+=1;reset();toggleBattleMenu(false);
 }
 function restartRun(){
+ nextStage=null;
  run={active:true,battle:1,wins:0,coins:0,totalSeconds:0,lastStageId:null,attackLevel:0,shieldLevel:0,drones:0,generatorLevel:0,generatorElapsed:0,wallet:progression.coins.starting_battle_coins,menuEarned:0,surgeTime:0,surgeCooldown:0};
  reset();toggleBattleMenu(false);
 }
@@ -648,6 +648,7 @@ function enemyScale(){return 1+Math.max(0,run.battle-1)*progression.round_growth
 function allyScale(){return 1+Math.max(0,run.battle-1)*progression.round_growth_pct.ally/100}
 function showResult(){
  const victory=state.victory;
+ if(victory){const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;nextStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;if(nextStage)mapBackground(stageBackgroundPath(nextStage));}
  $('run-results').hidden=false;
  $('result-heading').textContent=victory?'Victory':'Defeat';
  $('result-stage').textContent=(stage()?.name||'Battlefield')+' · Battle '+run.battle;
@@ -661,7 +662,7 @@ function showResult(){
  $('next-battle').hidden=!victory;
  $('restart-run-result').hidden=victory;
 }
-let progression={"schema_version":"1.0.0","team":{"starting_slots":8,"max_slots":12,"slot_unlock_costs":[250,500,900,1400]},"coins":{"kill_base":20,"elite_multiplier":3,"boss_multiplier":8,"round_clear_battle_base":80,"round_clear_battle_growth":10,"round_clear_menu_base":50,"round_clear_menu_growth":6,"elite_kill_gold":2,"boss_kill_gold":8,"starting_battle_coins":100},"defence":{"first_count":12,"count_per_round":1,"max_count":45,"initial_spawn_seconds":12,"min_spawn_seconds":0.8,"spawn_acceleration":0.25,"boss_every":5,"round_break_seconds":4,"attack_cost":75,"max_upgrade":10,"monster_unlock_cost":250,"elite_sprite_scale":1.05,"tower_range_cap":425,"boss_sprite_scale":1.4,"first_elite_round":3,"first_boss_round":10,"normal_sprite_scale":0.7,"fortress_start_x":156,"fortress_goal_x":1705,"fortress_move_speed":8,"fortress_stop_distance":185,"fortress_world_width":1920,"ally_advance_distance":420,"fortress_extended_stage":11,"fortress_extended_world_width":2880,"fortress_extended_goal_x":2665,"final_minions_short":4,"final_minions_extended":6,"final_encounter_distance":500,"portal_clearance":155,"final_spawn_seconds":4,"portal_exit_seconds":1.4},"rank_bonus_pct":{"normal":{"hp":0,"damage":0,"skill_power":0,"attack_speed":0},"elite":{"hp":50,"damage":50,"skill_power":50,"attack_speed":20},"boss":{"hp":200,"damage":100,"skill_power":100,"attack_speed":40}},"round_growth_pct":{"ally":12,"enemy":12},"dark_night_bonus_pct":{"hp":10,"damage":15,"attack_speed":10},"summoner":{"max_level":100,"base_power":40,"power_per_level":0.5,"xp_base":100,"xp_growth":20,"xp_normal":10,"xp_elite":30,"xp_boss":80,"xp_round":50,"elite_unlock_level":10,"boss_unlock_level":20,"surge_unlock_level":5,"surge_speed_pct":30,"surge_duration":8,"surge_cooldown":60,"characters":[{"id":"s001","name":"Aether Voss","passive":"summoner_power","active":"summoning_surge","available":true,"element":"neutral","art":{"sheet":"assets/characters/s001/aether-voss-sheet.png","columns":4,"rows":1,"frames":{"ready":0,"idle":1,"summon":2,"skill":3}}}],"equipment":{"slots":["headgear","amulet","weapon","armour","ring","relic"],"rarities":[{"id":"common","name":"Common","color":"#929292"},{"id":"uncommon","name":"Uncommon","color":"#40b85c"},{"id":"rare","name":"Rare","color":"#408de0"},{"id":"epic","name":"Epic","color":"#e53935"},{"id":"legendary","name":"Legendary","color":"#e5b539"}],"attributes":["summoner_power","skill_power_pct","skill_cooldown_reduction_pct","summoned_damage_pct","curse_max_hp_pct_per_second","curse_resistance_pct","dark_damage_resistance_pct","night_damage_bonus_pct"],"items":[],"loot_enabled":false,"elements":["neutral","nature","fire","water","earth","metal","lightning","light","dark"],"specializations":{"water":["ice"]},"item_fields":["id","name","slot","level","rarity","element","attributes","sell_gold","sprite"],"attribute_limits":{"curse_resistance_pct":[0,100],"dark_damage_resistance_pct":[0,100],"skill_cooldown_reduction_pct":[0,100]},"effects_enabled":false},"power_regen_per_second":1,"surge_regen_pct":25},"testing_mode":true};
+let progression={"schema_version":"1.0.0","team":{"starting_slots":8,"max_slots":12,"slot_unlock_costs":[250,500,900,1400]},"coins":{"kill_base":20,"elite_multiplier":3,"boss_multiplier":8,"round_clear_battle_base":80,"round_clear_battle_growth":10,"round_clear_menu_base":50,"round_clear_menu_growth":6,"elite_kill_gold":2,"boss_kill_gold":8,"starting_battle_coins":100},"defence":{"first_count":12,"count_per_round":1,"max_count":45,"initial_spawn_seconds":12,"min_spawn_seconds":0.8,"spawn_acceleration":0.25,"boss_every":5,"round_break_seconds":8,"attack_cost":75,"max_upgrade":10,"monster_unlock_cost":250,"elite_sprite_scale":1.05,"tower_range_cap":425,"boss_sprite_scale":1.4,"first_elite_round":3,"first_boss_round":10,"normal_sprite_scale":0.7,"fortress_start_x":156,"fortress_goal_x":1705,"fortress_move_speed":8,"fortress_stop_distance":185,"fortress_world_width":1920,"ally_advance_distance":420,"fortress_extended_stage":11,"fortress_extended_world_width":2880,"fortress_extended_goal_x":2665,"final_minions_short":4,"final_minions_extended":6,"final_encounter_distance":500,"portal_clearance":155,"final_spawn_seconds":4,"portal_exit_seconds":2,"portal_activation_seconds":1},"rank_bonus_pct":{"normal":{"hp":0,"damage":0,"skill_power":0,"attack_speed":0},"elite":{"hp":50,"damage":50,"skill_power":50,"attack_speed":20},"boss":{"hp":200,"damage":100,"skill_power":100,"attack_speed":40}},"round_growth_pct":{"ally":12,"enemy":12},"dark_night_bonus_pct":{"hp":10,"damage":15,"attack_speed":10},"summoner":{"max_level":100,"base_power":40,"power_per_level":0.5,"xp_base":100,"xp_growth":20,"xp_normal":10,"xp_elite":30,"xp_boss":80,"xp_round":50,"elite_unlock_level":10,"boss_unlock_level":20,"surge_unlock_level":5,"surge_speed_pct":30,"surge_duration":8,"surge_cooldown":60,"characters":[{"id":"s001","name":"Aether Voss","passive":"summoner_power","active":"summoning_surge","available":true,"element":"neutral","art":{"sheet":"assets/characters/s001/aether-voss-sheet.png","columns":4,"rows":1,"frames":{"ready":0,"idle":1,"summon":2,"skill":3}}}],"equipment":{"slots":["headgear","amulet","weapon","armour","ring","relic"],"rarities":[{"id":"common","name":"Common","color":"#929292"},{"id":"uncommon","name":"Uncommon","color":"#40b85c"},{"id":"rare","name":"Rare","color":"#408de0"},{"id":"epic","name":"Epic","color":"#e53935"},{"id":"legendary","name":"Legendary","color":"#e5b539"}],"attributes":["summoner_power","skill_power_pct","skill_cooldown_reduction_pct","summoned_damage_pct","curse_max_hp_pct_per_second","curse_resistance_pct","dark_damage_resistance_pct","night_damage_bonus_pct"],"items":[],"loot_enabled":false,"elements":["neutral","nature","fire","water","earth","metal","lightning","light","dark"],"specializations":{"water":["ice"]},"item_fields":["id","name","slot","level","rarity","element","attributes","sell_gold","sprite"],"attribute_limits":{"curse_resistance_pct":[0,100],"dark_damage_resistance_pct":[0,100],"skill_cooldown_reduction_pct":[0,100]},"effects_enabled":false},"power_regen_per_second":1,"surge_regen_pct":25},"testing_mode":true};
 function storeProfile(){try{let saved=profile;if(progression.testing_mode===true){const previous=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');saved={...profile};for(const key of ['tower','shield','drone','generator'])if(!profile[key+'s'].includes(profile[key]))saved[key]=previous?.[key]||profile[key+'s'][0];}localStorage.setItem(PROFILE_KEY,JSON.stringify(saved))}catch(e){}}
 function loadProfile(defaults){
  let saved=null;
@@ -834,7 +835,7 @@ function setAudioLevel(kind,value){
 
 let roster=[],catalog=[],team=[],view='home',stages=[],images={},state,cooldowns={},last=performance.now(),enemyTimer=2,battleMenuOpen=false,navOpen=false;
 async function init(){await loadGameCatalog();stages=await(await fetch('stage_affinities.json',{cache:'no-store'})).json();if(!Array.isArray(stages))stages=stages.stages||[];stages=(await Promise.all(stages.map(async entry=>entry.source?fetch(entry.source,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Missing map '+entry.source);return r.json()}):entry))).filter(entry=>entry&&entry.enabled!==false);for(const m of roster){const img=new Image();img.src=sheetUrl(m);images[m.id]=img;const btn=document.createElement('button');btn.id='card_'+m.id;btn.append(sheetPreview(m.id));const txt=document.createElement('span');txt.innerHTML=m.name+'<br><small id="cooldown_'+m.id+'">Ready</small>';btn.append(txt);btn.onclick=()=>spawn(m,1);$('cards').append(btn)}$('restart').onclick=reset;bindMenu();renderBestiary();renderTeam();reset();if(allowBestiaryHash&&location.hash.startsWith('#/bestiary'))readBestiaryRoute();window.addEventListener('popstate',readBestiaryRoute);window.addEventListener('hashchange',readBestiaryRoute);$('startup-message').hidden=progression.testing_mode!==true;if(progression.testing_mode===true)$('startup-message').textContent='TEST MODE · Unlock restrictions bypassed';for(const id of ['home-start','menu-team-home','menu-upgrades-home'])$(id).disabled=false;requestAnimationFrame(frame)}
-let currentStage=null;
+let currentStage=null,nextStage=null;
 function stageBackgroundPath(s){
  // The JSON is authoritative. Existing older manifests may omit background;
  // their stable IDs follow the repository's established hyphenated filenames.
@@ -842,7 +843,7 @@ function stageBackgroundPath(s){
 }
 function chooseRandomStage(){
  const choices=stages.length>1?stages.filter(s=>s.id!==run.lastStageId):stages;
- currentStage=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;
+ currentStage=nextStage|| (choices.length?choices[Math.floor(Math.random()*choices.length)]:null);nextStage=null;
  if(currentStage){run.lastStageId=currentStage.id;mapBackground(stageBackgroundPath(currentStage))};
  window.MonstersClashEnvironment?.configure(currentStage);
  window.MonstersClashDayNight?.configure(currentStage);
@@ -923,8 +924,8 @@ function reset(){
  progression.defence.fortress_goal_x=extended?progression.defence.fortress_extended_goal_x:progression.defence.fortress_world_width-215;
  towerLayout.x=progression.defence.fortress_start_x;TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;battleHeroFrame=-1;
  chooseRandomStage();
- const cfg=equipmentConfig;
- state={heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power,units:[],allyBase:towerConfigs.ally?.max_hp||1900,towerShield:TowerUpgrades.createShield(run,cfg),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,portalUnlocked:false,portalExit:0,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
+ const cfg=progression.defence;
+ state={heroPose:'ready',heroPoseUntil:0,fortressMoving:false,availablePower:summonerStats().power,units:[],allyBase:towerConfigs.ally?.max_hp||1900,towerShield:TowerUpgrades.createShield(run,equipmentConfig),time:0,ended:false,victory:false,rewarded:false,roundCoins:0,kills:0,spawned:0,finalRank:run.battle>=cfg.first_elite_round?(run.battle>=cfg.first_boss_round&&run.battle%cfg.boss_every===0?'boss':'elite'):null,finalSpawned:false,portalUnlocked:false,portalAge:0,portalExit:0,finalPhase:false,finalMinionsRemaining:run.battle>=cfg.fortress_extended_stage?cfg.final_minions_extended:cfg.final_minions_short,arrivalTime:null,breakLeft:cfg.round_break_seconds,droneTimers:[],droneAim:[],earnings:[],generatorPulse:0};
  refreshCoinDisplays();
  cooldowns={ally:{},enemy:{}};enemyTimer=2;
  towerCooldowns.ally=1;
@@ -1109,6 +1110,7 @@ function stepTowerDefense(dt){
 }
 function step(dt){
  if(state.ended){if(state.victory){state.breakLeft=Math.max(0,state.breakLeft-dt);if(state.breakLeft<=0)nextBattle();}return;}
+ if(state.portalUnlocked){const cfg=progression.defence;state.time+=dt;state.portalAge+=dt;state.fortressMoving=false;const goal=cfg.fortress_goal_x;if(state.portalAge>=cfg.portal_activation_seconds){state.fortressMoving=towerLayout.x<goal;towerLayout.x=Math.min(goal,towerLayout.x+Math.max(cfg.fortress_move_speed,(goal-state.portalStartX)/3)*dt);TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;if(towerLayout.x>=goal){state.portalExit=Math.min(1,state.portalExit+dt/cfg.portal_exit_seconds);}}if(state.portalExit>=1){state.victory=true;state.ended=true;run.totalSeconds+=state.time;settleBattle();soundEffect('victory');$('status').textContent='Destination Reached';showResult();}return;}
  state.time+=dt;state.generatorPulse=Math.max(0,state.generatorPulse-dt);if(run.generatorLevel>0&&state.allyBase>0){run.generatorElapsed+=dt;while(run.generatorElapsed>=equipmentConfig.generator_interval){run.generatorElapsed-=equipmentConfig.generator_interval;state.generatorPulse=.85;const coins=run.generatorLevel*equipmentConfig.generator_income;run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.earnings.push({x:towerLayout.generatorX,y:towerLayout.generatorY-towerLayout.generatorHeight/2-5,value:coins,life:1.35});refreshCoinDisplays();}}state.earnings=state.earnings.filter(f=>(f.life-=dt)>0);TowerUpgrades.update(state.towerShield,dt,equipmentConfig);
  window.MonstersClashDayNight?.update(dt);
  window.MonstersClashDayNight?.updateLabel($('day-night-label'));
@@ -1213,7 +1215,7 @@ function step(dt){
  for(const u of state.units){if(u.hp<=0&&u.side<0){const coins=Math.round(progression.coins.kill_base*(u.rank==='boss'?progression.coins.boss_multiplier:u.rank==='elite'?progression.coins.elite_multiplier:1));run.wallet+=coins;run.coins+=coins;state.roundCoins+=coins;state.kills++;const sp=progression.summoner;profile.xp+=u.rank==='boss'?sp.xp_boss:u.rank==='elite'?sp.xp_elite:sp.xp_normal;storeProfile();const gold=u.rank==='boss'?progression.coins.boss_kill_gold:u.rank==='elite'?progression.coins.elite_kill_gold:0;if(gold){profile.coins+=gold;run.menuEarned+=gold;storeProfile();}state.earnings.push({x:u.x,y:Math.max(28,u.y-(u.m.id==='m001'?134:128)*u.visualScale*.75),value:coins,life:1.35});refreshCoinDisplays();}}
  state.units=state.units.filter(u=>u.hp>0);
  const goal=cfg.fortress_goal_x,blocked=state.units.some(u=>u.hp>0&&u.side<0&&u.x<=towerLayout.x+cfg.fortress_stop_distance);
- if(state.finalPhase&&state.finalMinionsRemaining===0&&(!state.finalRank||state.finalSpawned)&&teamCount(-1)===0)state.portalUnlocked=true;
+ if(state.allyBase>0&&state.finalPhase&&state.finalMinionsRemaining===0&&(!state.finalRank||state.finalSpawned)&&teamCount(-1)===0){state.portalUnlocked=true;state.portalStartX=towerLayout.x;state.fortressMoving=false;return;}
  const stop=state.portalUnlocked?goal:goal-cfg.portal_clearance-110;
  state.fortressMoving=state.allyBase>0&&!blocked&&towerLayout.x<stop;
  if(state.fortressMoving){towerLayout.x=Math.min(stop,towerLayout.x+cfg.fortress_move_speed*dt);TOWER_APPROACH.ally=towerLayout.x+79;towerLayout.generatorX=towerLayout.x-78;if(!state.portalUnlocked)for(const u of state.units)u.x=Math.max(TOWER_APPROACH.ally+1,u.x);}
@@ -1303,26 +1305,23 @@ function draw(){
  ctx.setTransform(1,0,0,1,0,0);
  ctx.clearRect(0,0,cv.width,cv.height);
  ctx.save();ctx.setTransform(horizontalScale,0,0,worldScale,viewOffsetX*horizontalScale,viewOffsetY*worldScale);
- const s=stage(),colors={nature:['#78ceff','#95cb79','#7dbe57'],fire:['#f87b52','#a84c35','#b75c3d'],ice:['#b6e7ff','#a5d3e5','#cceaf5'],earth:['#b5c5cf','#9b927f','#bfae85'],neutral:['#93cce7','#81a081','#9eb982']}[s?.affinity]||['#8ed1ef','#89bd73','#92c269'];
+ const s=state.ended&&state.victory&&nextStage&&readyImage(mapBackground(stageBackgroundPath(nextStage)))?nextStage:stage(),colors={nature:['#78ceff','#95cb79','#7dbe57'],fire:['#f87b52','#a84c35','#b75c3d'],ice:['#b6e7ff','#a5d3e5','#cceaf5'],earth:['#b5c5cf','#9b927f','#bfae85'],neutral:['#93cce7','#81a081','#9eb982']}[s?.affinity]||['#8ed1ef','#89bd73','#92c269'];
  const backdrop=mapBackground(stageBackgroundPath(s));
  if(readyImage(backdrop)){for(let tile=Math.floor(cameraX/W);tile<=Math.floor((cameraX+W)/W);tile++){ctx.save();ctx.translate(tile*W,0);if(tile%2){ctx.translate(W,0);ctx.scale(-1,1);}drawMapBackground(backdrop,0,-viewOffsetY,W,viewHeight);ctx.restore();}}
  else{const grad=ctx.createLinearGradient(0,0,0,ground);grad.addColorStop(0,colors[0]);grad.addColorStop(1,colors[1]);ctx.fillStyle=grad;ctx.fillRect(-viewOffsetX,-viewOffsetY,viewWidth,viewHeight);ctx.fillStyle=colors[2];ctx.fillRect(-viewOffsetX,ground,viewWidth,Math.max(0,viewHeight-viewOffsetY-ground));ctx.fillStyle='#446b48';ctx.fillRect(-viewOffsetX,ground,viewWidth,5)}
  window.MonstersClashDayNight?.render(ctx,-viewOffsetX,-viewOffsetY,viewWidth,viewHeight);
  window.MonstersClashEnvironment?.render(ctx,'background',-viewOffsetX,-viewOffsetY,viewWidth,viewHeight);
- // Destination marker on the existing map; no new foreground decoration.
- // Ground portal: static artwork with a clipped procedural energy surface.
+ // Procedural exit: appears only after the entire final encounter is cleared.
+ if(state.portalUnlocked&&!state.ended){
  ctx.save();ctx.translate(progression.defence.fortress_goal_x,towerLayout.ground);ctx.scale(actorRatio,1);
- const portalGold=state.portalUnlocked,portalT=state.time,portalColor=portalGold?'255,193,64':'48,174,255',portalLight=portalGold?'#fff2aa':'#b9f6ff';
- if(readyImage(portalImage)){const pw=238,ph=pw*portalImage.naturalHeight/portalImage.naturalWidth;ctx.drawImage(portalImage,-pw/2,-ph*.83,pw,ph);}
- ctx.save();ctx.translate(0,-35);ctx.scale(1,.30);ctx.beginPath();ctx.arc(0,0,48,0,Math.PI*2);ctx.clip();
- const pg=ctx.createRadialGradient(0,0,0,0,0,48);pg.addColorStop(0,portalGold?'#ffed9a':'#32bfff');pg.addColorStop(.45,portalGold?'#c67b0b':'#1266c8');pg.addColorStop(1,portalGold?'#713c0a':'#093780');ctx.fillStyle=pg;ctx.fillRect(-48,-48,96,96);
- for(let j=0;j<3;j++){ctx.beginPath();for(let k=0;k<=56;k++){const t=k/56,r=4+t*43,ang=portalT*1.7+j*Math.PI*2/3+t*5.5;const px=Math.cos(ang)*r,py=Math.sin(ang)*r;if(k===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.strokeStyle='rgba('+portalColor+',.85)';ctx.lineWidth=4;ctx.shadowColor=portalLight;ctx.shadowBlur=7;ctx.stroke();ctx.lineWidth=1.2;ctx.strokeStyle=portalLight;ctx.stroke();}
- ctx.restore();
- for(let j=0;j<12;j++){const q=(portalT*.46+j/12)%1,ang=j*2.399+portalT*.45,px=Math.cos(ang)*42*(1-q*.5),py=-35+Math.sin(ang)*12-q*48;ctx.globalAlpha=Math.sin(q*Math.PI)*.75;ctx.fillStyle=portalLight;ctx.beginPath();ctx.arc(px,py,1.2+(j%3)*.35,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
- const aura=ctx.createRadialGradient(0,-38,3,0,-38,69);aura.addColorStop(0,'rgba('+portalColor+',.17)');aura.addColorStop(1,'rgba('+portalColor+',0)');ctx.fillStyle=aura;ctx.fillRect(-70,-108,140,140);
- for(let j=0;j<5;j++){const q=(portalT*.6+j/5)%1,x=Math.sin(j*2.4+portalT)*35;const ray=ctx.createLinearGradient(x,-30,x,-86);ray.addColorStop(0,'rgba('+portalColor+','+(.22*Math.sin(q*Math.PI))+')');ray.addColorStop(1,'rgba('+portalColor+',0)');ctx.fillStyle=ray;ctx.beginPath();ctx.moveTo(x-4,-30);ctx.lineTo(x+4,-30);ctx.lineTo(x+1,-86);ctx.closePath();ctx.fill();}
- ctx.restore();
- if(state.allyBase>0){ctx.save();ctx.translate(towerLayout.x,towerLayout.ground);ctx.scale(actorRatio,1);
+ const t=state.portalAge,alpha=Math.min(1,t/progression.defence.portal_activation_seconds),hue=t*85%360;ctx.globalAlpha=alpha*(1-state.portalExit*.25);
+ const glow=ctx.createRadialGradient(0,-5,0,0,-5,95);glow.addColorStop(0,'hsla('+hue+',95%,70%,.32)');glow.addColorStop(1,'hsla('+hue+',95%,60%,0)');ctx.save();ctx.scale(1,.38);ctx.fillStyle=glow;ctx.fillRect(-95,-100,190,200);ctx.restore();
+ ctx.save();ctx.scale(1,.32);for(let i=0;i<5;i++){const q=(t*.55+i/5)%1;ctx.strokeStyle='hsla('+((hue+i*65)%360)+',100%,72%,'+(.9*(1-q))+')';ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(0,0,18+q*73,0,Math.PI*2);ctx.stroke();}
+ for(let i=0;i<4;i++){ctx.beginPath();for(let k=0;k<=60;k++){const q=k/60,r=5+q*72,a=t*2+i*Math.PI/2+q*5.5,x=Math.cos(a)*r,y=Math.sin(a)*r;if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle='hsla('+((hue+i*90)%360)+',100%,73%,.8)';ctx.lineWidth=3;ctx.stroke();}ctx.restore();
+ for(let i=0;i<8;i++){const q=(t*.7+i/8)%1,x=Math.cos(i*2.4+t)*65;const ray=ctx.createLinearGradient(x,0,x,-105);ray.addColorStop(0,'hsla('+((hue+i*45)%360)+',100%,70%,'+(.28*Math.sin(q*Math.PI))+')');ray.addColorStop(1,'transparent');ctx.fillStyle=ray;ctx.beginPath();ctx.moveTo(x-6,0);ctx.lineTo(x+6,0);ctx.lineTo(x*.6,-105);ctx.closePath();ctx.fill();}
+ for(let i=0;i<28;i++){const q=(t*.42+i/28)%1,a=i*2.399+t*1.4,r=70*(1-q*.8);ctx.fillStyle='hsla('+((hue+i*37)%360)+',100%,80%,'+(.85*Math.sin(q*Math.PI))+')';ctx.beginPath();ctx.arc(Math.cos(a)*r,Math.sin(a)*r*.32-q*90,1.3+i%3*.45,0,Math.PI*2);ctx.fill();}
+ ctx.restore();}
+ if(state.allyBase>0&&!state.ended){ctx.save();ctx.translate(towerLayout.x,towerLayout.ground);ctx.scale(actorRatio,1);
  ctx.fillStyle='rgba(8,19,30,.24)';ctx.beginPath();ctx.ellipse(0,0,48,8,0,0,Math.PI*2);ctx.fill();
  const pulse=.84+.16*Math.sin(state.time*4),hover=12-Math.sin(state.time*2.2)*3;
  ctx.save();ctx.translate(0,-hover*.45);ctx.scale(1,.25);const glow=ctx.createRadialGradient(0,0,0,0,0,53);glow.addColorStop(0,'rgba(76,206,255,'+(.40*pulse)+')');glow.addColorStop(.45,'rgba(27,160,255,.19)');glow.addColorStop(1,'rgba(25,125,255,0)');ctx.fillStyle=glow;ctx.fillRect(-53,-53,106,106);ctx.restore();
