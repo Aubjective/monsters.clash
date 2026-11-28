@@ -84,7 +84,8 @@
   },
   "round_growth_pct": {
     "ally": 12,
-    "enemy": 12
+    "enemy": 12,
+    "equipment": 12
   },
   "dark_night_bonus_pct": {
     "hp": 10,
