@@ -14,8 +14,8 @@
         "type": "laser",
         "range": 720,
         "damage": 4.5,
-        "cooldown_seconds": 0.2,
-        "minimum_interval_seconds": 0.075,
+        "cooldown_seconds": 0.8,
+        "minimum_interval_seconds": 0.18,
         "damage_type": "physical",
         "maximum_range": 720
       },
@@ -40,7 +40,7 @@
         },
         "fortress_speed": {
           "label": "Attack speed",
-          "step": 0.22,
+          "step": 0.16,
           "cost": 65
         },
         "fortress_penetration": {
@@ -116,14 +116,18 @@
       },
       "visual_scale": 0.85,
       "aim": {
-        "max_tilt_degrees": 12,
-        "tracking_speed": 7
+        "max_tilt_degrees": 25,
+        "tracking_speed": 9
       },
       "shield_orbit": {
-        "rx": 69,
-        "ry": 36,
-        "plate_scale": 0.85
-      }
+        "rx": 58,
+        "ry": 27,
+        "plate_scale": 0.7
+      },
+      "shield_center": [
+        0.47,
+        0.55
+      ]
     },
     {
       "id": "t002",
